@@ -28,5 +28,4 @@ public class Product {
     private Integer stockQuantity;
     private Integer minimumStock;
 
-    // Getters and Setters
 }

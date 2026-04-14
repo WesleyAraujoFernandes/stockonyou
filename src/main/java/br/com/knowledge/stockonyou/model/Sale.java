@@ -1,30 +1,34 @@
 package br.com.knowledge.stockonyou.model;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "suppliers")
-@AllArgsConstructor
-@NoArgsConstructor
+@Table(name = "sales")
 @Data
-public class Supplier {
+@NoArgsConstructor
+@AllArgsConstructor
+public class Sale {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NotNull
     private Long id;
 
-    private String name;
-    private String contact;
-    private String email;
-    private String phone;
-    private String cnpj; // Brazilian company identifier
+    private LocalDateTime saleDate;
+
+    private Double totalAmount;
+
+    @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL)
+    private List<SaleItem> items;
 }

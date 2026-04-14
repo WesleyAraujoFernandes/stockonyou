@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.knowledge.stockonyou.dto.SupplierDTO;
 import br.com.knowledge.stockonyou.dto.request.SupplierRequest;
 import br.com.knowledge.stockonyou.dto.response.SupplierResponse;
 import br.com.knowledge.stockonyou.mapper.SupplierMapper;
@@ -34,6 +33,7 @@ public class SupplierController {
 
     @GetMapping
     public List<SupplierResponse> getAllSuppliers() {
+        List<Supplier> suppliers = supplierService.findAll();
         return supplierService.findAll()
                 .stream()
                 .map(mapper::toResponse)
@@ -41,20 +41,19 @@ public class SupplierController {
     }
 
     @PostMapping
-    public SupplierResponse createSupplier(@RequestBody SupplierRequest supplierDTO) {
-        Supplier saved = supplierService.create(supplierDTO);
+    public SupplierResponse createSupplier(@RequestBody SupplierRequest supplierRequest) {
+        Supplier saved = supplierService.create(supplierRequest);
         return mapper.toResponse(saved);
     }
 
     @PutMapping("/{id}")
-    public SupplierDTO updateSupplier(@PathVariable Long id, @RequestBody SupplierDTO supplierDTO) {
+    public SupplierResponse updateSupplier(@PathVariable Long id, @RequestBody SupplierRequest supplierRequest) {
         Supplier existing = supplierService.findById(id);
-
-        Supplier updated = SupplierMapper.INSTANCE.toEntity(supplierDTO);
-        updated.setId(existing.getId()); // mantém o ID original
-
-        Supplier saved = supplierService.save(updated);
-        return SupplierMapper.INSTANCE.toDTO(saved);
+        if (existing.getId() == null) {
+            throw new RuntimeException("Supplier not found with id " + id);
+        }
+        Supplier updated = supplierService.update(id, supplierRequest);
+        return mapper.toResponse(updated);
     }
 
     @DeleteMapping("/{id}")

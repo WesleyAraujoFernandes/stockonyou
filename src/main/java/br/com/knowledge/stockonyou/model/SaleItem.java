@@ -4,27 +4,32 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "suppliers")
-@AllArgsConstructor
-@NoArgsConstructor
+@Table(name = "sale_items")
 @Data
-public class Supplier {
+@NoArgsConstructor
+@AllArgsConstructor
+public class SaleItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NotNull
     private Long id;
 
-    private String name;
-    private String contact;
-    private String email;
-    private String phone;
-    private String cnpj; // Brazilian company identifier
+    @ManyToOne
+    private Sale sale;
+
+    @ManyToOne
+    private Product product;
+
+    private Integer quantity;
+
+    private Double unitPrice;
+
+    private Double totalPrice;
 }

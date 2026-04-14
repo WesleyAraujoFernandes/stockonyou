@@ -51,6 +51,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/products/**").hasAnyRole("ADMIN", "USER", "MANAGER")
                         .requestMatchers("/api/suppliers/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers("/api/stock/**").hasAnyRole("ADMIN", "MANAGER")
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(authenticationEntryPoint)

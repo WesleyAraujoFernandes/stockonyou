@@ -3,6 +3,8 @@ package br.com.knowledge.stockonyou.controller;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,28 +18,25 @@ import br.com.knowledge.stockonyou.model.User;
 import br.com.knowledge.stockonyou.repository.RoleRepository;
 import br.com.knowledge.stockonyou.repository.UserRepository;
 import br.com.knowledge.stockonyou.util.JwtUtil;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
+
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private PasswordEncoder passwordEncoder;
-    private JwtUtil jwtUtil;
-
-    public AuthController(UserRepository userRepository, RoleRepository roleRepository,
-            PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
-    }
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
     public String registerUser(@RequestBody UserDTO userDTO) {
         User user = new User();
         user.setUsername(userDTO.getUsername());
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        user.setEnabled(true);
 
         Set<Role> roles = new HashSet<>();
         for (String roleName : userDTO.getRoles()) {
@@ -53,14 +52,12 @@ public class AuthController {
 
     @PostMapping("/login")
     public String login(@RequestBody LoginDTO loginDTO) {
-        User user = userRepository.findByUsername(loginDTO.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!passwordEncoder.matches(loginDTO.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
-        }
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginDTO.getUsername(),
+                        loginDTO.getPassword()));
 
-        return jwtUtil.generateToken(user.getUsername());
+        return jwtUtil.generateToken(loginDTO.getUsername());
     }
-
 }

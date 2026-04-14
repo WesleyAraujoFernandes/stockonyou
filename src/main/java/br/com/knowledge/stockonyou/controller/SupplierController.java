@@ -12,38 +12,38 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.knowledge.stockonyou.dto.SupplierDTO;
+import br.com.knowledge.stockonyou.dto.request.SupplierRequest;
+import br.com.knowledge.stockonyou.dto.response.SupplierResponse;
 import br.com.knowledge.stockonyou.mapper.SupplierMapper;
 import br.com.knowledge.stockonyou.model.Supplier;
 import br.com.knowledge.stockonyou.service.SupplierService;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/suppliers")
+@RequiredArgsConstructor
 public class SupplierController {
     private final SupplierService supplierService;
-
-    public SupplierController(SupplierService supplierService) {
-        this.supplierService = supplierService;
-    }
+    private final SupplierMapper mapper;
 
     @GetMapping("/{id}")
-    public SupplierDTO getSupplierById(@PathVariable Long id) {
+    public SupplierResponse getSupplierById(@PathVariable Long id) {
         Supplier supplier = supplierService.findById(id);
-        return SupplierMapper.INSTANCE.toDTO(supplier);
+        return mapper.toResponse(supplier);
     }
 
     @GetMapping
-    public List<SupplierDTO> getAllSuppliers() {
+    public List<SupplierResponse> getAllSuppliers() {
         return supplierService.findAll()
                 .stream()
-                .map(SupplierMapper.INSTANCE::toDTO)
+                .map(mapper::toResponse)
                 .toList();
     }
 
     @PostMapping
-    public SupplierDTO createSupplier(@RequestBody SupplierDTO supplierDTO) {
-        Supplier supplier = SupplierMapper.INSTANCE.toEntity(supplierDTO);
-        Supplier saved = supplierService.save(supplier);
-        return SupplierMapper.INSTANCE.toDTO(saved);
+    public SupplierResponse createSupplier(@RequestBody SupplierRequest supplierDTO) {
+        Supplier saved = supplierService.create(supplierDTO);
+        return mapper.toResponse(saved);
     }
 
     @PutMapping("/{id}")

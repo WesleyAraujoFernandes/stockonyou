@@ -1,14 +1,16 @@
 package br.com.knowledge.stockonyou.mapper;
 
-import org.mapstruct.factory.Mappers;
-
-import br.com.knowledge.stockonyou.dto.SupplierDTO;
+import org.mapstruct.Mapper;
+import br.com.knowledge.stockonyou.dto.request.SupplierRequest;
+import br.com.knowledge.stockonyou.dto.response.SupplierResponse;
 import br.com.knowledge.stockonyou.model.Supplier;
 
+@Mapper(componentModel = "spring")
 public interface SupplierMapper {
-    SupplierMapper INSTANCE = Mappers.getMapper(SupplierMapper.class);
 
-    SupplierDTO toDTO(Supplier supplier);
+    Supplier toEntity(SupplierRequest dto);
 
-    Supplier toEntity(SupplierDTO dto);
+    SupplierRequest toRequest(Supplier supplier);
+
+    SupplierResponse toResponse(Supplier supplier);
 }

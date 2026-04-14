@@ -1,16 +1,16 @@
 package br.com.knowledge.stockonyou.mapper;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
-
-import br.com.knowledge.stockonyou.dto.ProductDTO;
+import br.com.knowledge.stockonyou.dto.request.ProductRequest;
+import br.com.knowledge.stockonyou.dto.response.ProductResponse;
 import br.com.knowledge.stockonyou.model.Product;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface ProductMapper {
-    ProductMapper INSTANCE = Mappers.getMapper(ProductMapper.class);
 
-    ProductDTO toDTO(Product product);
+    Product toEntity(ProductRequest dto);
 
-    Product toEntity(ProductDTO dto);
+    ProductRequest toRequest(Product product);
+
+    ProductResponse toResponse(Product product);
 }

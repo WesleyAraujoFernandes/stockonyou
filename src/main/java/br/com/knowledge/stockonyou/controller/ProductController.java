@@ -11,33 +11,39 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.knowledge.stockonyou.dto.ProductDTO;
+import br.com.knowledge.stockonyou.dto.request.ProductRequest;
+import br.com.knowledge.stockonyou.dto.response.ProductResponse;
 import br.com.knowledge.stockonyou.mapper.ProductMapper;
 import br.com.knowledge.stockonyou.model.Product;
 import br.com.knowledge.stockonyou.service.ProductService;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/products")
+@RequiredArgsConstructor
 public class ProductController {
-    private final ProductService productService;
 
-    public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
+    private final ProductService productService;
+    private final ProductMapper mapper;
 
     @GetMapping
-    public List<ProductDTO> getAllProducts() {
+    public List<ProductResponse> getAllProducts() {
         return productService.findAll()
                 .stream()
-                .map(ProductMapper.INSTANCE::toDTO)
+                .map(mapper::toResponse)
                 .toList();
     }
 
+    @GetMapping("/{id}")
+    public ProductResponse getProductById(@PathVariable Long id) {
+        Product product = productService.findById(id);
+        return mapper.toResponse(product);
+    }
+
     @PostMapping
-    public ProductDTO createProduct(@RequestBody ProductDTO productDTO) {
-        Product product = ProductMapper.INSTANCE.toEntity(productDTO);
-        Product saved = productService.save(product);
-        return ProductMapper.INSTANCE.toDTO(saved);
+    public ProductResponse createProduct(@RequestBody ProductRequest productDTO) {
+        Product saved = productService.create(productDTO);
+        return mapper.toResponse(saved);
     }
 
     @DeleteMapping("/{id}")
@@ -46,19 +52,11 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ProductDTO updateProduct(@PathVariable Long id, @RequestBody ProductDTO productDTO) {
-        Product existing = productService.findById(id);
+    public ProductResponse updateProduct(
+            @PathVariable Long id,
+            @RequestBody ProductRequest productDTO) {
 
-        existing.setName(productDTO.getName());
-        existing.setCategory(productDTO.getCategory());
-        existing.setUnit(productDTO.getUnit());
-        existing.setPurchasePrice(productDTO.getPurchasePrice());
-        existing.setSalePrice(productDTO.getSalePrice());
-        existing.setStockQuantity(productDTO.getStockQuantity());
-        existing.setMinimumStock(productDTO.getMinimumStock());
-
-        Product updated = productService.save(existing);
-        return ProductMapper.INSTANCE.toDTO(updated);
+        Product updated = productService.update(id, productDTO);
+        return mapper.toResponse(updated);
     }
-
 }

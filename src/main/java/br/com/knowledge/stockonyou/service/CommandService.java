@@ -74,11 +74,15 @@ public class CommandService {
     }
 
     private Command findOpenCommand(Long id) {
-        Command command = commandRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Command not found with id " + id));
-        if (command.getStatus() != CommandStatus.OPEN) {
-            throw new IllegalArgumentException("Command is not open");
+        if (id != null) {
+            Command command = commandRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Command not found with id " + id));
+            if (command.getStatus() != CommandStatus.OPEN) {
+                throw new IllegalArgumentException("Command is not open");
+            }
+            return command;
+        } else {
+            throw new IllegalArgumentException("Command id is null");
         }
-        return command;
     }
 }

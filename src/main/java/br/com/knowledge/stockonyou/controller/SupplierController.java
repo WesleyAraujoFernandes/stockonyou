@@ -33,7 +33,6 @@ public class SupplierController {
 
     @GetMapping
     public List<SupplierResponse> getAllSuppliers() {
-        List<Supplier> suppliers = supplierService.findAll();
         return supplierService.findAll()
                 .stream()
                 .map(mapper::toResponse)

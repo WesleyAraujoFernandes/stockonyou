@@ -22,6 +22,7 @@ public class Supplier {
     @NotNull
     private Long id;
 
+    @NotNull(message = "O nome do fornecedor é obrigatório")
     private String name;
     private String contact;
     private String email;

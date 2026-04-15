@@ -1,6 +1,7 @@
 package br.com.knowledge.stockonyou.model;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Entity
@@ -24,6 +26,7 @@ public class Command {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull(message = "O nome do cliente é obrigatório")
     private String customerName;
 
     private LocalDateTime openedAt;
@@ -37,4 +40,10 @@ public class Command {
 
     @OneToMany(mappedBy = "command", cascade = CascadeType.ALL)
     private List<CommandItem> items;
+
+    private PaymentMethod paymentMethod;
+
+    private BigDecimal paidAmount;
+
+    private LocalDateTime paidAt;
 }

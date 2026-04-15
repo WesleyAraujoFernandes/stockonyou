@@ -4,8 +4,15 @@ import br.com.knowledge.stockonyou.repository.ProductRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
+import br.com.knowledge.stockonyou.dto.request.OpenCommandRequest;
+import br.com.knowledge.stockonyou.exception.CommandClosedException;
+import br.com.knowledge.stockonyou.exception.CommandItemNotFoundExeption;
+import br.com.knowledge.stockonyou.exception.CommandNotFoundException;
+import br.com.knowledge.stockonyou.exception.InsufficientStockException;
 import br.com.knowledge.stockonyou.exception.ResourceNotFoundException;
 import br.com.knowledge.stockonyou.model.Command;
 import br.com.knowledge.stockonyou.model.CommandItem;
@@ -25,19 +32,32 @@ public class CommandService {
     private final CommandItemRepository itemRepository;
     private final ProductService productService;
 
-    public Command openCommand(String customerName) {
+    public Command openCommand(OpenCommandRequest request) {
         Command command = new Command();
-        command.setCustomerName(customerName);
+        command.setCustomerName(request.customerName());
         command.setStatus(CommandStatus.OPEN);
         command.setOpenedAt(LocalDateTime.now());
         return commandRepository.save(command);
     }
 
+    public Command findById(Long id) {
+        return commandRepository.findById(id)
+                .orElseThrow(() -> new CommandNotFoundException("Command not found with id " + id));
+    }
+
+    public List<Command> findByStatus(CommandStatus status) {
+        return commandRepository.findByStatus(status);
+    }
+
     public CommandItem addItem(Long commandId, Long productId, Integer quantity) {
-        Command command = findOpenCommand(productId);
+
+        Command command = findOpenCommand(commandId);
+
         Product product = productService.findById(productId);
+
         if (product.getStockQuantity() < quantity) {
-            throw new IllegalArgumentException("Insufficient stock for product " + product.getName());
+            throw new InsufficientStockException(
+                    "Insufficient stock for product " + product.getName());
         }
 
         product.setStockQuantity(product.getStockQuantity() - quantity);
@@ -48,22 +68,31 @@ public class CommandService {
         item.setProduct(product);
         item.setQuantity(quantity);
         item.setUnitPrice(product.getSalePrice());
-        item.setTotalPrice(product.getSalePrice() * quantity);
+
+        item.setTotalPrice(
+                product.getSalePrice()
+                        .multiply(BigDecimal.valueOf(quantity)));
+
         item.setAddedAt(LocalDateTime.now());
+
         return itemRepository.save(item);
     }
 
-    public void removeItem(Long itemId) {
+    public void removeItemFromCommand(Long commandId, Long itemId) {
         CommandItem item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new ResourceNotFoundException("Item not found with id " + itemId));
+                .orElseThrow(() -> new CommandItemNotFoundExeption("Item not found with id " + itemId));
+        findOpenCommand(item.getCommand().getId());
         Product product = item.getProduct();
         product.setStockQuantity(product.getStockQuantity() + item.getQuantity());
         productRepository.save(product);
-        itemRepository.deleteById(itemId);
+        itemRepository.delete(item);
     }
 
     public Command closeCommand(Long id) {
         Command command = findOpenCommand(id);
+        if (command == null || command.getStatus() != CommandStatus.OPEN) {
+            throw new CommandClosedException("Command is not open");
+        }
         command.setStatus(CommandStatus.CLOSED);
         command.setClosedAt(LocalDateTime.now());
         return commandRepository.save(command);
@@ -76,9 +105,9 @@ public class CommandService {
     private Command findOpenCommand(Long id) {
         if (id != null) {
             Command command = commandRepository.findById(id)
-                    .orElseThrow(() -> new ResourceNotFoundException("Command not found with id " + id));
+                    .orElseThrow(() -> new CommandNotFoundException("Command not found with id " + id));
             if (command.getStatus() != CommandStatus.OPEN) {
-                throw new IllegalArgumentException("Command is not open");
+                throw new CommandClosedException(id);
             }
             return command;
         } else {

@@ -1,5 +1,6 @@
 package br.com.knowledge.stockonyou.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class Command {
     @Enumerated(EnumType.STRING)
     private CommandStatus status;
 
-    private Double totalAmount;
+    private BigDecimal totalAmount;
 
     @OneToMany(mappedBy = "command", cascade = CascadeType.ALL)
     private List<CommandItem> items;

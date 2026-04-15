@@ -1,5 +1,6 @@
 package br.com.knowledge.stockonyou.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
@@ -27,9 +28,9 @@ public class CommandItem {
 
     private Integer quantity;
 
-    private Double unitPrice;
+    private BigDecimal unitPrice;
 
-    private Double totalPrice;
+    private BigDecimal totalPrice;
 
     private LocalDateTime addedAt;
 }

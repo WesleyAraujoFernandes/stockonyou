@@ -1,5 +1,6 @@
 package br.com.knowledge.stockonyou.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,7 @@ public class SaleService {
         Sale sale = new Sale();
         sale.setSaleDate(LocalDateTime.now());
         List<SaleItem> items = new ArrayList<>();
-        double total = 0.0;
+        BigDecimal total = BigDecimal.ZERO;
         for (SaleItemRequest itemRequest : request.items()) {
             Product product = productRepository.findById(itemRequest.productId())
                     .orElseThrow(() -> new ResourceNotFoundException(
@@ -48,9 +49,9 @@ public class SaleService {
             item.setQuantity(itemRequest.quantity());
             item.setUnitPrice(product.getSalePrice());
 
-            double itemTotal = product.getSalePrice() * itemRequest.quantity();
+            BigDecimal itemTotal = product.getSalePrice().multiply(BigDecimal.valueOf(itemRequest.quantity()));
             item.setTotalPrice(itemTotal);
-            total += itemTotal;
+            total = total.add(itemTotal);
 
             items.add(item);
             product.setStockQuantity(product.getStockQuantity() - itemRequest.quantity());
@@ -83,10 +84,10 @@ public class SaleService {
         item.setProduct(product);
         item.setQuantity(request.quantity());
         item.setUnitPrice(product.getSalePrice());
-        item.setTotalPrice(product.getSalePrice() * request.quantity());
+        item.setTotalPrice(product.getSalePrice().multiply(BigDecimal.valueOf(request.quantity())));
         item.setAddedAt(LocalDateTime.now());
         command.getItems().add(item);
-        command.setTotalAmount(command.getTotalAmount() + item.getTotalPrice());
+        command.setTotalAmount(command.getTotalAmount().add(item.getTotalPrice()));
         commandRepository.save(command);
     }
 }

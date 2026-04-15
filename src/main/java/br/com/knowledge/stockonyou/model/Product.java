@@ -1,5 +1,7 @@
 package br.com.knowledge.stockonyou.model;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,8 +27,8 @@ public class Product {
     private String name;
     private String category;
     private String unit;
-    private Double purchasePrice;
-    private Double salePrice;
+    private BigDecimal purchasePrice;
+    private BigDecimal salePrice;
     private Integer stockQuantity;
     private Integer minimumStock;
 

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.knowledge.stockonyou.dto.request.SupplierRequest;
 import br.com.knowledge.stockonyou.dto.response.SupplierResponse;
+import br.com.knowledge.stockonyou.exception.SupplierNotFoundException;
 import br.com.knowledge.stockonyou.mapper.SupplierMapper;
 import br.com.knowledge.stockonyou.model.Supplier;
 import br.com.knowledge.stockonyou.service.SupplierService;
@@ -49,7 +50,7 @@ public class SupplierController {
     public SupplierResponse updateSupplier(@PathVariable Long id, @RequestBody SupplierRequest supplierRequest) {
         Supplier existing = supplierService.findById(id);
         if (existing.getId() == null) {
-            throw new RuntimeException("Supplier not found with id " + id);
+            throw new SupplierNotFoundException(id);
         }
         Supplier updated = supplierService.update(id, supplierRequest);
         return mapper.toResponse(updated);

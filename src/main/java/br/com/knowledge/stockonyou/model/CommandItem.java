@@ -3,6 +3,9 @@ package br.com.knowledge.stockonyou.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import org.springframework.lang.NonNull;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -28,9 +31,14 @@ public class CommandItem {
 
     private Integer quantity;
 
+    @Column(precision = 10, scale = 2)
     private BigDecimal unitPrice;
 
+    @Column(precision = 10, scale = 2)
     private BigDecimal totalPrice;
 
     private LocalDateTime addedAt;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal subtotal;
 }

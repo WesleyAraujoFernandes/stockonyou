@@ -1,7 +1,9 @@
 package br.com.knowledge.stockonyou.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import br.com.knowledge.stockonyou.dto.request.ProductRequest;
@@ -18,6 +20,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
 
+    @SuppressWarnings("null")
     public Product findById(Long id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id " + id));
@@ -27,6 +30,7 @@ public class ProductService {
         return productRepository.findAll();
     }
 
+    @SuppressWarnings("null")
     public Product create(ProductRequest request) {
         Product product = productMapper.toEntity(request);
         return productRepository.save(product);
@@ -42,6 +46,7 @@ public class ProductService {
         return productRepository.save(updated);
     }
 
+    @SuppressWarnings("null")
     public void delete(Long id) {
         Product product = findById(id);
         if (product.getId() != null) {
@@ -49,5 +54,25 @@ public class ProductService {
         } else {
             throw new ResourceNotFoundException("Product not found with id " + id);
         }
+    }
+
+    public List<Product> getLowStockProducts() {
+        return productRepository.findAll(Sort.by("stockQuantity").ascending());
+    }
+
+    public List<Product> getHighStockProducts() {
+        return productRepository.findAll(Sort.by("stockQuantity").descending());
+    }
+
+    public List<Product> getTopLowStockProducts(Integer quantity) {
+        return productRepository.findByStockQuantityLessThanEqualOrderByStockQuantityAsc(BigDecimal.valueOf(quantity));
+    }
+
+    public List<Product> getTopHighStockProducts(Integer quantity) {
+        return productRepository.findByStockQuantityLessThanEqualOrderByStockQuantityDesc(BigDecimal.valueOf(quantity));
+    }
+
+    public List<Product> getCriticalStockProducts() {
+        return productRepository.findCriticalStockProducts();
     }
 }

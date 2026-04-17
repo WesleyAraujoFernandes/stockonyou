@@ -14,8 +14,19 @@ public interface CommandRepository extends JpaRepository<Command, Long> {
     List<Command> findByStatus(CommandStatus status);
 
     @Query("""
+                SELECT c
+                FROM Command c
+                WHERE c.status = 'PAID'
+                AND c.paidAt >= :startOfDay
+                AND c.paidAt < :endOfDay
+            """)
+    List<Command> findPaidToday(
+            @Param("startOfDay") LocalDateTime startOfDay,
+            @Param("endOfDay") LocalDateTime endOfDay);
+
+    @Query("""
                 SELECT
-                    COALESCE(SUM(c.totalAmount), 0),
+                    SUM(c.totalAmount),
                     COUNT(c)
                 FROM Command c
                 WHERE c.status = :status

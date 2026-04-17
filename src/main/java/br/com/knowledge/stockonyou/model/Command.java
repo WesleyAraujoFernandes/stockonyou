@@ -1,11 +1,11 @@
 package br.com.knowledge.stockonyou.model;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -36,13 +36,18 @@ public class Command {
     @Enumerated(EnumType.STRING)
     private CommandStatus status;
 
+    @Column(precision = 10, scale = 2)
     private BigDecimal totalAmount;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal subtotal;
 
     @OneToMany(mappedBy = "command", cascade = CascadeType.ALL)
     private List<CommandItem> items;
 
     private PaymentMethod paymentMethod;
 
+    @Column(precision = 10, scale = 2)
     private BigDecimal paidAmount;
 
     private LocalDateTime paidAt;

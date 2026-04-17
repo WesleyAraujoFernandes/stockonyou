@@ -1,7 +1,7 @@
 package br.com.knowledge.stockonyou.service;
 
 import br.com.knowledge.stockonyou.repository.ProductRepository;
-
+import br.com.knowledge.stockonyou.util.MoneyUtils;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -9,9 +9,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
+import br.com.knowledge.stockonyou.dto.DailyCashClosingDTO;
+import br.com.knowledge.stockonyou.dto.TopProductDTO;
 import br.com.knowledge.stockonyou.dto.request.OpenCommandRequest;
 import br.com.knowledge.stockonyou.dto.response.DailySummaryResponse;
 import br.com.knowledge.stockonyou.exception.CommandClosedException;
@@ -25,7 +26,7 @@ import br.com.knowledge.stockonyou.model.PaymentMethod;
 import br.com.knowledge.stockonyou.model.Product;
 import br.com.knowledge.stockonyou.repository.CommandItemRepository;
 import br.com.knowledge.stockonyou.repository.CommandRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -34,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 public class CommandService {
     private final ProductRepository productRepository;
     private final CommandRepository commandRepository;
+    private final CommandItemRepository commandItemRepository;
     private final CommandItemRepository itemRepository;
     private final ProductService productService;
 
@@ -86,22 +88,15 @@ public class CommandService {
             item.setCommand(command);
             item.setProduct(product);
             item.setQuantity(quantity);
-            item.setUnitPrice(product.getSalePrice());
+            item.setUnitPrice(MoneyUtils.normalize(product.getSalePrice()));
             item.setTotalPrice(
-                    product.getSalePrice()
-                            .multiply(BigDecimal.valueOf(quantity)));
+                    MoneyUtils.normalize(product.getSalePrice()
+                            .multiply(BigDecimal.valueOf(quantity))));
             item.setAddedAt(LocalDateTime.now());
             command.getItems().add(item);
         }
         recalculateTotal(command);
         return commandRepository.save(command);
-    }
-
-    private void recalculateTotal(Command command) {
-        BigDecimal totalAmount = command.getItems().stream()
-                .map(CommandItem::getTotalPrice)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        command.setTotalAmount(totalAmount);
     }
 
     public void removeItemFromCommand(Long commandId, Long itemId) {
@@ -124,8 +119,26 @@ public class CommandService {
         return commandRepository.save(command);
     }
 
+    /*
+     * The command needs to be closed before it can be paid
+     */
+    @Transactional
     public Command payCommand(Long id, PaymentMethod paymentMethod) {
         Command command = findOpenCommand(id);
+
+        if (command.getStatus() != CommandStatus.CLOSED) {
+            throw new CommandClosedException("Command is not closed");
+        }
+
+        for (CommandItem item : command.getItems()) {
+            Product product = item.getProduct();
+            Integer newStock = product.getStockQuantity() - item.getQuantity();
+            if (newStock < 0) {
+                throw new InsufficientStockException(
+                        "Insufficient stock for product " + product.getName());
+            }
+            product.setStockQuantity(newStock);
+        }
 
         command.setStatus(CommandStatus.PAID);
         command.setPaidAt(LocalDateTime.now());
@@ -142,9 +155,63 @@ public class CommandService {
         Long totalCommands = (Long) result[1];
         BigDecimal averageTicket = BigDecimal.ZERO;
         if (totalCommands != null && totalCommands > 0) {
-            averageTicket = totalSales.divide(BigDecimal.valueOf(totalCommands), 2, RoundingMode.HALF_UP);
+            averageTicket = MoneyUtils
+                    .normalize(totalSales.divide(BigDecimal.valueOf(totalCommands), 2, RoundingMode.HALF_UP));
         }
         return new DailySummaryResponse(totalSales, totalCommands, averageTicket);
+    }
+
+    public Command updateItemQuantity(Long commandId, Long itemId, Integer quantity) {
+        CommandItem item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new CommandItemNotFoundExeption("Item not found with id " + itemId));
+        findOpenCommand(item.getCommand().getId());
+        if (quantity < 0) {
+            throw new IllegalArgumentException("Quantity must be greater than 0");
+        }
+        if (quantity == 0) {
+            removeItemFromCommand(commandId, itemId);
+        } else {
+            item.setQuantity(quantity);
+            item.setSubtotal(MoneyUtils.normalize(item.getUnitPrice().multiply(BigDecimal.valueOf(quantity))));
+            item.setTotalPrice(MoneyUtils.normalize(item.getUnitPrice().multiply(BigDecimal.valueOf(quantity))));
+            itemRepository.save(item);
+        }
+        recalculateTotal(item.getCommand());
+        if (item.getCommand() == null) {
+            throw new CommandNotFoundException("Command not found with id " + commandId);
+        }
+        return commandRepository.save(item.getCommand());
+    }
+
+    public DailyCashClosingDTO getDailyCashClosing() {
+        List<Command> commands = commandRepository.findPaidToday(LocalDate.now().atStartOfDay(),
+                LocalDate.now().plusDays(1).atStartOfDay());
+        DailyCashClosingDTO dto = new DailyCashClosingDTO();
+        BigDecimal total = MoneyUtils.normalize(MoneyUtils
+                .normalize(commands.stream().map(Command::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add)));
+        dto.setTotalAmount(MoneyUtils.normalize(total));
+        dto.setTotalCommands(commands.size());
+        dto.setAverageTicket(MoneyUtils.normalize(commands.isEmpty() ? BigDecimal.ZERO
+                : MoneyUtils.normalize(total.divide(BigDecimal.valueOf(commands.size()), 2, RoundingMode.HALF_UP))));
+        dto.setCashTotal(MoneyUtils.normalize(sumByPayment(commands, PaymentMethod.CASH)));
+        dto.setCreditCardTotal(MoneyUtils.normalize(sumByPayment(commands, PaymentMethod.CREDIT_CARD)));
+        dto.setDebitCardTotal(MoneyUtils.normalize(sumByPayment(commands, PaymentMethod.DEBIT_CARD)));
+        dto.setPixTotal(MoneyUtils.normalize(sumByPayment(commands, PaymentMethod.PIX)));
+        dto.setTransferTotal(MoneyUtils.normalize(sumByPayment(commands, PaymentMethod.TRANSFER)));
+        return dto;
+    }
+
+    private void recalculateTotal(Command command) {
+        BigDecimal totalAmount = command.getItems().stream()
+                .map(CommandItem::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        command.setTotalAmount(MoneyUtils.normalize(totalAmount));
+    }
+
+    private BigDecimal sumByPayment(List<Command> commands, PaymentMethod paymentMethod) {
+        return MoneyUtils
+                .normalize(commands.stream().filter(command -> command.getPaymentMethod().equals(paymentMethod))
+                        .map(Command::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add));
     }
 
     private Command findOpenCommand(Long id) {
@@ -167,5 +234,21 @@ public class CommandService {
         } else {
             throw new IllegalArgumentException("Command ID is null");
         }
+    }
+
+    public List<Command> findPaidToday() {
+        LocalDate today = LocalDate.now();
+        LocalDateTime start = today.atStartOfDay();
+        LocalDateTime end = today.plusDays(1).atStartOfDay();
+        return commandRepository.findPaidToday(start, end);
+    }
+
+    public List<TopProductDTO> getTopProductsToday() {
+
+        LocalDate today = LocalDate.now();
+
+        return commandItemRepository.findTopProductsToday(
+                today.atStartOfDay(),
+                today.plusDays(1).atStartOfDay());
     }
 }

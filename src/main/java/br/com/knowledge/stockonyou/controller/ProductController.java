@@ -2,6 +2,7 @@ package br.com.knowledge.stockonyou.controller;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -58,5 +59,18 @@ public class ProductController {
 
         Product updated = productService.update(id, productDTO);
         return mapper.toResponse(updated);
+    }
+
+    public ResponseEntity<List<Product>> getLowStock() {
+        return ResponseEntity.ok(productService.getLowStockProducts());
+    }
+
+    public ResponseEntity<List<Product>> getHighStock() {
+        return ResponseEntity.ok(productService.getHighStockProducts());
+    }
+
+    @GetMapping("/alerts/low-stock")
+    public ResponseEntity<List<Product>> getLowStockAlerts() {
+        return ResponseEntity.ok(productService.getCriticalStockProducts());
     }
 }

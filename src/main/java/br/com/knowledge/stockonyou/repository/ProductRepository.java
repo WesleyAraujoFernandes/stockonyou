@@ -25,7 +25,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("""
             SELECT p
             FROM Product p
-            WHERE P.minimumStock IS NOT NULL,
+            WHERE p.minimumStock IS NOT NULL
             AND p.stockQuantity <= p.minimumStock
             AND p.stockQuantity >= 0
             """)

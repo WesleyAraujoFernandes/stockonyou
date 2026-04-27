@@ -6,7 +6,9 @@ info:
 http:
   method: GET
   url: http://localhost:8080/api/products
-  auth: inherit
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NzA2MDU1OCwiZXhwIjoxNzc3MDY0MTU4fQ.EK57CQHLPNUcRUtdsksbMsf4_5KeEEDaijKYmdigEy0
 
 settings:
   encodeUrl: true

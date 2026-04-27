@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.knowledge.stockonyou.dto.LoginDTO;
 import br.com.knowledge.stockonyou.dto.UserDTO;
+import br.com.knowledge.stockonyou.dto.response.LoginResponse;
 import br.com.knowledge.stockonyou.model.Role;
 import br.com.knowledge.stockonyou.model.User;
 import br.com.knowledge.stockonyou.repository.RoleRepository;
@@ -51,13 +52,13 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginDTO loginDTO) {
+    public LoginResponse login(@RequestBody LoginDTO loginDTO) {
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginDTO.getUsername(),
                         loginDTO.getPassword()));
-
-        return jwtUtil.generateToken(loginDTO.getUsername());
+        String token = jwtUtil.generateToken(loginDTO.getUsername());
+        return new LoginResponse(token);
     }
 }

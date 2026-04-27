@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: http://localhost:8080/api/products
+  url: "{{baseUrl}}/products"
   body:
     type: json
     data: |-
@@ -18,9 +18,7 @@ http:
         "stockQuantity": 30,
         "minimumStock": 5
       }
-  auth:
-    type: bearer
-    token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NzA1NjQyNiwiZXhwIjoxNzc3MDYwMDI2fQ.zNRHcVWKBq_1Z6Lzg6pmaenqSUZgmnHP-iqH461JJok
+  auth: inherit
 
 settings:
   encodeUrl: true

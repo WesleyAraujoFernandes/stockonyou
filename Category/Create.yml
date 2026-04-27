@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: http://localhost:8080/api/categories/2
+  url: "{{baseUrl}}/api/categories/2"
   auth:
     type: bearer
     token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NzA1NTU5NiwiZXhwIjoxNzc3MDU5MTk2fQ.SosJpyYXzY5igjJmibfk12M79CDFErZLFc8QkAJQcAc

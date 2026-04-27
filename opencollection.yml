@@ -1,0 +1,29 @@
+opencollection: 1.0.0
+
+info:
+  name: StockOnYou
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NzI5NTYzNSwiZXhwIjoxNzc3Mjk5MjM1fQ.TGHd1SgSgqN09_ePfx9dlLG8koXiUoDGnSa6qhHTGAs
+  variables:
+    - name: baseUrl
+      value: http://localhost:8080/api
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

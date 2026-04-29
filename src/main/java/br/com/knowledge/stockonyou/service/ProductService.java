@@ -38,7 +38,7 @@ public class ProductService {
 
     public Product update(Long id, ProductRequest request) {
         Product existing = findById(id);
-        if (existing.getId() == null) {
+        if (existing == null || existing.getId() == null) {
             throw new ResourceNotFoundException("Product not found with id " + id);
         }
         Product updated = productMapper.toEntity(request);

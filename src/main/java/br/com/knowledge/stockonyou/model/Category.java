@@ -1,7 +1,5 @@
 package br.com.knowledge.stockonyou.model;
 
-import java.math.BigDecimal;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,19 +15,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class Product {
-
+public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @NotNull
     private Long id;
-
     private String name;
-    private Category category;
-    private String unit;
-    private BigDecimal purchasePrice;
-    private BigDecimal salePrice;
-    private Integer stockQuantity;
-    private Integer minimumStock;
-
 }

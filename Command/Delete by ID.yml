@@ -1,16 +1,16 @@
 info:
-  name: Create
+  name: Delete by ID
   type: http
-  seq: 3
+  seq: 2
 
 http:
-  method: POST
-  url: "{{baseUrl}}/categories"
+  method: DELETE
+  url: "{{baseUrl}}/commands/"
   body:
     type: json
     data: |-
       {
-        "name": "Bebidas"
+        "customerName": "wesley"
       }
   auth: inherit
 

@@ -19,7 +19,6 @@ public class Supplier {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NotNull
     private Long id;
 
     @NotNull(message = "O nome do fornecedor é obrigatório")

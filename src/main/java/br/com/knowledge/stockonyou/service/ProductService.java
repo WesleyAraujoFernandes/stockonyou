@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 import br.com.knowledge.stockonyou.dto.request.ProductRequest;
 import br.com.knowledge.stockonyou.exception.ResourceNotFoundException;
 import br.com.knowledge.stockonyou.mapper.ProductMapper;
+import br.com.knowledge.stockonyou.model.Category;
 import br.com.knowledge.stockonyou.model.Product;
+import br.com.knowledge.stockonyou.repository.CategoryRepository;
 import br.com.knowledge.stockonyou.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -18,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
 
     @SuppressWarnings("null")
@@ -33,6 +36,9 @@ public class ProductService {
     @SuppressWarnings("null")
     public Product create(ProductRequest request) {
         Product product = productMapper.toEntity(request);
+        Category category = categoryRepository.findById(request.categoryId()).orElseThrow(
+                () -> new ResourceNotFoundException("Category not found with id " + request.categoryId()));
+        product.setCategory(category);
         return productRepository.save(product);
     }
 

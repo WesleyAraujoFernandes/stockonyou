@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import br.com.knowledge.stockonyou.dto.DailyCashClosingDTO;
@@ -38,6 +39,10 @@ public class CommandService {
     private final CommandItemRepository commandItemRepository;
     private final CommandItemRepository itemRepository;
     private final ProductService productService;
+
+    public List<Command> findAll() {
+        return commandRepository.findAll();
+    }
 
     public Command openCommand(OpenCommandRequest request) {
         Command command = new Command();
@@ -250,5 +255,9 @@ public class CommandService {
         return commandItemRepository.findTopProductsToday(
                 today.atStartOfDay(),
                 today.plusDays(1).atStartOfDay());
+    }
+
+    public void deleteById(@NonNull Long id) {
+        commandRepository.deleteById(id);
     }
 }

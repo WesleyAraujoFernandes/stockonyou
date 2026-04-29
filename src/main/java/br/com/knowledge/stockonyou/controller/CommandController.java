@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -17,6 +18,8 @@ import br.com.knowledge.stockonyou.dto.TopProductDTO;
 import br.com.knowledge.stockonyou.dto.request.CommandItemRequest;
 import br.com.knowledge.stockonyou.dto.request.OpenCommandRequest;
 import br.com.knowledge.stockonyou.dto.request.PayCommandRequest;
+import br.com.knowledge.stockonyou.dto.response.CommandResponse;
+import br.com.knowledge.stockonyou.mapper.CommandMapper;
 import br.com.knowledge.stockonyou.model.Command;
 import br.com.knowledge.stockonyou.model.CommandStatus;
 import br.com.knowledge.stockonyou.service.CommandService;
@@ -28,11 +31,18 @@ import lombok.RequiredArgsConstructor;
 public class CommandController {
 
     private final CommandService commandService;
+    private final CommandMapper commandMapper;
 
     @PostMapping("/open")
     public ResponseEntity<Command> openCommand(@RequestBody OpenCommandRequest request) {
         Command command = commandService.openCommand(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(command);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<CommandResponse>> findAll() {
+        List<CommandResponse> response = commandService.findAll().stream().map(commandMapper::toResponse).toList();
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
@@ -42,11 +52,11 @@ public class CommandController {
 
     @PostMapping("/{id}/items")
     public ResponseEntity<Command> addItem(
-            @PathVariable Long id,
+            @PathVariable Long commandId,
             @RequestBody CommandItemRequest request) {
 
         Command item = commandService.addItem(
-                id,
+                commandId,
                 request.productId(),
                 request.quantity());
 
@@ -56,6 +66,12 @@ public class CommandController {
     @DeleteMapping("/items/{commandId}/{itemId}")
     public ResponseEntity<Void> removeItem(@PathVariable Long commandId, @PathVariable Long itemId) {
         commandService.removeItemFromCommand(commandId, itemId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCommand(@NonNull @PathVariable Long id) {
+        commandService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 

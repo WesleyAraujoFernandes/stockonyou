@@ -3,7 +3,7 @@ package br.com.knowledge.stockonyou.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import org.springframework.lang.NonNull;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,6 +24,7 @@ public class CommandItem {
     private Long id;
 
     @ManyToOne
+    @JsonBackReference
     private Command command;
 
     @ManyToOne

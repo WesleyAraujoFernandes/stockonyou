@@ -1,14 +1,14 @@
 package br.com.knowledge.stockonyou.dto.response;
 
-import br.com.knowledge.stockonyou.model.Category;
+import java.math.BigDecimal;
 
 public record ProductResponse(Long id,
-                String name,
-                Category category,
-                String unit,
-                Double purchasePrice,
-                Double salePrice,
-                Integer stockQuantity,
-                Integer minimumStock) {
+        String name,
+        Long categoryId,
+        String unit,
+        BigDecimal purchasePrice,
+        BigDecimal salePrice,
+        Integer stockQuantity,
+        Integer minimumStock) {
 
 }

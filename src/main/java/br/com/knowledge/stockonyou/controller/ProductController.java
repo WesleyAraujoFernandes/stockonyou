@@ -17,6 +17,7 @@ import br.com.knowledge.stockonyou.dto.response.ProductResponse;
 import br.com.knowledge.stockonyou.mapper.ProductMapper;
 import br.com.knowledge.stockonyou.model.Product;
 import br.com.knowledge.stockonyou.service.ProductService;
+import io.micrometer.core.ipc.http.HttpSender.Response;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -28,37 +29,38 @@ public class ProductController {
     private final ProductMapper mapper;
 
     @GetMapping
-    public List<ProductResponse> getAllProducts() {
-        return productService.findAll()
+    public ResponseEntity<List<ProductResponse>> getAllProducts() {
+        return ResponseEntity.ok(productService.findAll()
                 .stream()
                 .map(mapper::toResponse)
-                .toList();
+                .toList());
     }
 
     @GetMapping("/{id}")
-    public ProductResponse getProductById(@PathVariable Long id) {
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
         Product product = productService.findById(id);
-        return mapper.toResponse(product);
+        return ResponseEntity.ok(mapper.toResponse(product));
     }
 
     @PostMapping
-    public ProductResponse createProduct(@RequestBody ProductRequest productDTO) {
+    public ResponseEntity<ProductResponse> createProduct(@RequestBody ProductRequest productDTO) {
         Product saved = productService.create(productDTO);
-        return mapper.toResponse(saved);
+        return ResponseEntity.status(201).body(mapper.toResponse(saved));
     }
 
     @DeleteMapping("/{id}")
-    public void deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}")
-    public ProductResponse updateProduct(
+    public ResponseEntity<ProductResponse> updateProduct(
             @PathVariable Long id,
             @RequestBody ProductRequest productDTO) {
 
         Product updated = productService.update(id, productDTO);
-        return mapper.toResponse(updated);
+        return ResponseEntity.ok(mapper.toResponse(updated));
     }
 
     public ResponseEntity<List<Product>> getLowStock() {

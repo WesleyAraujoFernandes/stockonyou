@@ -5,8 +5,10 @@ info:
 
 http:
   method: GET
-  url: "{{baseUrl}}/products"
-  auth: inherit
+  url: "{{baseUrl}}/categories"
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NzQ4OTM1MSwiZXhwIjoxNzc3NDkyOTUxfQ.bC0ezEGY2iwxvGRmjPnNHT_VDFPcmU3PLnhWYl3zsXI
 
 settings:
   encodeUrl: true

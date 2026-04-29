@@ -1,16 +1,16 @@
 info:
-  name: Create
+  name: Open
   type: http
-  seq: 3
+  seq: 1
 
 http:
   method: POST
-  url: "{{baseUrl}}/categories"
+  url: "{{baseUrl}}/commands/open"
   body:
     type: json
     data: |-
       {
-        "name": "Bebidas"
+        "customerName": "wesley"
       }
   auth: inherit
 

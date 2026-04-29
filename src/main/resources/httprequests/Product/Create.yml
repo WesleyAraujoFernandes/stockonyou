@@ -10,15 +10,17 @@ http:
     type: json
     data: |-
       {
-        "name": "Coca-cola Lata 350ml",
-        "category": "Refrigerante",
+        "name": "Sprite Lata 350ml",
         "unit": "un",
+        "categoryId": 3,
         "purchasePrice": 2.50,
         "salePrice": 4.00,
         "stockQuantity": 30,
         "minimumStock": 5
       }
-  auth: inherit
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NzQ4MzM1OCwiZXhwIjoxNzc3NDg2OTU4fQ.kAxc2GlBgxVuQ979pKn78rxxuEY7Zsq4UEIY3mxJqfk
 
 settings:
   encodeUrl: true

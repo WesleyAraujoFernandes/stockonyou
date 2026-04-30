@@ -17,7 +17,6 @@ import br.com.knowledge.stockonyou.dto.response.ProductResponse;
 import br.com.knowledge.stockonyou.mapper.ProductMapper;
 import br.com.knowledge.stockonyou.model.Product;
 import br.com.knowledge.stockonyou.service.ProductService;
-import io.micrometer.core.ipc.http.HttpSender.Response;
 import lombok.RequiredArgsConstructor;
 
 @RestController

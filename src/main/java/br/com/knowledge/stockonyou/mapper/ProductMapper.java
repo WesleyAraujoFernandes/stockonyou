@@ -23,10 +23,7 @@ public interface ProductMapper {
 
     // Entity → Response
     @Mapping(source = "category.id", target = "categoryId")
-    @Mapping(source = "category.categoryName", target = "name")
+    @Mapping(source = "category.categoryName", target = "categoryName")
     ProductResponse toResponse(Product product);
 
-    // Entity → Request (se realmente precisar)
-    @Mapping(source = "category.id", target = "categoryId")
-    ProductRequest toRequest(Product product);
 }

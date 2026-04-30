@@ -2,8 +2,6 @@ package br.com.knowledge.stockonyou.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-
 import br.com.knowledge.stockonyou.dto.request.ProductRequest;
 import br.com.knowledge.stockonyou.dto.response.ProductResponse;
 import br.com.knowledge.stockonyou.model.Product;
@@ -12,6 +10,7 @@ import br.com.knowledge.stockonyou.model.Product;
 public interface ProductMapper {
 
     // Request → Entity
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "category", ignore = true)
     Product toEntity(ProductRequest dto);
 
@@ -24,7 +23,7 @@ public interface ProductMapper {
 
     // Entity → Response
     @Mapping(source = "category.id", target = "categoryId")
-    @Mapping(source = "category.name", target = "name")
+    @Mapping(source = "category.categoryName", target = "name")
     ProductResponse toResponse(Product product);
 
     // Entity → Request (se realmente precisar)

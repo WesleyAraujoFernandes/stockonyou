@@ -22,7 +22,7 @@ public interface ProductMapper {
             @org.mapstruct.MappingTarget Product product);
 
     // Entity → Response
-    @Mapping(source = "category.id", target = "categoryId")
+    @Mapping(target = "categoryId", expression = "java(product.getCategory() != null ? product.getCategory().getId() : null)")
     @Mapping(source = "category.categoryName", target = "categoryName")
     ProductResponse toResponse(Product product);
 

@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,8 +30,10 @@ public class SaleItem {
     @ManyToOne
     private Product product;
 
+    @NotNull(message = "A quantidade é obrigatória")
     private Integer quantity;
 
+    @NotNull(message = "O preco unitário é obrigatório")
     private BigDecimal unitPrice;
 
     private BigDecimal totalPrice;

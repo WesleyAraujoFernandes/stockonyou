@@ -12,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Entity
@@ -30,9 +31,12 @@ public class CommandItem {
     @ManyToOne
     private Product product;
 
+    @Column(nullable = false)
+    @NotNull(message = "A quantidade é obrigatória")
     private Integer quantity;
 
     @Column(precision = 10, scale = 2)
+    @NotNull(message = "O preco unitário é obrigatório")
     private BigDecimal unitPrice;
 
     @Column(precision = 10, scale = 2)

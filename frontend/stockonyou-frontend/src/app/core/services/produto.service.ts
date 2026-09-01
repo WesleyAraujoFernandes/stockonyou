@@ -14,7 +14,7 @@ export class ProdutoService {
     nome?: string,
     precoMin?: number,
     precoMax?: number,
-    categoriaId?: number,
+    categoriaIds?: number[], // Mantém o array de números
     page: number = 0,
     size: number = 10
   ): Observable<PageResponse<Produto>> {
@@ -22,12 +22,19 @@ export class ProdutoService {
       .set('page', page.toString())
       .set('size', size.toString())
       .set('sort', 'id,desc');
+
     if (nome) params = params.set('nome', nome);
     if (precoMin !== undefined && precoMin !== null)
       params = params.set('precoMin', precoMin.toString());
     if (precoMax !== undefined && precoMax !== null)
       params = params.set('precoMax', precoMax.toString());
-    if (categoriaId) params = params.set('categoriaId', categoriaId.toString());
+    
+    // CORREÇÃO DEFINITIVA: Transforma o array [1, 2, 3] na string única "1,2,3"
+    // Enviando como 'categoriaId', o Spring Boot converte automaticamente para List<Long>
+    if (categoriaIds && categoriaIds.length > 0) {
+      params = params.set('categoriaId', categoriaIds.join(','));
+    }
+
     return this.http.get<PageResponse<Produto>>(this.apiUrl, { params });
   }
 

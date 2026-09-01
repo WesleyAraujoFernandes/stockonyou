@@ -40,6 +40,13 @@ public class ProdutoService {
         return ProdutoResponseDTO.fromEntity(produto);
     }
 
+    @Transactional(readOnly = true)
+    public Page<ProdutoResponseDTO> buscarDinamica(String nome, BigDecimal precoMin, BigDecimal precoMax, List<Long> categoriasIds, Pageable pageable) {
+        Specification<Produto> spec = ProdutoSpecification.comFiltros(nome, precoMin, precoMax, categoriasIds);
+        return produtoRepository.findAll(spec, pageable)
+            .map(ProdutoResponseDTO::fromEntity);
+    }
+
     @Transactional
     public ProdutoResponseDTO criar(ProdutoRequestDTO dto) {
         if (produtoRepository.existsByCodigoBarras(dto.codigoBarras())) {
@@ -91,15 +98,4 @@ public class ProdutoService {
 
     }
 
-    @Transactional(readOnly = true)
-    public Page<ProdutoResponseDTO> buscarDinamica(
-            String nome,
-            BigDecimal precoMin,
-            BigDecimal precoMax,
-            Long categoriaId,
-            Pageable pageable) {
-        Specification<Produto> spec = ProdutoSpecification.comFiltros(nome, precoMin, precoMax, categoriaId);
-        return produtoRepository.findAll(spec, pageable)
-                .map(ProdutoResponseDTO::fromEntity);
-    }
 }

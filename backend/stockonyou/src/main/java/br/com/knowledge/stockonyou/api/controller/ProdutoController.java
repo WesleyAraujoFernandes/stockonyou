@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,7 +31,7 @@ public class ProdutoController {
             @RequestParam(required = false) String nome,
             @RequestParam(required = false) BigDecimal precoMin,
             @RequestParam(required = false) BigDecimal precoMax,
-            @RequestParam(required = false) Long categoriaId,
+            @RequestParam(required = false) List<Long> categoriaId,
             @PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
 
         Page<ProdutoResponseDTO> produtos = produtoService.buscarDinamica(nome, precoMin, precoMax, categoriaId,

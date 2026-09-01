@@ -55,6 +55,7 @@ export class Produtos implements OnInit {
   // Estado dos Filtros
   filtroNome = '';
   filtroPrecoFaixa = signal<string>('');
+  categoriasSelecionadas = signal<number[]>([]);
   //filtroPrecoMin?: number;
   //filtroPrecoMax?: number;
 
@@ -97,8 +98,12 @@ export class Produtos implements OnInit {
       precoMin = 100.01;
     }
 
+    const categoriaIds = this.categoriasSelecionadas().length > 0
+      ? this.categoriasSelecionadas()
+      : undefined;
+
     this.produtoService
-      .listarComFiltros(this.filtroNome, precoMin, precoMax)
+      .listarComFiltros(this.filtroNome, precoMin, precoMax, categoriaIds)
       .subscribe({
         next: (response) => this.produtos.set(response.content || []),
         error: (err) => {
@@ -107,6 +112,20 @@ export class Produtos implements OnInit {
         },
       });
   }
+
+  alternarCategoria(id: number, checked: boolean): void {
+    if (checked) {
+      // Adiciona o ID de forma imutável abrindo a lista antiga
+      this.categoriasSelecionadas.update(lista => [...lista, id]);
+    } else {
+      // Remove o ID filtrando a lista antiga
+      this.categoriasSelecionadas.update(lista => lista.filter(catId => catId !== id));
+    }
+    
+    // Dispara a requisição com o novo array consolidado
+    this.carregarProdutos();
+  }
+
 
   carregarCategorias(): void {
     this.categoriaService.listarTodas().subscribe({
@@ -118,6 +137,7 @@ export class Produtos implements OnInit {
   limparFiltros(): void {
     this.filtroNome = '';
     this.filtroPrecoFaixa.set('');
+    this.categoriasSelecionadas.set([]);
     this.carregarProdutos();
   }
 

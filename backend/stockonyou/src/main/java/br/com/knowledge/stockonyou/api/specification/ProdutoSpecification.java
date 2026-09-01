@@ -11,7 +11,7 @@ import jakarta.persistence.criteria.Predicate;
 
 public class ProdutoSpecification {
     public static Specification<Produto> comFiltros(String nome, BigDecimal precoMin, BigDecimal precoMax,
-            Long categoriaId) {
+            List<Long> categoriasIds) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (nome != null && !nome.isBlank()) {
@@ -28,8 +28,8 @@ public class ProdutoSpecification {
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("preco"), precoMax));
             }
 
-            if (categoriaId != null) {
-                predicates.add(criteriaBuilder.equal(root.get("categoria").get("id"), categoriaId));
+            if (categoriasIds != null && !categoriasIds.isEmpty()) {
+                predicates.add(root.get("categoria").get("id").in(categoriasIds));
             }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));

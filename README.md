@@ -141,4 +141,4 @@ O frontend estará disponível no seu navegador em `http://localhost:4200`.
 
 ## ✒️ Autores
 
-* **Seu Nome** - *Desenvolvimento Completo* - [@seu-usuario-github](https://github.com)
+* **Wesley Fernandes** - *Desenvolvimento Completo* - [@WesleyAraujoFernandes](https://github.com)

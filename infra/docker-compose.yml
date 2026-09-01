@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # Banco de Dados PostgreSQL (Compartilhado entre App e Keycloak)
+  # ---------------------------------------------------------------------------
+  postgres-estoque:
+    image: postgres:16-alpine
+    container_name: postgres-estoque
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: estoque_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_estoque_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d estoque_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  # ---------------------------------------------------------------------------
+  # Inicializador dos Bancos (Executa os scripts SQL com segurança)
+  # ---------------------------------------------------------------------------
+  postgres-init:
+    image: postgres:16-alpine
+    container_name: postgres-init
+    depends_on:
+      postgres-estoque:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: postgres_pass
+    command: >
+      bash -c "
+      psql -h postgres-estoque -U postgres -tc \"SELECT 1 FROM pg_roles WHERE rolname='keycloak'\" | grep -q 1 || psql -h postgres-estoque -U postgres -c \"CREATE USER keycloak WITH PASSWORD 'keycloak_pass';\";
+      psql -h postgres-estoque -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname='keycloak_db'\" | grep -q 1 || psql -h postgres-estoque -U postgres -c \"CREATE DATABASE keycloak_db OWNER keycloak;\";
+      psql -h postgres-estoque -U postgres -c \"GRANT ALL PRIVILEGES ON DATABASE keycloak_db TO keycloak;\";
+      "
+
+  # ---------------------------------------------------------------------------
+  # Gerenciador de Identidade Keycloak 26
+  # ---------------------------------------------------------------------------
+  keycloak-estoque:
+    image: quay.io/keycloak/keycloak:26.0.0
+    container_name: keycloak-estoque
+    restart: unless-stopped
+    depends_on:
+      postgres-init:
+        condition: service_completed_successfully
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres-estoque:5432/keycloak_db
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak_pass
+    ports:
+      - "8091:8080"
+    command: start-dev
+
+# -----------------------------------------------------------------------------
+# Volumes Persistentes
+# -----------------------------------------------------------------------------
+volumes:
+  postgres_estoque_data:

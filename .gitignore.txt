@@ -1,0 +1,15 @@
+# Arquivos do Angular
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# Arquivos do Spring Boot
+backend/target/
+backend/.gradle/
+backend/build/
+
+# Arquivos de IDEs
+.idea/
+.vscode/
+*.iml
+.DS_Store

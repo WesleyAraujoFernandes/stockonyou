@@ -1,0 +1,35 @@
+    <!-- renderiza apenas se houver um toast ativo no signal -->
+    @if (toastService.toast(); as data) {
+      <div 
+        class="fixed bottom-5 right-5 z-50 flex items-center gap-3 max-w-sm p-4 rounded-xl border shadow-2xl animate-slide-in backdrop-blur-md transition-all duration-300"
+        [ngClass]="{
+          'bg-emerald-950/90 border-emerald-500/30 text-emerald-200': data.tipo === 'success',
+          'bg-red-950/90 border-red-500/30 text-red-200': data.tipo === 'error'
+        }"
+      >
+        <!-- Ícone Dinâmico de Sucesso ou Erro -->
+        @if (data.tipo === 'success') {
+          <svg lucideCheckCircle class="w-5 h-5 text-emerald-400 shrink-0"></svg>
+        } @else {
+          <svg lucideXCircle class="w-5 h-5 text-red-400 shrink-0"></svg>
+        }
+
+        <!-- Texto da Mensagem -->
+        <span class="text-xs font-medium tracking-wide pr-2">
+          {{ data.mensagem }}
+        </span>
+
+        <!-- Botão para fechar manualmente -->
+        <button 
+          (click)="toastService.fechar()" 
+          class="ml-auto p-1 rounded-lg transition-colors duration-200"
+          [ngClass]="{
+            'hover:bg-emerald-800/40 text-emerald-400': data.tipo === 'success',
+            'hover:bg-red-800/40 text-red-400': data.tipo === 'error'
+          }"
+        >
+          <svg lucideX class="w-3.5 h-3.5"></svg>
+        </button>
+      </div>
+    }
+

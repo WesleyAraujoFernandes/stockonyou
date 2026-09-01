@@ -1,20 +1,50 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CategoriaService } from '../../../core/services/categoria.service';
+import { ToastService } from '../../../core/services/toast.service'; // 1. INJETAR O NOVO SERVIÇO GLOBAL
 import { Categoria } from '../../../core/model/produto.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { 
+  LucideDynamicIcon, 
+  LucideSearch, 
+  LucidePlus, 
+  LucideEdit, 
+  LucideTrash2, 
+  LucideX, 
+  LucideAlertTriangle 
+} from '@lucide/angular';
 
 @Component({
   selector: 'app-categorias',
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    LucideDynamicIcon,
+    LucideSearch,
+    LucidePlus,
+    LucideEdit,
+    LucideTrash2,
+    LucideX,
+    LucideAlertTriangle
+  ],
   templateUrl: './categorias.html',
   styleUrl: './categorias.css',
 })
 export class Categorias implements OnInit {
   private readonly categoriaService = inject(CategoriaService);
+  private readonly toast = inject(ToastService); // 2. INJEÇÃO DO TOAST GLOBAL
   private readonly listaCategoriaRaw = signal<Categoria[]>([]);
 
+  readonly IconPlus = LucidePlus;
+
   termoBusca = signal<string>('');
+  novaCategoria: Partial<Categoria> = { nome: '', descricao: '' };
+  categoriaParaExcluir = signal<Categoria | null>(null);
+  categoriaEmEdicao = signal<Categoria | null>(null);
+
+  exibirModal = signal<boolean>(false);
+  exibirModalExclusao = signal<boolean>(false);
+
   categoriasFiltradas = computed(() => {
     const termo = this.termoBusca().toLowerCase().trim();
     const lista = this.listaCategoriaRaw();
@@ -24,17 +54,8 @@ export class Categorias implements OnInit {
     return lista.filter(cat =>
       cat.nome.toLowerCase().includes(termo) ||
       (cat.descricao && cat.descricao.toLowerCase().includes(termo))
-    )
-  })
-  categorias = signal<Categoria[]>([]);
-  exibirModal = signal<boolean>(false);
-  exibirModalExclusao = signal<boolean>(false);
-  categoriaParaExcluir = signal<Categoria | null>(null);
-  categoriaEmEdicao = signal<Categoria | null>(null);
-
-  // Signals do Toast utilizados no seu HTML
-  toastMessage = signal<string>('');
-  toastType = signal<'success' | 'error'>('success');
+    );
+  });
 
   ngOnInit(): void {
     this.carregarCategorias();
@@ -43,13 +64,12 @@ export class Categorias implements OnInit {
   carregarCategorias(): void {
     this.categoriaService.listarTodas().subscribe({
       next: (data) => {
-        // Altere aqui para salvar no sinal RAW (bruto)
         this.listaCategoriaRaw.set(Array.isArray(data) ? data : []);
       },
       error: (err) => {
         console.error('Erro ao carregar categorias:', err);
         this.listaCategoriaRaw.set([]);
-        this.mostrarToast('Erro ao carregar a lista de categorias.', 'error');
+        this.toast.erro('Erro ao carregar a lista de categorias.'); // 3. TOAST DE ERRO GLOBAL
       }
     });
   }
@@ -69,37 +89,33 @@ export class Categorias implements OnInit {
     this.exibirModal.set(false);
   }
 
-  novaCategoria: Partial<Categoria> = { nome: '', descricao: '' };
-
   salvar(): void {
     if (!this.novaCategoria.nome) return;
 
     const catEditando = this.categoriaEmEdicao();
 
     if (catEditando) {
-      // Fluxo de Atualização (PUT)
       this.categoriaService.atualizar(catEditando.id, this.novaCategoria as Categoria).subscribe({
         next: () => {
           this.carregarCategorias();
           this.fecharModal();
-          this.mostrarToast('Categoria atualizada com sucesso!', 'success');
+          this.toast.sucesso('Categoria atualizada com sucesso!'); // 4. TOAST DE SUCESSO GLOBAL
         },
         error: (err) => {
           console.error('Erro ao atualizar categoria:', err);
-          this.mostrarToast('Falha ao atualizar categoria.', 'error');
+          this.toast.erro('Falha ao atualizar categoria.');
         }
       });
     } else {
-      // Fluxo de Criação (POST)
       this.categoriaService.criar(this.novaCategoria).subscribe({
         next: () => {
           this.carregarCategorias();
           this.fecharModal();
-          this.mostrarToast('Categoria cadastrada com sucesso!', 'success');
+          this.toast.sucesso('Categoria cadastrada com sucesso!'); // 5. TOAST DE SUCESSO GLOBAL
         },
         error: (err) => {
           console.error('Erro ao criar categoria:', err);
-          this.mostrarToast('Falha ao cadastrar categoria.', 'error');
+          this.toast.erro('Falha ao cadastrar categoria.');
         }
       });
     }
@@ -118,11 +134,11 @@ export class Categorias implements OnInit {
       next: () => {
         this.carregarCategorias();
         this.fecharModalExclusao();
-        this.mostrarToast('Categoria excluída com sucesso!', 'success');
+        this.toast.sucesso('Categoria excluída com sucesso!'); // 6. TOAST DE SUCESSO GLOBAL
       },
       error: (err) => {
         console.error('Erro ao excluir categoria:', err);
-        this.mostrarToast('Falha ao excluir categoria.', 'error');
+        this.toast.erro('Falha ao excluir categoria.');
       }
     });
   }
@@ -130,16 +146,5 @@ export class Categorias implements OnInit {
   fecharModalExclusao(): void {
     this.exibirModalExclusao.set(false);
     this.categoriaParaExcluir.set(null);
-  }
-
-  // Método auxiliar para gerenciar a exibição do Toast temporizado
-  private mostrarToast(mensagem: string, tipo: 'success' | 'error'): void {
-    this.toastMessage.set(mensagem);
-    this.toastType.set(tipo);
-
-    // Esconde o Toast automaticamente após 3 segundos (3000ms)
-    setTimeout(() => {
-      this.toastMessage.set('');
-    }, 3000);
   }
 }

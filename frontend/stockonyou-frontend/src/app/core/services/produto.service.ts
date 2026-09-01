@@ -30,4 +30,16 @@ export class ProdutoService {
     if (categoriaId) params = params.set('categoriaId', categoriaId.toString());
     return this.http.get<PageResponse<Produto>>(this.apiUrl, { params });
   }
+
+  criar(produto: Partial<Produto>): Observable<Produto> {
+    return this.http.post<Produto>(this.apiUrl, produto);
+  }
+
+  atualizar(id: number, produto: Produto): Observable<Produto> {
+    return this.http.put<Produto>(`${this.apiUrl}/${id}`, produto);
+  }
+
+  excluir(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }

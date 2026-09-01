@@ -23,17 +23,13 @@
           >
             Navegação
           </span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="2"
-            stroke="currentColor"
-            class="w-5 h-5 transition-transform duration-300 mx-auto"
+          
+          <!-- SINTAXE OFICIAL 1: Ícone estático aplicando o seletor diretamente no atributo do SVG -->
+          <svg 
+            lucideMenu 
             [class.rotate-180]="!isSidebarOpen()"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-          </svg>
+            class="w-5 h-5 transition-transform duration-300 mx-auto"
+          ></svg>
         </button>
 
         <!-- Links do Menu Cadastros -->
@@ -46,17 +42,11 @@
             class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 border border-transparent transition-all group"
             [title]="!isSidebarOpen() ? item.label : ''"
           >
-            <!-- Ícone -->
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.8"
-              stroke="currentColor"
+            <!-- SINTAXE OFICIAL 2: Ícone dinâmico da lista injetando o objeto através de [lucideIcon] -->
+            <svg 
+              [lucideIcon]="item.icon" 
               class="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="item.iconPath" />
-            </svg>
+            ></svg>
 
             <!-- Rótulo do Item (Oculto quando a sidebar recolhe) -->
             <span *ngIf="isSidebarOpen()" class="truncate">
@@ -86,3 +76,4 @@
     </main>
   </div>
 </div>
+<app-toast></app-toast>

@@ -10,6 +10,7 @@ export interface Produto {
   nome: string;
   codigoBarras: string;
   quantidade: number;
+  quantidadeMinima: number;
   preco: number;
   categoria: Categoria;
   dataCriacao?: string;

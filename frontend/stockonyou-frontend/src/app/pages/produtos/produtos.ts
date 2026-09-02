@@ -24,15 +24,15 @@ import {
     CommonModule,
     FormsModule,
     LucideDynamicIcon,
-    LucideSearch,
-    LucideEraser,
-    LucidePlus,
+    //LucideSearch,
+    //LucideEraser,
+    //LucidePlus,
     LucideEdit,
     LucideTrash2,
     LucideX,
     LucideAlertTriangle,
-    LucideBox,
-    LucideDollarSign
+    //LucideBox,
+    //LucideDollarSign
   ],
   templateUrl: './produtos.html',
   styleUrl: './produtos.css',
@@ -71,6 +71,7 @@ export class Produtos implements OnInit {
     nome: '',
     codigoBarras: '',
     quantidade: 0,
+    quantidadeMinima: 0,
     preco: 0,
     categoriaId: ''
   };
@@ -121,7 +122,7 @@ export class Produtos implements OnInit {
       // Remove o ID filtrando a lista antiga
       this.categoriasSelecionadas.update(lista => lista.filter(catId => catId !== id));
     }
-    
+
     // Dispara a requisição com o novo array consolidado
     this.carregarProdutos();
   }
@@ -148,6 +149,7 @@ export class Produtos implements OnInit {
         nome: produto.nome,
         codigoBarras: produto.codigoBarras,
         quantidade: produto.quantidade,
+        quantidadeMinima: produto.quantidadeMinima,
         preco: produto.preco,
         categoriaId: produto.categoria?.id?.toString() || ''
       };
@@ -157,6 +159,7 @@ export class Produtos implements OnInit {
         nome: '',
         codigoBarras: '',
         quantidade: 0,
+        quantidadeMinima: 0,
         preco: 0,
         categoriaId: ''
       };
@@ -175,6 +178,7 @@ export class Produtos implements OnInit {
       nome: this.novoProduto.nome,
       codigoBarras: this.novoProduto.codigoBarras,
       quantidade: this.novoProduto.quantidade,
+      quantidadeMinima: this.novoProduto.quantidadeMinima,
       preco: this.novoProduto.preco,
       categoriaId: Number(this.novoProduto.categoriaId)
     };

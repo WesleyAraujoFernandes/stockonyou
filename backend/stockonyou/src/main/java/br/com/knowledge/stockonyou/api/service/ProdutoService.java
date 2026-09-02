@@ -86,6 +86,7 @@ public class ProdutoService {
         produto.setDataAtualizacao(LocalDateTime.now());
         produto.setPreco(produtoRequestDTO.preco());
         produto.setQuantidade(produtoRequestDTO.quantidade());
+        produto.setQuantidadeMinima(produtoRequestDTO.quantidadeMinima());
         return ProdutoResponseDTO.fromEntity(produtoRepository.save(produto));
     }
 

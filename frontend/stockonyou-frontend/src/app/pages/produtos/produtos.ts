@@ -8,6 +8,8 @@ import { FormsModule } from '@angular/forms';
 import {
   LucideAlertTriangle,
   LucideBox,
+  LucideChevronLeft,
+  LucideChevronRight,
   LucideDollarSign,
   LucideDynamicIcon,
   LucideEdit,
@@ -24,6 +26,8 @@ import {
     CommonModule,
     FormsModule,
     LucideDynamicIcon,
+    LucideChevronLeft,
+    LucideChevronRight,
     //LucideSearch,
     //LucideEraser,
     //LucidePlus,
@@ -42,11 +46,20 @@ export class Produtos implements OnInit {
   private readonly categoriaService = inject(CategoriaService);
   private readonly toast = inject(ToastService); // 2. INJEÇÃO DO TOAST GLOBAL
 
+
   // Referências dos Ícones p/ Templates Estáticos ou Dinâmicos
   readonly IconPlus = LucidePlus;
   readonly IconEreaser = LucideEraser;
   readonly IconSearch = LucideSearch;
   readonly IconMoney = LucideDollarSign;
+
+  // Signals de Navegação
+  paginaAtual = signal<number>(0);
+  totalPaginas = signal<number>(0);
+  tamanhoPagina = 10;
+
+  // Atualize o método para injetar a página atual na chamada do Service
+
 
   // Signals de Dados
   produtos = signal<Produto[]>([]);
@@ -81,6 +94,7 @@ export class Produtos implements OnInit {
     this.carregarCategorias();
   }
 
+
   carregarProdutos(): void {
     let precoMin: number | undefined = undefined;
     let precoMax: number | undefined = undefined;
@@ -103,10 +117,15 @@ export class Produtos implements OnInit {
       ? this.categoriasSelecionadas()
       : undefined;
 
+    //this.paginaAtual.set(0); //  pesquisa por texto também comece do início da lista.
+
     this.produtoService
-      .listarComFiltros(this.filtroNome, precoMin, precoMax, categoriaIds)
+      .listarComFiltros(this.filtroNome, precoMin, precoMax, categoriaIds, this.paginaAtual(), this.tamanhoPagina)
       .subscribe({
-        next: (response) => this.produtos.set(response.content || []),
+        next: (response) => {
+          this.produtos.set(response.content || []);
+          this.totalPaginas.set(response.totalPages || 0);
+        },
         error: (err) => {
           console.error('Erro ao carregar produto:', err);
           this.toast.erro('Falha ao carregar a lista de produtos.');
@@ -116,17 +135,13 @@ export class Produtos implements OnInit {
 
   alternarCategoria(id: number, checked: boolean): void {
     if (checked) {
-      // Adiciona o ID de forma imutável abrindo a lista antiga
       this.categoriasSelecionadas.update(lista => [...lista, id]);
     } else {
-      // Remove o ID filtrando a lista antiga
       this.categoriasSelecionadas.update(lista => lista.filter(catId => catId !== id));
     }
-
-    // Dispara a requisição com o novo array consolidado
+    this.paginaAtual.set(0); // Força voltar para a primeira página
     this.carregarProdutos();
   }
-
 
   carregarCategorias(): void {
     this.categoriaService.listarTodas().subscribe({
@@ -139,6 +154,7 @@ export class Produtos implements OnInit {
     this.filtroNome = '';
     this.filtroPrecoFaixa.set('');
     this.categoriasSelecionadas.set([]);
+    this.paginaAtual.set(0); // Reseta a paginação
     this.carregarProdutos();
   }
 
@@ -237,4 +253,12 @@ export class Produtos implements OnInit {
       error: (err) => console.error('Erro ao deletar produto:', err)
     });
   }
+
+  mudarPagina(novaPagina: number): void {
+    if (novaPagina >= 0 && novaPagina < this.totalPaginas()) {
+      this.paginaAtual.set(novaPagina);
+      this.carregarProdutos();
+    }
+  }
+
 }

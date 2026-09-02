@@ -28,16 +28,14 @@
 
     <!-- NOVO: Filtro por Faixa de Preço (Substitui os dois inputs anteriores) -->
     <div>
-      <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Faixa de Preço</label>
+      <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Faixa de
+        Preço</label>
       <div class="relative flex items-center w-full">
         <div class="absolute left-3 flex items-center pointer-events-none text-slate-500 z-10">
           <svg [lucideIcon]="IconMoney" class="w-4 h-4"></svg>
         </div>
-        <select
-          [ngModel]="filtroPrecoFaixa()"
-          (ngModelChange)="filtroPrecoFaixa.set($event); carregarProdutos()"
-          class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500 transition-colors appearance-none cursor-pointer"
-        >
+        <select [ngModel]="filtroPrecoFaixa()" (ngModelChange)="filtroPrecoFaixa.set($event); carregarProdutos()"
+          class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500 transition-colors appearance-none cursor-pointer">
           <option value="">Todos os preços</option>
           <option value="ate10">Até R$ 10,00</option>
           <option value="ate20">Até R$ 20,00</option>
@@ -58,58 +56,6 @@
     </div>
   </div>
 
-  <!-- Tabela de Produtos -->
-   <!--
-  <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-sm overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse">
-        <thead>
-          <tr class="bg-slate-950/60 border-b border-slate-800 text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
-            <th class="py-3.5 px-4">ID</th>
-            <th class="py-3.5 px-4">Produto</th>
-            <th class="py-3.5 px-4">Cod. Barras</th>
-            <th class="py-3.5 px-4">Categoria</th>
-            <th class="py-3.5 px-4">Qtd.</th>
-            <th class="py-3.5 px-4">Preço</th>
-            <th class="py-3.5 px-4 text-right">Ações</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-800/60 text-xs">
-          @for (produto of produtos(); track produto.id) {
-          <tr class="hover:bg-slate-800/40 transition-colors">
-            <td class="py-3.5 px-4 font-mono text-slate-500">#{{ produto.id }}</td>
-            <td class="py-3.5 px-4 font-medium text-slate-200">{{ produto.nome }}</td>
-            <td class="py-3.5 px-4 font-mono text-slate-400">{{ produto.codigoBarras }}</td>
-            <td class="py-3.5 px-4">
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                {{ produto.categoria?.nome || 'Sem categoria' }}
-              </span>
-            </td>
-            <td class="py-3.5 px-4 text-slate-300">{{ produto.quantidade }}</td>
-            <td class="py-3.5 px-4 font-semibold text-slate-100">
-              {{ produto.preco | currency:'BRL':'symbol':'1.2-2' }}
-            </td>
-            <td class="py-3.5 px-4 text-right">
-              <div class="flex justify-end gap-1">
-                <button (click)="abrirModal(produto)" class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition cursor-pointer" title="Editar">
-                  <svg lucideEdit class="w-4 h-4"></svg>
-                </button>
-                <button (click)="confirmarExclusao(produto)" class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition cursor-pointer" title="Excluir">
-                  <svg lucideTrash2 class="w-4 h-4"></svg>
-                </button>
-              </div>
-            </td>
-          </tr>
-          } @empty {
-          <tr>
-            <td colspan="7" class="py-12 text-center text-slate-500">Nenhum produto encontrado com os filtros aplicados.</td>
-          </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  </div>
--->
   <!-- Container principal dividido para acomodar a Barra Lateral Direita -->
   <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
 
@@ -118,7 +64,8 @@
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
-            <tr class="bg-slate-950/60 border-b border-slate-800 text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
+            <tr
+              class="bg-slate-950/60 border-b border-slate-800 text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
               <th class="py-3.5 px-4">ID</th>
               <th class="py-3.5 px-4">Produto</th>
               <th class="py-3.5 px-4">Cod. Barras</th>
@@ -136,8 +83,9 @@
               <td class="py-3.5 px-4 font-medium text-slate-200">{{ produto.nome }}</td>
               <td class="py-3.5 px-4 font-mono text-slate-400">{{ produto.codigoBarras }}</td>
               <td class="py-3.5 px-4">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                  {{ produto.categoria?.nome || 'Sem categoria' }}
+                <span
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                  {{ produto.categoria.nome || 'Sem categoria' }}
                 </span>
               </td>
               <td class="py-3.5 px-4 text-slate-300">{{ produto.quantidade }}</td>
@@ -147,10 +95,14 @@
               </td>
               <td class="py-3.5 px-4 text-right">
                 <div class="flex justify-end gap-1">
-                  <button (click)="abrirModal(produto)" class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition cursor-pointer" title="Editar">
+                  <button (click)="abrirModal(produto)"
+                    class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition cursor-pointer"
+                    title="Editar">
                     <svg lucideEdit class="w-4 h-4"></svg>
                   </button>
-                  <button (click)="confirmarExclusao(produto)" class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition cursor-pointer" title="Excluir">
+                  <button (click)="confirmarExclusao(produto)"
+                    class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition cursor-pointer"
+                    title="Excluir">
                     <svg lucideTrash2 class="w-4 h-4"></svg>
                   </button>
                 </div>
@@ -158,11 +110,40 @@
             </tr>
             } @empty {
             <tr>
-              <td colspan="7" class="py-12 text-center text-slate-500">Nenhum produto encontrado com os filtros aplicados.</td>
+              <td colspan="7" class="py-12 text-center text-slate-500">Nenhum produto encontrado com os filtros
+                aplicados.</td>
             </tr>
             }
           </tbody>
         </table>
+        <!-- Insira este bloco imediatamente abaixo da tag </table> e antes do fechamento da div da tabela -->
+        <div
+          class="bg-slate-950/40 border-t border-slate-800/60 px-4 py-3.5 flex items-center justify-between gap-4 text-xs select-none">
+          <!-- Indicador de Páginas -->
+          <div class="text-slate-400">
+            Página <span class="text-white font-semibold">{{ totalPaginas() > 0 ? paginaAtual() + 1 : 0 }}</span> de
+            <span class="text-white font-semibold">{{ totalPaginas() }}</span>
+          </div>
+
+          <!-- Botões de Ação (Anterior e Próxima) -->
+          <div class="flex items-center gap-2">
+            <!-- Botão Anterior (Desabilitado na página 0) -->
+            <button (click)="mudarPagina(paginaAtual() - 1)" [disabled]="paginaAtual() === 0"
+              class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800 transition disabled:opacity-40 disabled:hover:bg-slate-900 disabled:hover:text-slate-300 disabled:cursor-not-allowed cursor-pointer font-medium">
+              <svg lucideChevronLeft class="w-3.5 h-3.5"></svg>
+              Anterior
+            </button>
+
+            <!-- Botão Próxima (Desabilitado na última página) -->
+            <button (click)="mudarPagina(paginaAtual() + 1)"
+              [disabled]="paginaAtual() >= totalPaginas() - 1 || totalPaginas() === 0"
+              class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800 transition disabled:opacity-40 disabled:hover:bg-slate-900 disabled:hover:text-slate-300 disabled:cursor-not-allowed cursor-pointer font-medium">
+              Próxima
+              <svg lucideChevronRight class="w-3.5 h-3.5"></svg>
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -176,21 +157,19 @@
       <!-- Lista vertical contendo os checkboxes -->
       <div class="space-y-2.5 max-h-64 overflow-y-auto pr-1 scrollbar-thin">
         @for (categoria of categorias(); track categoria.id) {
-          <label class="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-slate-950/40 border border-transparent hover:border-slate-800/60 cursor-pointer select-none transition-all group">
-            <input
-              type="checkbox"
-              [checked]="categoriasSelecionadas().includes(categoria.id)"
-              (change)="alternarCategoria(categoria.id, $any($event.target).checked)"
-              class="w-4 h-4 rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-indigo-500/20 focus:ring-2 focus:ring-offset-0 accent-indigo-600 cursor-pointer transition-colors"
-            />
-            <span class="text-xs text-slate-400 group-hover:text-slate-200 transition-colors truncate">
-              {{ categoria.nome }}
-            </span>
-          </label>
+        <label
+          class="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-slate-950/40 border border-transparent hover:border-slate-800/60 cursor-pointer select-none transition-all group">
+          <input type="checkbox" [checked]="categoriasSelecionadas().includes(categoria.id)"
+            (change)="alternarCategoria(categoria.id, $any($event.target).checked)"
+            class="w-4 h-4 rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-indigo-500/20 focus:ring-2 focus:ring-offset-0 accent-indigo-600 cursor-pointer transition-colors" />
+          <span class="text-xs text-slate-400 group-hover:text-slate-200 transition-colors truncate">
+            {{ categoria.nome }}
+          </span>
+        </label>
         } @empty {
-          <div class="text-[11px] text-slate-600 text-center py-4">
-            Nenhuma categoria disponível.
-          </div>
+        <div class="text-[11px] text-slate-600 text-center py-4">
+          Nenhuma categoria disponível.
+        </div>
         }
       </div>
     </aside>
@@ -207,7 +186,8 @@
         <h2 class="text-base font-bold text-white">
           {{ produtoEmEdicao() ? 'Editar Produto' : 'Novo Produto' }}
         </h2>
-        <button type="button" (click)="fecharModal()" class="text-slate-400 hover:text-slate-200 transition cursor-pointer">
+        <button type="button" (click)="fecharModal()"
+          class="text-slate-400 hover:text-slate-200 transition cursor-pointer">
           <svg lucideX class="w-4 h-4"></svg>
         </button>
       </div>
@@ -218,10 +198,24 @@
           <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">
             Nome do Produto (Obrigatorio)
           </label>
-          <input type="text" name="nome" required minlength="3" #nomeInput="ngModel" [(ngModel)]="novoProduto.nome" placeholder="Ex: Teclado Mecanico RGB"
-            class="w-full px-3 py-2 bg-slate-950 border rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+          <input type="text" name="nome" required minlength="3" #nomeInput="ngModel" [(ngModel)]="novoProduto.nome"
+            placeholder="Ex: Teclado Mecanico RGB"
+            class="w-full px-3 py-2 bg-slate-950 border rounded-xl text-xs text-white focus:outline-none focus:ring-2 transition-colors"
             [class.border-slate-800]="!(nomeInput.invalid && (nomeInput.dirty || nomeInput.touched))"
-            [class.border-red-500/50]="nomeInput.invalid && (nomeInput.dirty || nomeInput.touched)" />
+            [class.focus:ring-indigo-500]="!(nomeInput.invalid && (nomeInput.dirty || nomeInput.touched))"
+            [class.border-red-500/50]="nomeInput.invalid && (nomeInput.dirty || nomeInput.touched)"
+            [class.focus:ring-red-500/30]="nomeInput.invalid && (nomeInput.dirty || nomeInput.touched)" />
+
+          <!-- Mensagens de Erro do Nome -->
+          @if (nomeInput.invalid && (nomeInput.dirty || nomeInput.touched)) {
+          <div class="text-red-400 text-[11px] mt-1.5 flex items-center gap-1 font-medium">
+            @if (nomeInput.errors?.['required']) {
+            O nome do produto e obrigatorio.
+            } @else if (nomeInput.errors?.['minlength']) {
+            O nome deve ter pelo menos 3 caracteres.
+            }
+          </div>
+          }
         </div>
 
         <!-- Campo Codigo de Barras -->
@@ -229,10 +223,20 @@
           <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">
             Codigo de Barras (Obrigatorio)
           </label>
-          <input type="text" name="codigoBarras" required #codInput="ngModel" [(ngModel)]="novoProduto.codigoBarras" placeholder="Ex: 7891234567890"
-            class="w-full px-3 py-2 bg-slate-950 border rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+          <input type="text" name="codigoBarras" required #codInput="ngModel" [(ngModel)]="novoProduto.codigoBarras"
+            placeholder="Ex: 7891234567890"
+            class="w-full px-3 py-2 bg-slate-950 border rounded-xl text-xs text-white focus:outline-none focus:ring-2 transition-colors"
             [class.border-slate-800]="!(codInput.invalid && (codInput.dirty || codInput.touched))"
-            [class.border-red-500/50]="codInput.invalid && (codInput.dirty || codInput.touched)" />
+            [class.focus:ring-indigo-500]="!(codInput.invalid && (codInput.dirty || codInput.touched))"
+            [class.border-red-500/50]="codInput.invalid && (codInput.dirty || codInput.touched)"
+            [class.focus:ring-red-500/30]="codInput.invalid && (codInput.dirty || codInput.touched)" />
+
+          <!-- Mensagens de Erro do Codigo de Barras -->
+          @if (codInput.invalid && (codInput.dirty || codInput.touched)) {
+          <div class="text-red-400 text-[11px] mt-1.5 flex items-center gap-1 font-medium">
+            O codigo de barras e obrigatorio.
+          </div>
+          }
         </div>
 
         <!-- Campo Categoria (Select) -->
@@ -241,14 +245,23 @@
             Categoria (Obrigatorio)
           </label>
           <select name="categoriaId" required #catInput="ngModel" [(ngModel)]="novoProduto.categoriaId"
-            class="w-full px-3 py-2 bg-slate-950 border rounded-xl text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+            class="w-full px-3 py-2 bg-slate-950 border rounded-xl text-xs text-slate-200 focus:outline-none focus:ring-2 transition-colors"
             [class.border-slate-800]="!(catInput.invalid && (catInput.dirty || catInput.touched))"
-            [class.border-red-500/50]="catInput.invalid && (catInput.dirty || catInput.touched)">
+            [class.focus:ring-indigo-500]="!(catInput.invalid && (catInput.dirty || catInput.touched))"
+            [class.border-red-500/50]="catInput.invalid && (catInput.dirty || catInput.touched)"
+            [class.focus:ring-red-500/30]="catInput.invalid && (catInput.dirty || catInput.touched)">
             <option value="" disabled selected>Selecione...</option>
             @for (categoria of categorias(); track categoria.id) {
-              <option [value]="categoria.id">{{ categoria.nome }}</option>
+            <option [value]="categoria.id">{{ categoria.nome }}</option>
             }
           </select>
+
+          <!-- Mensagens de Erro da Categoria -->
+          @if (catInput.invalid && (catInput.dirty || catInput.touched)) {
+          <div class="text-red-400 text-[11px] mt-1.5 flex items-center gap-1 font-medium">
+            Selecione uma categoria para o produto.
+          </div>
+          }
         </div>
 
         <!-- Campo Quantidade -->
@@ -256,21 +269,24 @@
           <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">
             Quantidade (Obrigatorio)
           </label>
-          <input type="number" name="quantidade" required min="0" #qtdInput="ngModel" [(ngModel)]="novoProduto.quantidade"
-            class="w-full px-3 py-2 bg-slate-950 border rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+          <input type="number" name="quantidade" required min="0" #qtdInput="ngModel"
+            [(ngModel)]="novoProduto.quantidade"
+            class="w-full px-3 py-2 bg-slate-950 border rounded-xl text-xs text-white focus:outline-none focus:ring-2 transition-colors"
             [class.border-slate-800]="!(qtdInput.invalid && (qtdInput.dirty || qtdInput.touched))"
-            [class.border-red-500/50]="qtdInput.invalid && (qtdInput.dirty || qtdInput.touched)" />
-        </div>
+            [class.focus:ring-indigo-500]="!(qtdInput.invalid && (qtdInput.dirty || qtdInput.touched))"
+            [class.border-red-500/50]="qtdInput.invalid && (qtdInput.dirty || qtdInput.touched)"
+            [class.focus:ring-red-500/30]="qtdInput.invalid && (qtdInput.dirty || qtdInput.touched)" />
 
-        <!-- Campo Quantidade Mínima -->
-        <div>
-          <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">
-            Quantidade Mínima (Obrigatorio)
-          </label>
-          <input type="number" name="quantidadeMinima" required min="0" #qtdInput="ngModel" [(ngModel)]="novoProduto.quantidadeMinima"
-            class="w-full px-3 py-2 bg-slate-950 border rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
-            [class.border-slate-800]="!(qtdInput.invalid && (qtdInput.dirty || qtdInput.touched))"
-            [class.border-red-500/50]="qtdInput.invalid && (qtdInput.dirty || qtdInput.touched)" />
+          <!-- Mensagens de Erro da Quantidade -->
+          @if (qtdInput.invalid && (qtdInput.dirty || qtdInput.touched)) {
+          <div class="text-red-400 text-[11px] mt-1.5 flex items-center gap-1 font-medium">
+            @if (qtdInput.errors?.['required']) {
+            A quantidade e obrigatoria.
+            } @else if (qtdInput.errors?.['min']) {
+            A quantidade nao pode ser menor que zero.
+            }
+          </div>
+          }
         </div>
 
         <!-- Campo Preço -->
@@ -278,14 +294,28 @@
           <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">
             Preço Unitario (Obrigatorio)
           </label>
-          <input type="number" name="preco" required min="0.01" step="0.01" #precoInput="ngModel" [(ngModel)]="novoProduto.preco"
-            class="w-full px-3 py-2 bg-slate-950 border rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+          <input type="number" name="preco" required min="0.01" step="0.01" #precoInput="ngModel"
+            [(ngModel)]="novoProduto.preco"
+            class="w-full px-3 py-2 bg-slate-950 border rounded-xl text-xs text-white focus:outline-none focus:ring-2 transition-colors"
             [class.border-slate-800]="!(precoInput.invalid && (precoInput.dirty || precoInput.touched))"
-            [class.border-red-500/50]="precoInput.invalid && (precoInput.dirty || precoInput.touched)" />
+            [class.focus:ring-indigo-500]="!(precoInput.invalid && (precoInput.dirty || precoInput.touched))"
+            [class.border-red-500/50]="precoInput.invalid && (precoInput.dirty || precoInput.touched)"
+            [class.focus:ring-red-500/30]="precoInput.invalid && (precoInput.dirty || precoInput.touched)" />
+
+          <!-- Mensagens de Erro do Preço -->
+          @if (precoInput.invalid && (precoInput.dirty || precoInput.touched)) {
+          <div class="text-red-400 text-[11px] mt-1.5 flex items-center gap-1 font-medium">
+            @if (precoInput.errors?.['required']) {
+            O preço e obrigatorio.
+            } @else if (precoInput.errors?.['min']) {
+            O preço deve ser maior que zero.
+            }
+          </div>
+          }
         </div>
       </div>
 
-      <!-- Botoes de Ação do Form -->
+      <!-- Botões de Ação do Form -->
       <div class="flex justify-end gap-3 border-t border-slate-800 pt-4">
         <button type="button" (click)="fecharModal()"
           class="px-4 py-2 rounded-xl text-xs font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 transition cursor-pointer">
@@ -300,17 +330,20 @@
   </div>
   }
 
+
   <!-- Modal de Confirmação de Exclusão -->
   @if (exibirModalExclusao()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4">
     <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4 text-center">
-      <div class="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center mx-auto">
+      <div
+        class="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center mx-auto">
         <svg lucideAlertTriangle class="w-6 h-6"></svg>
       </div>
       <div>
         <h3 class="text-base font-bold text-white">Confirmar Exclusão</h3>
         <p class="text-xs text-slate-400 mt-2">
-          Tem certeza que deseja excluir o produto <span class="text-white font-semibold">"{{ produtoParaExcluir()?.nome }}"</span> do estoque?
+          Tem certeza que deseja excluir o produto <span class="text-white font-semibold">"{{ produtoParaExcluir()?.nome
+            }}"</span> do estoque?
         </p>
       </div>
       <div class="flex gap-3 pt-2">

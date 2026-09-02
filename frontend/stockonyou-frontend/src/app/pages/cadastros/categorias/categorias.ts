@@ -4,21 +4,21 @@ import { ToastService } from '../../../core/services/toast.service'; // 1. INJET
 import { Categoria } from '../../../core/model/produto.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { 
-  LucideDynamicIcon, 
-  LucideSearch, 
-  LucidePlus, 
-  LucideEdit, 
-  LucideTrash2, 
-  LucideX, 
-  LucideAlertTriangle 
+import {
+  LucideDynamicIcon,
+  LucideSearch,
+  LucidePlus,
+  LucideEdit,
+  LucideTrash2,
+  LucideX,
+  LucideAlertTriangle
 } from '@lucide/angular';
 
 @Component({
   selector: 'app-categorias',
   imports: [
-    CommonModule, 
-    FormsModule, 
+    CommonModule,
+    FormsModule,
     LucideDynamicIcon,
     LucideSearch,
     LucidePlus,
@@ -138,7 +138,7 @@ export class Categorias implements OnInit {
       },
       error: (err) => {
         console.error('Erro ao excluir categoria:', err);
-        this.toast.erro('Falha ao excluir categoria.');
+        this.toast.erro('Falha ao excluir categoria. Existem produtos associados a esta categoria.');
       }
     });
   }

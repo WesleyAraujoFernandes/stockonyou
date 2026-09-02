@@ -50,6 +50,12 @@ public class ProdutoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(produtoService.criar(dto));
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<ProdutoResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody ProdutoRequestDTO dto) {
+        return ResponseEntity.ok(produtoService.atualizar(id, dto));
+    }
+
     @PatchMapping("/{id}/estoque")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<ProdutoResponseDTO> atualizarEstoque(@PathVariable Long id,

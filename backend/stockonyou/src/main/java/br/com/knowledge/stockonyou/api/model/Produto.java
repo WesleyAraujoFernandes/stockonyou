@@ -27,6 +27,9 @@ public class Produto {
     @Column(nullable = false)
     private Integer quantidade;
 
+    @Column(name="quantidade_minima", nullable = false)
+    private Integer quantidadeMinima;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal preco;
 

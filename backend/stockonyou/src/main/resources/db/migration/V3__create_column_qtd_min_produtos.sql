@@ -1,0 +1,2 @@
+ALTER TABLE produtos 
+ADD COLUMN quantidade_minima BIGINT DEFAULT 0 NOT NULL;

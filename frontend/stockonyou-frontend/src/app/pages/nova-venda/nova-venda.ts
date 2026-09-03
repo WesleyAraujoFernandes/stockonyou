@@ -27,6 +27,15 @@ interface ItemCarrinho {
   subTotal: number;
 }
 
+export interface ItemVendaResponse {
+  id: number;
+  produtoId: number;     // Alterado de 'produto: Produto' para bater com o Java
+  produtoNome: string;   // Adicionado para receber o nome direto do DTO
+  quantidade: number;
+  precoUnitario: number;
+  subtotal: number;      // Ajustado para ficar tudo em minúsculo igual ao Java
+}
+
 @Component({
   selector: 'app-nova-venda',
   // CORREÇÃO: Adicionado o LucideDynamicIcon no array de imports do componente standalone
@@ -77,40 +86,88 @@ export class NovaVenda implements OnInit {
     })
   }
 
+  // Altere o seu método selecionarCliente para buscar a comanda no banco
   selecionarCliente(cliente: Cliente): void {
     this.clienteSelecionado.set(cliente);
     this.termoBuscaCliente = cliente.nome;
     this.clientesEncontrados.set([]);
+
+    // CORREÇÃO: Toda vez que muda o cliente, busca o estado atual dele no banco
+    this.carregarComandaDoCliente(cliente.id);
   }
 
+  carregarComandaDoCliente(clienteId: number): void {
+    if (clienteId === 1) {
+      this.carrinho.set([]);
+      return;
+    }
+
+    this.vendaService.buscarComandaAbertaPorCliente(clienteId).subscribe({
+      next: (comandaAtiva: any) => { // Mudado para 'any' para aceitar o mapeamento de chaves do DTO Java
+        if (comandaAtiva && comandaAtiva.itens && comandaAtiva.itens.length > 0) {
+
+          const itensMapeados = comandaAtiva.itens.map((item: any) => ({
+            produto: {
+              id: item.produtoId,
+              nome: item.produtoNome,
+              preco: item.precoUnitario,
+              codigoBarras: '',
+              quantidade: 0,
+              categoria: { id: 0, nome: '' }
+            } as Produto,
+            quantidade: item.quantidade,
+            precoUnitario: item.precoUnitario,
+            subTotal: item.subtotal
+          }));
+
+          this.carrinho.set(itensMapeados);
+          this.toast.sucesso(`Comanda aberta recuperada para ${this.clienteSelecionado().nome}`);
+        } else {
+          this.carrinho.set([]);
+        }
+      },
+      error: (err) => {
+        console.error('Erro ao buscar comanda do cliente:', err);
+        this.carrinho.set([]);
+      }
+    });
+  }
+
+
+
+  // Atualize também a função verificarOuCadastrarCliente para zerar caso o usuário apague o nome
   verificarOuCadastrarCliente(): void {
     const termo = this.termoBuscaCliente.trim();
+
     if (!termo) {
       this.clienteSelecionado.set({ id: 1, nome: 'Cliente Padrão' });
+      this.carrinho.set([]); // CORREÇÃO: Se apagou o cliente, zera o carrinho voltando pro padrão
       return;
     }
 
     if (termo === this.clienteSelecionado().nome) {
       return;
     }
+
     const desejaCadastrar = confirm(`O cliente "${termo}" não foi encontrado. Deseja cadastrá-lo agora no sistema?`);
+
     if (desejaCadastrar) {
       this.clienteService.cadastrarRapido(termo).subscribe({
         next: (novoCliente) => {
-          this.selecionarCliente(novoCliente);
-          this.toast.sucesso(`Cliente "${novoCliente.nome}" cadastrado e selecionado`);
+          this.selecionarCliente(novoCliente); // Já chama o carregarComandaDoCliente embutido
+          this.toast.sucesso(`Cliente "${novoCliente.nome}" cadastrado e selecionado!`);
         },
-        error: (err) => {
-          this.toast.erro('Falha ao cadastrar o cliente de forma rápida.');
-        }
+        error: (err) => this.toast.erro('Falha ao cadastrar o cliente.')
       });
     } else {
       this.toast.info('Venda será processada para o Cliente Padrão.');
       this.clienteSelecionado.set({ id: 1, nome: 'Cliente Padrão' });
       this.termoBuscaCliente = 'Cliente Padrão';
       this.clientesEncontrados.set([]);
+      this.carrinho.set([]); // Zera voltando ao balcão
     }
   }
+
 
 
 
@@ -197,7 +254,7 @@ export class NovaVenda implements OnInit {
       next: () => {
         this.toast.sucesso('Venda finalizada com sucesso! Estoque atualizado.');
         this.carrinho.set([]);
-        this.clienteSelecionado.set({id: 1, nome: 'Cliente Padrão'})
+        this.clienteSelecionado.set({ id: 1, nome: 'Cliente Padrão' })
         this.termoBuscaCliente = '';
         this.clientesEncontrados.set([]);
       },

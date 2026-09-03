@@ -35,4 +35,12 @@ export class VendaService {
   realizarVenda(venda: VendaRequest): Observable<VendaResponse> {
     return this.http.post<VendaResponse>(this.apiUrl, venda);
   }
+
+  finalizarComanda(id: number): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${id}/finalizar`, {});
+  }
+
+  buscarComandaAbertaPorCliente(clienteId: number): Observable<VendaResponse | null> {
+    return this.http.get<VendaResponse | null>(`${this.apiUrl}/cliente/${clienteId}/aberta`)
+  }
 }

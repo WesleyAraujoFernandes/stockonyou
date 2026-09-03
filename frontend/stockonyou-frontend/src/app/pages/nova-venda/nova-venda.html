@@ -1,1 +1,188 @@
-<p>nova-venda works!</p>
+<div class="space-y-6">
+  <!-- Cabeçalho -->
+  <div class="border-b border-slate-800 pb-5">
+    <h1 class="text-2xl font-bold tracking-tight text-white font-sans flex items-center gap-3">
+      <svg [lucideIcon]="IconCart" class="w-6 h-6 text-indigo-500"></svg>
+      Frente de Caixa / PDV
+    </h1>
+    <p class="text-xs text-slate-400 mt-1">Realize a saída de produtos e atualize o estoque em tempo real.</p>
+  </div>
+
+  <!-- Layout Dividido em Duas Colunas -->
+  <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
+
+    <!-- COLUNA DA ESQUERDA: Configuração dos Itens (Ocupa 3 colunas) -->
+    <div class="lg:col-span-3 space-y-5">
+
+      <!-- Bloco de Identificação do Cliente -->
+      <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-sm space-y-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+            <svg [lucideIcon]="IconUser" class="w-4 h-4 text-indigo-400"></svg> Identificação do Comprador
+          </h2>
+          <span class="text-[10px] text-slate-500 font-medium italic">
+            Ativo: {{ clienteSelecionado().nome }} (ID #{{ clienteSelecionado().id }})
+          </span>
+        </div>
+
+        <div class="relative w-full">
+          <div class="absolute left-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-slate-500">
+            <svg [lucideIcon]="IconUser" class="w-4 h-4"></svg>
+          </div>
+          <input
+            type="text"
+            [(ngModel)]="termoBuscaCliente"
+            (input)="buscarClientesPorTermo()"
+            (blur)="verificarOuCadastrarCliente()"
+            (ngModelChange)="clienteNome.set($event)"
+            placeholder="Digite para buscar ou cadastrar um cliente..."
+            class="w-full pl-9 pr-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500 transition-colors"
+          />
+          @if (clientesEncontrados().length > 0) {
+            <ul class="absolute z-50 left-0 w-full bg-slate-900 border border-slate-700 mt-1 rounded-xl shadow-2xl max-h-40 overflow-y-auto divide-y divide-slate-800 text-xs">
+              @for (cli of clientesEncontrados(); track cli.id) {
+                <li
+                  (mousedown)="selecionarCliente(cli)"
+                  class="px-4 py-2.5 hover:bg-slate-800 text-slate-300 hover:text-white cursor-pointer flex justify-between items-center transition-colors"
+                >
+                  <span class="font-medium">{{ cli.nome }}</span>
+                  <span class="text-[10px] text-slate-500">ID #{{ cli.id }}</span>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+
+      <!-- Bloco de Busca de Produtos -->
+      <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-sm space-y-4 relative">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+          <svg [lucideIcon]="IconBarcode" class="w-4 h-4 text-indigo-400"></svg> Adicionar Item ao Carrinho
+        </h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+          <!-- Input de Pesquisa Dinâmica -->
+          <div class="sm:col-span-2 relative">
+            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Pesquisar Produto</label>
+            <div class="relative flex items-center w-full">
+              <div class="absolute left-3 flex items-center pointer-events-none text-slate-500">
+                <svg [lucideIcon]="IconSearch" class="w-4 h-4"></svg>
+              </div>
+              <input
+                type="text"
+                [(ngModel)]="termoBuscaProduto"
+                (input)="buscarProdutosPorTermo()"
+                placeholder="Digite o nome do produto..."
+                class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500 transition-colors"
+              />
+            </div>
+
+            <!-- Dropdown de Resultados da Busca -->
+            @if (produtosEncontrados().length > 0) {
+              <ul class="absolute z-50 left-0 w-full bg-slate-900 border border-slate-700 mt-1 rounded-xl shadow-2xl max-h-48 overflow-y-auto divide-y divide-slate-800 text-xs">
+                @for (prod of produtosEncontrados(); track prod.id) {
+                  <li
+                    (click)="selecionarProduto(prod)"
+                    class="px-4 py-2.5 hover:bg-slate-800 text-slate-300 hover:text-white cursor-pointer flex justify-between items-center transition-colors"
+                  >
+                    <span class="font-medium">{{ prod.nome }}</span>
+                    <span class="text-slate-500 text-[10px]">Estoque: {{ prod.quantidade }} | {{ prod.preco | currency: 'BRL' }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+
+          <!-- Input de Quantidade -->
+          <div>
+            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Quantidade</label>
+            <input
+              type="number"
+              [(ngModel)]="quantidadeInserir"
+              min="1"
+              class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500 transition-colors text-center"
+            />
+          </div>
+
+          <!-- Botão Inserir -->
+          <div>
+            <button
+              (click)="adicionarNoCarrinho()"
+              class="w-full inline-flex items-center justify-center gap-2 py-2 bg-indigo-600 hover:bg-indigo-500 border border-indigo-500/20 text-white text-xs font-semibold rounded-xl transition cursor-pointer shadow-md shadow-indigo-600/10 active:scale-95"
+            >
+              <svg [lucideIcon]="IconPlus" class="w-4 h-4"></svg> Incluir
+            </button>
+          </div>
+        </div>
+
+        <!-- Feedback de Produto Atualmente Selecionado -->
+        @if (produtoSelecionado) {
+          <div class="mt-2 p-3 bg-slate-950/50 border border-slate-800/80 rounded-xl flex justify-between items-center text-xs">
+            <span class="text-slate-400">Selecionado: <strong class="text-white font-semibold">{{ produtoSelecionado.nome }}</strong></span>
+            <span class="text-indigo-400 font-mono font-semibold">{{ produtoSelecionado.preco | currency: 'BRL' }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- COLUNA DA DIREITA: Visualização do Carrinho/Cupom (Ocupa 2 colunas) -->
+    <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl shadow-sm overflow-hidden flex flex-col justify-between h-[450px]">
+
+      <!-- Cabeçalho do Carrinho -->
+      <div class="bg-slate-950/60 p-4 border-b border-slate-800 flex justify-between items-center">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+          Cesta de Compras
+        </h3>
+        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+          {{ carrinho().length }} {{ carrinho().length === 1 ? 'Item' : 'Itens' }}
+        </span>
+      </div>
+
+      <!-- Lista Rolável de Itens -->
+      <div class="flex-1 overflow-y-auto divide-y divide-slate-800/60 px-4 scrollbar-thin">
+        @for (item of carrinho(); track item.produto.id; let idx = $index) {
+          <div class="py-3 flex justify-between items-center text-xs group animate-fadeIn">
+            <div class="space-y-0.5 max-w-[70%]">
+              <p class="font-medium text-slate-200 truncate">{{ item.produto.nome }}</p>
+              <p class="text-[10px] text-slate-500">
+                {{ item.quantidade }}x × {{ item.precoUnitario | currency: 'BRL' }}
+              </p>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="font-semibold text-slate-300 font-mono">{{ item.subTotal | currency: 'BRL' }}</span>
+              <button
+                (click)="removerDoCarrinho(idx)"
+                class="p-1 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                title="Remover item"
+              >
+                <svg [lucideIcon]="IconTrash" class="w-3.5 h-3.5"></svg>
+              </button>
+            </div>
+          </div>
+        } @empty {
+          <div class="h-full flex flex-col items-center justify-center text-center text-slate-500 space-y-2 py-20">
+            <svg [lucideIcon]="IconCart" class="w-8 h-8 text-slate-700 animate-pulse"></svg>
+            <p class="text-[11px]">O carrinho está aguardando mercadorias.</p>
+          </div>
+        }
+      </div>
+
+      <!-- Rodapé com Totalizadores e Conclusão -->
+      <div class="bg-slate-950/60 p-4 border-t border-slate-800 space-y-4">
+        <div class="flex justify-between items-center">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total a Pagar</span>
+          <span class="text-xl font-bold text-emerald-400 font-mono">{{ valorTotalCarrinho() | currency: 'BRL' }}</span>
+        </div>
+
+        <button
+          (click)="finalizarVenda()"
+          [disabled]="carrinho().length === 0"
+          class="w-full inline-flex items-center justify-center py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:hover:bg-emerald-600 font-semibold text-white text-xs rounded-xl shadow-lg shadow-emerald-600/10 border border-emerald-500/20 transition cursor-pointer disabled:cursor-not-allowed text-center uppercase tracking-wider active:scale-95"
+        >
+          Finalizar Cupom
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

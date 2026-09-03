@@ -7,9 +7,11 @@ import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -33,6 +35,8 @@ public class Venda {
     private LocalDateTime dataVenda;
     @Column(name = "cliente_nome")
     private String clienteNome;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.ALL)
+    private Cliente cliente;
     @Column(name = "valor_total", nullable = false)
     private BigDecimal valorTotal;
     @Column(name = "usuario_nome")

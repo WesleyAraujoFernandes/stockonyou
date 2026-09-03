@@ -2,7 +2,7 @@ import { Injectable, signal } from '@angular/core';
 
 export interface ToastData {
   mensagem: string;
-  tipo: 'success' | 'error';
+  tipo: 'success' | 'error' | 'info';
 }
 
 @Injectable({
@@ -21,7 +21,11 @@ export class ToastService {
     this.exibir(mensagem, 'error');
   }
 
-  private exibir(mensagem: string, tipo: 'success' | 'error'): void {
+  info(mensagem: string): void {
+    this.exibir(mensagem, 'info');
+  }
+
+  private exibir(mensagem: string, tipo: 'success' | 'error' | 'info'): void {
     this.toastState.set({ mensagem, tipo });
     setTimeout(() => {
       this.toastState.set(null);

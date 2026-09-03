@@ -12,9 +12,11 @@ import br.com.knowledge.stockonyou.api.dto.ItemVendaRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.VendaRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.VendaResponseDTO;
 import br.com.knowledge.stockonyou.api.exception.ResourceNotFoundException;
+import br.com.knowledge.stockonyou.api.model.Cliente;
 import br.com.knowledge.stockonyou.api.model.ItemVenda;
 import br.com.knowledge.stockonyou.api.model.Produto;
 import br.com.knowledge.stockonyou.api.model.Venda;
+import br.com.knowledge.stockonyou.api.repository.ClienteRepository;
 import br.com.knowledge.stockonyou.api.repository.ProdutoRepository;
 import br.com.knowledge.stockonyou.api.repository.VendaRepository;
 import jakarta.transaction.Transactional;
@@ -25,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 public class VendaService {
     private final VendaRepository vendaRepository;
     private final ProdutoRepository produtoRepository;
+    private final ClienteRepository clienteRepository;
 
     @Transactional
     public VendaResponseDTO realizarVenda(VendaRequestDTO dto) {
@@ -33,9 +36,14 @@ public class VendaService {
         if (principal instanceof Jwt jwt) {
             username = jwt.getClaimAsString("preferred_username");
         }
+
+        Long idBusca = (dto.clienteId() != null) ? dto.clienteId() : 1L;
+        Cliente cliente = clienteRepository.findById(idBusca)
+            .orElseThrow(() -> new ResourceNotFoundException("Cliente Padrão (ID: 1) não cadastrado no banco."));
         Venda venda = Venda.builder()
                 .dataVenda(LocalDateTime.now())
-                .clienteNome(dto.clienteNome())
+                .clienteNome(cliente.getNome())
+                .cliente(cliente)
                 .usuarioNome(username)
                 .valorTotal(BigDecimal.ZERO)
                 .itens(new ArrayList<>())

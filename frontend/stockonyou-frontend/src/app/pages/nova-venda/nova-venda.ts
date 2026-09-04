@@ -1,14 +1,13 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VendaService } from '../../core/services/venda.service';
 import { ProdutoService } from '../../core/services/produto.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Produto } from '../../core/model/produto.model';
-import { ItemVendaRequest } from '../../core/model/venda.model'; // Certifique-se de que está mapeado no seu model
+import { ItemVendaRequest } from '../../core/model/venda.model';
 import { Cliente, ClienteService } from '../../core/services/cliente.service';
 
-// CORREÇÃO: Importando explicitamente todos os ícones e a diretiva dinâmica do pacote correto
 import {
   LucideDynamicIcon,
   LucideShoppingCart,
@@ -17,7 +16,8 @@ import {
   LucideUser,
   LucideSearch,
   LucideBarcode,
-  LucideDollarSign
+  LucideDollarSign,
+  LucideUserPlus
 } from '@lucide/angular';
 
 interface ItemCarrinho {
@@ -27,18 +27,13 @@ interface ItemCarrinho {
   subTotal: number;
 }
 
-export interface ItemVendaResponse {
-  id: number;
-  produtoId: number;     // Alterado de 'produto: Produto' para bater com o Java
-  produtoNome: string;   // Adicionado para receber o nome direto do DTO
-  quantidade: number;
-  precoUnitario: number;
-  subtotal: number;      // Ajustado para ficar tudo em minúsculo igual ao Java
+interface ComandaAtiva {
+  cliente: Cliente;
+  carrinho: ItemCarrinho[];
 }
 
 @Component({
   selector: 'app-nova-venda',
-  // CORREÇÃO: Adicionado o LucideDynamicIcon no array de imports do componente standalone
   imports: [CommonModule, FormsModule, LucideDynamicIcon],
   templateUrl: './nova-venda.html',
   styleUrl: './nova-venda.css',
@@ -56,13 +51,15 @@ export class NovaVenda implements OnInit {
   readonly IconSearch = LucideSearch;
   readonly IconBarcode = LucideBarcode;
   readonly IconMoney = LucideDollarSign;
+  readonly IconUserPlus = LucideUserPlus;
 
-  clienteNome = signal<string>('');
+  // Lista de comandas abertas na memória do sistema
+  comandasAtivas = signal<ComandaAtiva[]>([]);
+  clienteSelecionado = signal<Cliente>({ id: 1, nome: 'Cliente Padrão' });
   carrinho = signal<ItemCarrinho[]>([]);
 
   termoBuscaCliente = '';
   clientesEncontrados = signal<Cliente[]>([]);
-  clienteSelecionado = signal<Cliente>({ id: 1, nome: 'Cliente Padrão' });
 
   termoBuscaProduto = '';
   produtosEncontrados = signal<Produto[]>([]);
@@ -73,7 +70,72 @@ export class NovaVenda implements OnInit {
     return this.carrinho().reduce((acc, item) => acc + item.subTotal, 0);
   });
 
-  ngOnInit(): void { }
+  constructor() {
+    effect(() => {
+      const estadoAtual = {
+        comandas: this.comandasAtivas(),
+        clienteAtivoId: this.clienteSelecionado().id
+      };
+      localStorage.setItem('pdv_comandas_v1', JSON.stringify(estadoAtual));
+    })
+  }
+
+  ngOnInit(): void {
+    const dadosSalvos = localStorage.getItem('pdv_comandas_v1')
+    if (dadosSalvos) {
+      try {
+        const estadoBackup = JSON.parse(dadosSalvos);
+        if (estadoBackup.comandas && estadoBackup.comandas.length > 0) {
+          this.comandasAtivas.set(estadoBackup.comandas);
+          const clienteSalvo = estadoBackup.comandas.find((c: ComandaAtiva) => c.cliente.id === estadoBackup.clienteAtivoId);
+          if (clienteSalvo) {
+            this.clienteSelecionado.set(clienteSalvo.cliente);
+            this.carrinho.set(clienteSalvo.carrinho);
+          }
+          return;
+        }
+      } catch (e) {
+        console.error('Erro ao ler rascunhos de comandas:',e)
+      }
+    }
+    this.comandasAtivas.set([{
+      cliente: { id: 1, nome: 'Cliente Padrão' },
+      carrinho: []
+    }])
+  }
+
+  abrirNovaComanda(cliente: Cliente): void {
+    const jaExiste = this.comandasAtivas().some(c => c.cliente.id === cliente.id);
+    if (jaExiste && cliente.id !== 1) {
+      this.toast.erro(`A comanda para ${cliente.nome} já está aberta.`);
+      this.alternarParaComanda(cliente);
+      return;
+    }
+
+    const nova: ComandaAtiva = { cliente, carrinho: [] };
+    this.comandasAtivas.update(lista => [...lista, nova]);
+    this.alternarParaComanda(cliente);
+    this.toast.sucesso(`Comanda de ${cliente.nome} aberta.`);
+    this.termoBuscaCliente = '';
+    this.clientesEncontrados.set([]);
+  }
+
+  alternarParaComanda(cliente: Cliente): void {
+    // 1. Salva o estado atual do carrinho na comanda do cliente que estava ativo
+    this.comandasAtivas.update(lista => lista.map(c => {
+      if (c.cliente.id === this.clienteSelecionado().id) {
+        return { ...c, carrinho: this.carrinho() };
+      }
+      return c;
+    }));
+
+    // 2. Carrega a nova comanda selecionada
+    const comandaAlvo = this.comandasAtivas().find(c => c.cliente.id === cliente.id);
+    if (comandaAlvo) {
+      this.clienteSelecionado.set(comandaAlvo.cliente);
+      this.carrinho.set(comandaAlvo.carrinho);
+    }
+  }
 
   buscarClientesPorTermo(): void {
     if (!this.termoBuscaCliente.trim()) {
@@ -83,93 +145,25 @@ export class NovaVenda implements OnInit {
     this.clienteService.buscarPorTermo(this.termoBuscaCliente).subscribe({
       next: (dados) => this.clientesEncontrados.set(dados || []),
       error: (err) => console.error('Erro ao buscar clientes:', err)
-    })
-  }
-
-  // Altere o seu método selecionarCliente para buscar a comanda no banco
-  selecionarCliente(cliente: Cliente): void {
-    this.clienteSelecionado.set(cliente);
-    this.termoBuscaCliente = cliente.nome;
-    this.clientesEncontrados.set([]);
-
-    // CORREÇÃO: Toda vez que muda o cliente, busca o estado atual dele no banco
-    this.carregarComandaDoCliente(cliente.id);
-  }
-
-  carregarComandaDoCliente(clienteId: number): void {
-    if (clienteId === 1) {
-      this.carrinho.set([]);
-      return;
-    }
-
-    this.vendaService.buscarComandaAbertaPorCliente(clienteId).subscribe({
-      next: (comandaAtiva: any) => { // Mudado para 'any' para aceitar o mapeamento de chaves do DTO Java
-        if (comandaAtiva && comandaAtiva.itens && comandaAtiva.itens.length > 0) {
-
-          const itensMapeados = comandaAtiva.itens.map((item: any) => ({
-            produto: {
-              id: item.produtoId,
-              nome: item.produtoNome,
-              preco: item.precoUnitario,
-              codigoBarras: '',
-              quantidade: 0,
-              categoria: { id: 0, nome: '' }
-            } as Produto,
-            quantidade: item.quantidade,
-            precoUnitario: item.precoUnitario,
-            subTotal: item.subtotal
-          }));
-
-          this.carrinho.set(itensMapeados);
-          this.toast.sucesso(`Comanda aberta recuperada para ${this.clienteSelecionado().nome}`);
-        } else {
-          this.carrinho.set([]);
-        }
-      },
-      error: (err) => {
-        console.error('Erro ao buscar comanda do cliente:', err);
-        this.carrinho.set([]);
-      }
     });
   }
 
-
-
-  // Atualize também a função verificarOuCadastrarCliente para zerar caso o usuário apague o nome
   verificarOuCadastrarCliente(): void {
     const termo = this.termoBuscaCliente.trim();
-
-    if (!termo) {
-      this.clienteSelecionado.set({ id: 1, nome: 'Cliente Padrão' });
-      this.carrinho.set([]); // CORREÇÃO: Se apagou o cliente, zera o carrinho voltando pro padrão
+    if (!termo || termo === this.clienteSelecionado().nome) {
       return;
     }
 
-    if (termo === this.clienteSelecionado().nome) {
-      return;
-    }
-
-    const desejaCadastrar = confirm(`O cliente "${termo}" não foi encontrado. Deseja cadastrá-lo agora no sistema?`);
-
+    const desejaCadastrar = confirm(`O cliente "${termo}" não foi encontrado. Deseja abrir uma nova comanda para ele?`);
     if (desejaCadastrar) {
       this.clienteService.cadastrarRapido(termo).subscribe({
         next: (novoCliente) => {
-          this.selecionarCliente(novoCliente); // Já chama o carregarComandaDoCliente embutido
-          this.toast.sucesso(`Cliente "${novoCliente.nome}" cadastrado e selecionado!`);
+          this.abrirNovaComanda(novoCliente);
         },
         error: (err) => this.toast.erro('Falha ao cadastrar o cliente.')
       });
-    } else {
-      this.toast.info('Venda será processada para o Cliente Padrão.');
-      this.clienteSelecionado.set({ id: 1, nome: 'Cliente Padrão' });
-      this.termoBuscaCliente = 'Cliente Padrão';
-      this.clientesEncontrados.set([]);
-      this.carrinho.set([]); // Zera voltando ao balcão
     }
   }
-
-
-
 
   buscarProdutosPorTermo(): void {
     if (!this.termoBuscaProduto.trim()) {
@@ -199,17 +193,20 @@ export class NovaVenda implements OnInit {
       return;
     }
     if (this.quantidadeInserir > this.produtoSelecionado.quantidade) {
-      this.toast.erro(`Estoque insuficiente. Quantidade disponível: ${this.produtoSelecionado.quantidade}`);
+      this.toast.erro(`Estoque insuficiente. Disponível: ${this.produtoSelecionado.quantidade}`);
       return;
     }
+
     const itensAtuais = [...this.carrinho()];
     const itemExistente = itensAtuais.find(item => item.produto.id === this.produtoSelecionado!.id);
+
     if (itemExistente) {
       const novaQtd = itemExistente.quantidade + this.quantidadeInserir;
       if (novaQtd > this.produtoSelecionado.quantidade) {
         this.toast.erro(`Estoque insuficiente somando o carrinho. Limite: ${this.produtoSelecionado.quantidade}`);
         return;
       }
+
       itemExistente.quantidade = novaQtd;
       itemExistente.subTotal = itemExistente.quantidade * itemExistente.precoUnitario;
       this.carrinho.set(itensAtuais);
@@ -221,6 +218,14 @@ export class NovaVenda implements OnInit {
         subTotal: this.quantidadeInserir * this.produtoSelecionado!.preco
       }]);
     }
+
+    this.comandasAtivas.update(lista => lista.map(c => {
+      if (c.cliente.id === this.clienteSelecionado().id) {
+        return {...c, carrinho: this.carrinho() }
+      }
+      return c;
+    }))
+
     this.toast.sucesso(`${this.produtoSelecionado.nome} adicionado.`);
     this.produtoSelecionado = null;
     this.termoBuscaProduto = '';
@@ -229,6 +234,12 @@ export class NovaVenda implements OnInit {
 
   removerDoCarrinho(index: number): void {
     this.carrinho.update(lista => lista.filter((_, i) => i !== index));
+    this.comandasAtivas.update(lista => lista.map(c => {
+      if (c.cliente.id === this.clienteSelecionado().id) {
+        return { ...c, carrinho: this.carrinho() }
+      }
+      return c;
+    }))
     this.toast.sucesso('Item removido do carrinho.');
   }
 
@@ -237,11 +248,13 @@ export class NovaVenda implements OnInit {
       this.toast.erro('O carrinho está vazio.');
       return;
     }
+
     const itensRequest: ItemVendaRequest[] = this.carrinho().map(item => ({
       produtoId: item.produto.id,
       quantidade: item.quantidade,
       precoUnitario: item.precoUnitario
     }));
+
     const idClienteFinal = (this.clienteSelecionado() && this.clienteSelecionado().id)
       ? Number(this.clienteSelecionado().id)
       : 1;
@@ -250,11 +263,25 @@ export class NovaVenda implements OnInit {
       clienteId: idClienteFinal,
       itens: itensRequest
     };
+
     this.vendaService.realizarVenda(payload).subscribe({
       next: () => {
         this.toast.sucesso('Venda finalizada com sucesso! Estoque atualizado.');
+
+        const idFechado = this.clienteSelecionado().id;
         this.carrinho.set([]);
-        this.clienteSelecionado.set({ id: 1, nome: 'Cliente Padrão' })
+
+        // Remove a comanda finalizada do array reativo
+        this.comandasAtivas.update(lista => lista.filter(c => c.cliente.id !== idFechado));
+
+        // Se fechou todas as comandas, garante a abertura da comanda Balcão novamente
+        if (this.comandasAtivas().length === 0) {
+          this.comandasAtivas.set([{ cliente: { id: 1, nome: 'Cliente Padrão' }, carrinho: [] }]);
+        }
+
+        // Seleciona a primeira comanda restante da lista
+        this.clienteSelecionado.set(this.comandasAtivas()[0].cliente);
+        this.carrinho.set(this.comandasAtivas()[0].carrinho);
         this.termoBuscaCliente = '';
         this.clientesEncontrados.set([]);
       },
@@ -263,5 +290,29 @@ export class NovaVenda implements OnInit {
         this.toast.erro('Falha ao concluir a venda. Verifique as regras de negócio.');
       }
     });
+  }
+
+  ajustarQuantidadeItem(index: number): void {
+    const itensAtuais = [...this.carrinho()];
+    const item = itensAtuais[index];
+    if (!item) return;
+
+    const novaQuantidade = item.quantidade + -1;
+
+    if (novaQuantidade <= 0) {
+      this.removerDoCarrinho(index);
+      return;
+    }
+
+    item.quantidade = novaQuantidade;
+    item.subTotal = item.quantidade * item.precoUnitario;
+    this.carrinho.set(itensAtuais);
+
+    this.comandasAtivas.update(lista => lista.map(c => {
+      if (c.cliente.id === this.clienteSelecionado().id) {
+        return { ...c, carrinho: this.carrinho() }
+      }
+      return c;
+    }))
   }
 }

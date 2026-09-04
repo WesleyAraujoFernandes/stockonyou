@@ -1,6 +1,9 @@
 package br.com.knowledge.stockonyou.api.controller;
 
 import br.com.knowledge.stockonyou.api.repository.VendaRepository;
+
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.knowledge.stockonyou.api.dto.ItemVendaRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.VendaRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.VendaResponseDTO;
 import br.com.knowledge.stockonyou.api.model.StatusVenda;
@@ -33,18 +37,31 @@ public class VendaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PutMapping("/{id}/finalizar")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
-    public ResponseEntity<VendaResponseDTO> finalizarComanda(@PathVariable Long id) {
-        vendaService.finalizarComanda(id);
-        return ResponseEntity.noContent().build();
-    }
-
     @GetMapping("/cliente/{clienteId}/aberta")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<VendaResponseDTO> buscarComandaAberta(@PathVariable Long clienteId) {
         return vendaRepository.findByClienteIdAndStatus(clienteId, StatusVenda.ABERTA).map(venda -> ResponseEntity.ok(VendaResponseDTO.fromEntity(venda)))
                 .orElse(ResponseEntity.noContent().build());
                 
+    }
+
+    @GetMapping("/comandas")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<List<VendaResponseDTO>> listarComandasAbertas() {
+        return ResponseEntity.ok(vendaRepository.findAll().stream().map(VendaResponseDTO::fromEntity).toList());
+    }
+
+    @PutMapping("/cliente/{clienteId}/comanda")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<VendaResponseDTO> atualizarComdanda(
+        @PathVariable Long clienteId,
+        @Valid @RequestBody ItemVendaRequestDTO dto) {
+            return ResponseEntity.ok(vendaService.atualizarComandaAberta(clienteId, dto));
+        }
+
+    @PutMapping("/{id}/finalizar")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<VendaResponseDTO> finalizarComanda(@PathVariable Long id, StatusVenda status) {
+        return ResponseEntity.ok(vendaService.finalizarComanda(id, status));
     }
 }

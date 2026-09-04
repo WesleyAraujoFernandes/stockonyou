@@ -50,6 +50,7 @@ public class VendaService {
                     return Venda.builder()
                             .cliente(cliente)
                             .status(StatusVenda.ABERTA)
+                            .dataVenda(LocalDateTime.now())
                             .itens(new ArrayList<>())
                             .valorTotal(BigDecimal.ZERO)
                             .build();
@@ -95,79 +96,57 @@ public class VendaService {
                 .orElseGet(() -> clienteRepository.findById(1L).orElseThrow(
                         () -> new ResourceNotFoundException("Cliente Padrão não cadastrado.")));
 
-        Venda venda;
         boolean ehClientePadrao = cliente.getId().equals(1L);
 
+        // REGRA RESTRITIVA: Se não for cliente padrão, o Angular deve usar os métodos de atualizar/finalizar comanda
         if (!ehClientePadrao) {
-            // Busca se o cliente já tem uma comanda ABERTA
-            venda = vendaRepository.findByClienteIdAndStatus(cliente.getId(), StatusVenda.ABERTA)
-                    .orElseGet(() -> Venda.builder()
-                            .dataVenda(LocalDateTime.now())
-                            .clienteNome(cliente.getNome())
-                            .cliente(cliente)
-                            .usuarioNome(SecurityContextHolder.getContext().getAuthentication().getName())
-                            .valorTotal(BigDecimal.ZERO)
-                            .status(StatusVenda.ABERTA) // Abre uma nova comanda
-                            .itens(new ArrayList<>())
-                            .build());
-        } else {
-            // Cliente padrão sempre abre e fecha na hora (Venda direta de balcão)
-            venda = Venda.builder()
-                    .dataVenda(LocalDateTime.now())
-                    .clienteNome(cliente.getNome())
-                    .cliente(cliente)
-                    .usuarioNome(username)
-                    .valorTotal(BigDecimal.ZERO)
-                    .status(StatusVenda.FINALIZADA)
-                    .itens(new ArrayList<>())
-                    .build();
+            throw new IllegalArgumentException("Para clientes cadastrados, utilize o fluxo de gerenciamento de comandas.");
         }
 
-        BigDecimal valorAdicionalItens = BigDecimal.ZERO;
+        // Fluxo exclusivo: Cliente padrão (Abre e fecha na hora - Venda direta de balcão)
+        Venda venda = Venda.builder()
+                .dataVenda(LocalDateTime.now())
+                .clienteNome(cliente.getNome())
+                .cliente(cliente)
+                .usuarioNome(username)
+                .valorTotal(BigDecimal.ZERO)
+                .status(StatusVenda.PAGO) // CORREÇÃO 1: Mudado de FINALIZADA para PAGO
+                .itens(new ArrayList<>())
+                .build();
+
+        BigDecimal valorTotalVenda = BigDecimal.ZERO;
 
         for (ItemVendaRequestDTO itemDto : dto.itens()) {
             Produto produto = produtoRepository.findById(itemDto.produtoId())
-                    .orElseThrow(
-                            () -> new ResourceNotFoundException("Produto não encontrado ID: " + itemDto.produtoId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado ID: " + itemDto.produtoId()));
 
             if (produto.getQuantidade() < itemDto.quantidade()) {
                 throw new IllegalArgumentException("Estoque insuficiente para: " + produto.getNome());
             }
 
+            // Dá baixa no estoque na hora porque a venda de balcão finaliza imediatamente
             produto.setQuantidade(produto.getQuantidade() - itemDto.quantidade());
             produtoRepository.save(produto);
 
             BigDecimal subtotal = itemDto.precoUnitario().multiply(BigDecimal.valueOf(itemDto.quantidade()));
-            valorAdicionalItens = valorAdicionalItens.add(subtotal);
+            valorTotalVenda = valorTotalVenda.add(subtotal);
 
-            // Verifica se o produto já existe na comanda aberta para somar a quantidade,
-            // senão cria um novo item
-            ItemVenda itemExistente = venda.getItens().stream()
-                    .filter(i -> i.getProduto().getId().equals(produto.getId()))
-                    .findFirst()
-                    .orElse(null);
-
-            if (itemExistente != null) {
-                itemExistente.setQuantidade(itemExistente.getQuantidade() + itemDto.quantidade());
-                itemExistente.setSubtotal(itemExistente.getSubtotal().add(subtotal));
-            } else {
-                ItemVenda novoItem = ItemVenda.builder()
-                        .venda(venda)
-                        .produto(produto)
-                        .quantidade(itemDto.quantidade())
-                        .precoUnitario(itemDto.precoUnitario())
-                        .subtotal(subtotal)
-                        .build();
-                venda.getItens().add(novoItem);
-            }
+            ItemVenda novoItem = ItemVenda.builder()
+                    .venda(venda)
+                    .produto(produto)
+                    .quantidade(itemDto.quantidade())
+                    .precoUnitario(itemDto.precoUnitario())
+                    .subtotal(subtotal)
+                    .build();
+            venda.getItens().add(novoItem);
         }
 
-        // Soma o valor dos novos itens ao valor total acumulado da comanda
-        venda.setValorTotal(venda.getValorTotal().add(valorAdicionalItens));
+        venda.setValorTotal(valorTotalVenda);
         Venda vendaSalva = vendaRepository.save(venda);
 
         return VendaResponseDTO.fromEntity(vendaSalva);
     }
+
 
     @Transactional
     public void finalizarComanda(Long id) {

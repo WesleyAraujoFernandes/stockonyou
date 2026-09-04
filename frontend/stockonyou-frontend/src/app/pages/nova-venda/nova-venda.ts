@@ -28,6 +28,7 @@ interface ItemCarrinho {
 }
 
 interface ComandaAtiva {
+  vendaId?: number;
   cliente: Cliente;
   carrinho: ItemCarrinho[];
 }
@@ -57,6 +58,7 @@ export class NovaVenda implements OnInit {
   comandasAtivas = signal<ComandaAtiva[]>([]);
   clienteSelecionado = signal<Cliente>({ id: 1, nome: 'Cliente Padrão' });
   carrinho = signal<ItemCarrinho[]>([]);
+  vendaIdAtual: number | undefined = undefined;
 
   termoBuscaCliente = '';
   clientesEncontrados = signal<Cliente[]>([]);
@@ -65,6 +67,8 @@ export class NovaVenda implements OnInit {
   produtosEncontrados = signal<Produto[]>([]);
   produtoSelecionado: Produto | null = null;
   quantidadeInserir = 1;
+
+  exibirModalFechamento = signal<boolean>(false);
 
   valorTotalCarrinho = computed(() => {
     return this.carrinho().reduce((acc, item) => acc + item.subTotal, 0);
@@ -81,28 +85,53 @@ export class NovaVenda implements OnInit {
   }
 
   ngOnInit(): void {
-    const dadosSalvos = localStorage.getItem('pdv_comandas_v1')
-    if (dadosSalvos) {
-      try {
-        const estadoBackup = JSON.parse(dadosSalvos);
-        if (estadoBackup.comandas && estadoBackup.comandas.length > 0) {
-          this.comandasAtivas.set(estadoBackup.comandas);
-          const clienteSalvo = estadoBackup.comandas.find((c: ComandaAtiva) => c.cliente.id === estadoBackup.clienteAtivoId);
-          if (clienteSalvo) {
-            this.clienteSelecionado.set(clienteSalvo.cliente);
-            this.carrinho.set(clienteSalvo.carrinho);
-          }
-          return;
-        }
-      } catch (e) {
-        console.error('Erro ao ler rascunhos de comandas:',e)
-      }
-    }
-    this.comandasAtivas.set([{
-      cliente: { id: 1, nome: 'Cliente Padrão' },
-      carrinho: []
-    }])
+    this.recuperarTodasComandasDoBanco();
   }
+
+  recuperarTodasComandasDoBanco(): void {
+    this.vendaService.listarComandasAbertas().subscribe({
+      next: (comandasBanco) => {
+        if (comandasBanco && comandasBanco.length > 0) {
+          const mapeadas: ComandaAtiva[] = comandasBanco.map(venda => {
+            // Cria um fallback de segurança caso o DTO traga campos nulos do banco
+            const clienteValido: Cliente = {
+              id: venda.id, // Usa o ID da comanda/venda temporariamente se necessário
+              nome: venda.clienteNome || (venda as any).cliente?.nome || 'Cliente sem Nome'
+            };
+
+            return {
+              vendaId: venda.id,
+              cliente: clienteValido, // Sempre garante um objeto Cliente preenchido
+              carrinho: (venda.itens || []).map(item => ({
+                produto: item.produto,
+                quantidade: item.quantidade,
+                precoUnitario: item.precoUnitario,
+                subTotal: item.subtotal
+              }))
+            };
+          });
+
+          this.comandasAtivas.set(mapeadas);
+
+          if (mapeadas.length > 0) {
+            this.clienteSelecionado.set(mapeadas[0].cliente);
+            this.carrinho.set(mapeadas[0].carrinho);
+            this.vendaIdAtual = mapeadas[0].vendaId;
+          }
+        } else {
+          this.comandasAtivas.set([{ cliente: { id: 1, nome: 'Cliente Padrão' }, carrinho: [] }]);
+          this.clienteSelecionado.set({ id: 1, nome: 'Cliente Padrão' });
+          this.carrinho.set([]);
+          this.vendaIdAtual = undefined;
+        }
+      },
+      error: (err) => {
+        console.error('Erro ao listar comandas do banco:', err);
+        this.toast.erro('Falha ao carregar as comandas do servidor.');
+      }
+    });
+  }
+
 
   abrirNovaComanda(cliente: Cliente): void {
     const jaExiste = this.comandasAtivas().some(c => c.cliente.id === cliente.id);
@@ -114,8 +143,11 @@ export class NovaVenda implements OnInit {
 
     const nova: ComandaAtiva = { cliente, carrinho: [] };
     this.comandasAtivas.update(lista => [...lista, nova]);
-    this.alternarParaComanda(cliente);
-    this.toast.sucesso(`Comanda de ${cliente.nome} aberta.`);
+    this.clienteSelecionado.set(cliente);
+    this.carrinho.set([]);
+    this.vendaIdAtual = undefined;
+
+    this.toast.sucesso(`Comanda de ${cliente.nome} aberta.`)
     this.termoBuscaCliente = '';
     this.clientesEncontrados.set([]);
   }
@@ -124,16 +156,17 @@ export class NovaVenda implements OnInit {
     // 1. Salva o estado atual do carrinho na comanda do cliente que estava ativo
     this.comandasAtivas.update(lista => lista.map(c => {
       if (c.cliente.id === this.clienteSelecionado().id) {
-        return { ...c, carrinho: this.carrinho() };
+        return { ...c, carrinho: this.carrinho(), vendaId: this.vendaIdAtual };
       }
       return c;
     }));
 
-    // 2. Carrega a nova comanda selecionada
+    // 2. Carrega a comanda destino
     const comandaAlvo = this.comandasAtivas().find(c => c.cliente.id === cliente.id);
     if (comandaAlvo) {
       this.clienteSelecionado.set(comandaAlvo.cliente);
       this.carrinho.set(comandaAlvo.carrinho);
+      this.vendaIdAtual = comandaAlvo.vendaId;
     }
   }
 
@@ -184,6 +217,34 @@ export class NovaVenda implements OnInit {
   }
 
   adicionarNoCarrinho(): void {
+    if (!this.produtoSelecionado) return;
+
+    const itemRequest: ItemVendaRequest = {
+      produtoId: this.produtoSelecionado.id,
+      quantidade: this.quantidadeInserir,
+      precoUnitario: this.produtoSelecionado.preco
+    }
+
+    this.vendaService.atualizarComanda(this.clienteSelecionado().id, itemRequest).subscribe({
+      next: (vendaAtualizada) => {
+        this.vendaIdAtual = vendaAtualizada.id;
+        const novoCarrinho = vendaAtualizada.itens.map(item => ({
+          produto: item.produto,
+          quantidade: item.quantidade,
+          precoUnitario: item.precoUnitario,
+          subTotal: item.subtotal
+        }))
+        this.carrinho.set(novoCarrinho);
+        this.sincronizarListaLateral();
+        this.toast.sucesso('Item inserido e salvo no banco.');
+
+        this.produtoSelecionado = null;
+        this.termoBuscaProduto = '';
+        this.quantidadeInserir = 1;
+      },
+      error: () => this.toast.erro('Erro ao salvar item no banco.')
+    });
+
     if (!this.produtoSelecionado) {
       this.toast.erro('Selecione um produto antes de adicionar.');
       return;
@@ -314,5 +375,47 @@ export class NovaVenda implements OnInit {
       }
       return c;
     }))
+  }
+
+  private sincronizarListaLateral(): void {
+    this.comandasAtivas.update(lista => lista.map(c => {
+      if (c.cliente.id === this.clienteSelecionado().id) {
+        return { ...c, carrinho: this.carrinho(), vendaId: this.vendaIdAtual}
+      }
+      return c;
+    }))
+  }
+
+  abrirModalFinalizacao(): void {
+    if (this.carrinho().length === 0) {
+      this.toast.erro('O carrinho está vazio.');
+      return;
+    }
+    this.exibirModalFechamento.set(true);
+  }
+
+  confirmarFechamento(tipo: 'PAGO' | 'PENDENTE'): void {
+    if (!this.vendaIdAtual) return;
+
+    this.vendaService.finalizarComanda(this.vendaIdAtual, tipo).subscribe( {
+      next: () => {
+        const mensagem = tipo === 'PAGO' ? 'Venda quitada com sucesso!' : 'Conta pendurada (Fiado) registrada!';
+        this.toast.sucesso(mensagem);
+        const idFechado = this.clienteSelecionado().id;
+        this.carrinho.set([]);
+        this.exibirModalFechamento.set(false);
+
+        this.comandasAtivas.update(lista => lista.filter(c => c.cliente.id !== idFechado));
+
+        if (this.comandasAtivas.length === 0) {
+          this.comandasAtivas.set([{ cliente: { id: 1, nome: 'Cliente Padrão' }, carrinho: [] }]);
+        }
+
+        this.clienteSelecionado.set(this.comandasAtivas()[0].cliente);
+        this.carrinho.set(this.comandasAtivas()[0].carrinho);
+        this.vendaIdAtual = this.comandasAtivas()[0].vendaId;
+      },
+      error: () => this.toast.erro('Falha ao encerrar comanda.')
+    })
   }
 }

@@ -8,7 +8,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/estoque_db
     username: postgres
-    password: postgres
+    password: postgres_pass
     driver-class-name: org.postgresql.Driver
 
   jpa:

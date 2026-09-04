@@ -48,7 +48,7 @@ public class VendaController {
     @GetMapping("/comandas")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<List<VendaResponseDTO>> listarComandasAbertas() {
-        return ResponseEntity.ok(vendaRepository.findAll().stream().map(VendaResponseDTO::fromEntity).toList());
+        return ResponseEntity.ok(vendaService.listarComandasAbertas());
     }
 
     @PutMapping("/cliente/{clienteId}/comanda")

@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { PageResponse } from '../model/produto.model';
-import { VendaRequest, VendaResponse } from '../model/venda.model';
+import { ItemVendaRequest, VendaRequest, VendaResponse } from '../model/venda.model';
 
 @Injectable({
   providedIn: 'root',
@@ -36,11 +36,21 @@ export class VendaService {
     return this.http.post<VendaResponse>(this.apiUrl, venda);
   }
 
-  finalizarComanda(id: number): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/${id}/finalizar`, {});
+  buscarComandaAbertaPorCliente(clienteId: number): Observable<VendaResponse> {
+    return this.http.get<VendaResponse>(`${this.apiUrl}/cliente/${clienteId}/aberta`)
   }
 
-  buscarComandaAbertaPorCliente(clienteId: number): Observable<VendaResponse | null> {
-    return this.http.get<VendaResponse | null>(`${this.apiUrl}/cliente/${clienteId}/aberta`)
+  listarComandasAbertas(): Observable<VendaResponse[]> {
+    return this.http.get<VendaResponse[]>(`${this.apiUrl}/comandas`);
   }
+
+  atualizarComanda(clienteId: number, item: ItemVendaRequest): Observable<VendaResponse> {
+    return this.http.put<VendaResponse>(`${this.apiUrl}/cliente/${clienteId}/comanda`, item);
+  }
+
+  finalizarComanda(vendaId: number, status: 'PAGO' | 'PENDENTE'): Observable<VendaResponse> {
+    const params = new HttpParams().set('status', status);
+    return this.http.put<VendaResponse>(`${this.apiUrl}/${vendaId}/finalizar`, {}, {params});
+  }
+
 }

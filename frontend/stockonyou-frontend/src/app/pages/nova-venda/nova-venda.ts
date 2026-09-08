@@ -21,7 +21,7 @@ import {
 } from '@lucide/angular';
 
 interface ItemCarrinho {
-  produto: Produto;
+  produto?: Produto;
   quantidade: number;
   precoUnitario: number;
   subTotal: number;
@@ -70,6 +70,8 @@ export class NovaVenda implements OnInit {
 
   exibirModalFechamento = signal<boolean>(false);
 
+  idComandaAberta = signal<number | null>(null);
+
   valorTotalCarrinho = computed(() => {
     return this.carrinho().reduce((acc, item) => acc + item.subTotal, 0);
   });
@@ -90,20 +92,20 @@ export class NovaVenda implements OnInit {
 
   recuperarTodasComandasDoBanco(): void {
     this.vendaService.listarComandasAbertas().subscribe({
-      next: (comandasBanco) => {
+      next: (comandasBanco : any[]) => {
         if (comandasBanco && comandasBanco.length > 0) {
           const mapeadas: ComandaAtiva[] = comandasBanco.map(venda => {
-            // Cria um fallback de segurança caso o DTO traga campos nulos do banco
+            const idDoClienteReal = venda.cliente?.id || venda.clienteId || 999;
             const clienteValido: Cliente = {
-              id: venda.id, // Usa o ID da comanda/venda temporariamente se necessário
+              id: Number(idDoClienteReal),
               nome: venda.clienteNome || (venda as any).cliente?.nome || 'Cliente sem Nome'
             };
 
             return {
               vendaId: venda.id,
               cliente: clienteValido, // Sempre garante um objeto Cliente preenchido
-              carrinho: (venda.itens || []).map(item => ({
-                produto: item.produto,
+              carrinho: (venda.itens || []).map((item: any) => ({
+                produto: item.produto || { id: item.produtoId, nome: item.produtoNome, preco: item.precoUnitario },
                 quantidade: item.quantidade,
                 precoUnitario: item.precoUnitario,
                 subTotal: item.subtotal
@@ -113,11 +115,11 @@ export class NovaVenda implements OnInit {
 
           this.comandasAtivas.set(mapeadas);
 
-          if (mapeadas.length > 0) {
-            this.clienteSelecionado.set(mapeadas[0].cliente);
-            this.carrinho.set(mapeadas[0].carrinho);
-            this.vendaIdAtual = mapeadas[0].vendaId;
-          }
+          const primeira = mapeadas[0];
+          this.clienteSelecionado.set(primeira.cliente);
+          this.carrinho.set(primeira.carrinho)
+          this.vendaIdAtual = primeira.vendaId;
+
         } else {
           this.comandasAtivas.set([{ cliente: { id: 1, nome: 'Cliente Padrão' }, carrinho: [] }]);
           this.clienteSelecionado.set({ id: 1, nome: 'Cliente Padrão' });
@@ -132,6 +134,68 @@ export class NovaVenda implements OnInit {
     });
   }
 
+  carregarComandaDoCliente(clienteId: number): void {
+    if (clienteId === 1) {
+      this.carrinho.set([]);
+      this.idComandaAberta.set(null);
+      return;
+    }
+    this.vendaService.buscarComandaAbertaPorCliente(clienteId).subscribe({
+      next: (comandaAtiva: any) => {
+        if (comandaAtiva && comandaAtiva.itens && comandaAtiva.itens.length > 0) {
+          this.idComandaAberta.set(comandaAtiva.id);
+          const itensMapeados = comandaAtiva.itens.map((item: any) => ({
+            produto: {
+              id: item.produtoId,
+              nome: item.produtoNome,
+              preco: item.precoUnitario,
+              codigoBarras: '',
+              quantidade: 0,
+              categoria: { id: 0, nome: '' }
+            } as Produto,
+            quantidade: item.quantidade,
+            precoUnitario: item.precoUnitario,
+            subTotal: item.subtotal
+          }));
+          this.carrinho.set(itensMapeados);
+          this.toast.sucesso(`Comanda aberta recuperada para ${this.clienteSelecionado().nome}`)
+        } else {
+          this.carrinho.set([]);
+          this.idComandaAberta.set(null);
+        }
+      },
+      error: (err) => {
+        console.error('Erro ao buscar comanda do cliente:', err);
+        this.carrinho.set([]);
+        this.idComandaAberta.set(null);
+      }
+    })
+  }
+
+  fecharComandaAtiva(): void {
+    const idComanda = this.idComandaAberta();
+    if (!idComanda) {
+      this.toast.erro('Não há nenhuma comanda ativa aberta no servidor para ser finalizada.')
+      return
+    }
+    const confirmar = confirm(`Deseja realmente encerrar e fechar a conta de "${this.clienteSelecionado().nome}" no valor de ${this.valorTotalCarrinho().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`)
+    if (confirmar) {
+      this.vendaService.finalizarComanda(idComanda, 'PAGO').subscribe({
+        next: () => {
+          this.toast.sucesso('Conta fechada com sucesso! Comanda Finalizada.');
+          this.carrinho.set([]);
+          this.idComandaAberta.set(null);
+          this.clienteSelecionado.set({ id: 1, nome: 'Cliente Padrão' });
+          this.termoBuscaCliente = ''
+          this.clientesEncontrados.set([]);
+        },
+        error: (err) => {
+          console.error('Erro ao finalizar comanda:', err);
+          this.toast.erro('Falha ao encerrar a comanda no servidor.');
+        }
+      })
+    }
+  }
 
   abrirNovaComanda(cliente: Cliente): void {
     const jaExiste = this.comandasAtivas().some(c => c.cliente.id === cliente.id);
@@ -219,24 +283,60 @@ export class NovaVenda implements OnInit {
   adicionarNoCarrinho(): void {
     if (!this.produtoSelecionado) return;
 
+    // CASO 1: SE FOR CLIENTE PADRÃO (ID 1) -> Gerencia apenas em memória local
+    if (this.clienteSelecionado().id === 1) {
+      const itensAtuais = [...this.carrinho()];
+      const itemExistente = itensAtuais
+      .find(item => item.produto!.id === this.produtoSelecionado!.id);
+      if (itemExistente) {
+        itemExistente.quantidade += this.quantidadeInserir;
+        itemExistente.subTotal = itemExistente.quantidade * itemExistente.precoUnitario;
+        this.carrinho.set(itensAtuais);
+      } else {
+        this.carrinho.update(lista => [...lista, {
+          produto: this.produtoSelecionado!,
+          quantidade: this.quantidadeInserir,
+          precoUnitario: this.produtoSelecionado!.preco,
+          subTotal: this.quantidadeInserir * this.produtoSelecionado!.preco
+        }]);
+      }
+
+      this.sincronizarListaLateral();
+      this.toast.sucesso(`${this.produtoSelecionado.nome} adicionado ao balcão.`);
+      this.produtoSelecionado = null;
+      this.termoBuscaProduto = '';
+      this.quantidadeInserir = 1;
+      return; // Finaliza o método aqui, sem chamar o HTTP PUT
+    }
+
+    // CASO 2: CLIENTES REAIS (Etevaldo, Eliana...) -> Envia para a comanda aberta no banco
     const itemRequest: ItemVendaRequest = {
       produtoId: this.produtoSelecionado.id,
       quantidade: this.quantidadeInserir,
       precoUnitario: this.produtoSelecionado.preco
-    }
+    };
 
     this.vendaService.atualizarComanda(this.clienteSelecionado().id, itemRequest).subscribe({
-      next: (vendaAtualizada) => {
+      next: (vendaAtualizada: any) => {
         this.vendaIdAtual = vendaAtualizada.id;
-        const novoCarrinho = vendaAtualizada.itens.map(item => ({
-          produto: item.produto,
+
+        const novoCarrinho = vendaAtualizada.itens.map((item: any) => ({
+          produto: {
+            id: item.produtoId,
+            nome: item.produtoNome || 'Produto',
+            preco: item.precoUnitario,
+            codigoBarras: '',
+            quantidade: 9999,
+            categoria: { id: 0, nome: '' }
+          } as Produto,
           quantidade: item.quantidade,
           precoUnitario: item.precoUnitario,
           subTotal: item.subtotal
-        }))
+        }));
+
         this.carrinho.set(novoCarrinho);
         this.sincronizarListaLateral();
-        this.toast.sucesso('Item inserido e salvo no banco.');
+        this.toast.sucesso('Item inserido e salvo na comanda do banco.');
 
         this.produtoSelecionado = null;
         this.termoBuscaProduto = '';
@@ -244,65 +344,31 @@ export class NovaVenda implements OnInit {
       },
       error: () => this.toast.erro('Erro ao salvar item no banco.')
     });
-
-    if (!this.produtoSelecionado) {
-      this.toast.erro('Selecione um produto antes de adicionar.');
-      return;
-    }
-    if (this.quantidadeInserir <= 0) {
-      this.toast.erro('A quantidade deve ser maior que zero.');
-      return;
-    }
-    if (this.quantidadeInserir > this.produtoSelecionado.quantidade) {
-      this.toast.erro(`Estoque insuficiente. Disponível: ${this.produtoSelecionado.quantidade}`);
-      return;
-    }
-
-    const itensAtuais = [...this.carrinho()];
-    const itemExistente = itensAtuais.find(item => item.produto.id === this.produtoSelecionado!.id);
-
-    if (itemExistente) {
-      const novaQtd = itemExistente.quantidade + this.quantidadeInserir;
-      if (novaQtd > this.produtoSelecionado.quantidade) {
-        this.toast.erro(`Estoque insuficiente somando o carrinho. Limite: ${this.produtoSelecionado.quantidade}`);
-        return;
-      }
-
-      itemExistente.quantidade = novaQtd;
-      itemExistente.subTotal = itemExistente.quantidade * itemExistente.precoUnitario;
-      this.carrinho.set(itensAtuais);
-    } else {
-      this.carrinho.update(lista => [...lista, {
-        produto: this.produtoSelecionado!,
-        quantidade: this.quantidadeInserir,
-        precoUnitario: this.produtoSelecionado!.preco,
-        subTotal: this.quantidadeInserir * this.produtoSelecionado!.preco
-      }]);
-    }
-
-    this.comandasAtivas.update(lista => lista.map(c => {
-      if (c.cliente.id === this.clienteSelecionado().id) {
-        return {...c, carrinho: this.carrinho() }
-      }
-      return c;
-    }))
-
-    this.toast.sucesso(`${this.produtoSelecionado.nome} adicionado.`);
-    this.produtoSelecionado = null;
-    this.termoBuscaProduto = '';
-    this.quantidadeInserir = 1;
   }
-
   removerDoCarrinho(index: number): void {
-    this.carrinho.update(lista => lista.filter((_, i) => i !== index));
-    this.comandasAtivas.update(lista => lista.map(c => {
-      if (c.cliente.id === this.clienteSelecionado().id) {
-        return { ...c, carrinho: this.carrinho() }
+    const item = this.carrinho()[index];
+    // CORREÇÃO: Garante que o item e a propriedade produto existam antes de prosseguir
+    if (!item || !item.produto) return;
+
+    const itemRequest: ItemVendaRequest = {
+      produtoId: item.produto.id,
+      quantidade: 0,
+      precoUnitario: item.precoUnitario
+    };
+
+    this.vendaService.atualizarComanda(this.clienteSelecionado().id, itemRequest).subscribe({
+      next: () => {
+        this.carrinho.update(lista => lista.filter((_, i) => i !== index));
+        this.sincronizarListaLateral();
+        this.toast.sucesso('Item removido do banco.');
+      },
+      error: (err) => {
+        console.error('Erro ao remover item:', err);
+        this.toast.erro('Falha ao remover o item do banco.');
       }
-      return c;
-    }))
-    this.toast.sucesso('Item removido do carrinho.');
+    });
   }
+
 
   finalizarVenda(): void {
     if (this.carrinho().length === 0) {
@@ -310,8 +376,17 @@ export class NovaVenda implements OnInit {
       return;
     }
 
-    const itensRequest: ItemVendaRequest[] = this.carrinho().map(item => ({
-      produtoId: item.produto.id,
+    // 1. Filtra garantindo que só fiquem itens com produtos e IDs válidos
+    const itensValidos = this.carrinho().filter(item => item && item.produto && item.produto.id);
+
+    if (itensValidos.length === 0) {
+      this.toast.erro('Inconsistência nos produtos do carrinho. Tente reinserir os itens.');
+      return;
+    }
+
+    // 2. Mapeia os dados usando o operador '!' para garantir ao compilador que o produto existe
+    const itensRequest: ItemVendaRequest[] = itensValidos.map(item => ({
+      produtoId: item.produto!.id, // Adicionado '!' para resolver o erro de compilação
       quantidade: item.quantidade,
       precoUnitario: item.precoUnitario
     }));
@@ -327,60 +402,85 @@ export class NovaVenda implements OnInit {
 
     this.vendaService.realizarVenda(payload).subscribe({
       next: () => {
-        this.toast.sucesso('Venda finalizada com sucesso! Estoque atualizado.');
-
-        const idFechado = this.clienteSelecionado().id;
+        this.toast.sucesso('Venda processada com sucesso!');
         this.carrinho.set([]);
-
-        // Remove a comanda finalizada do array reativo
-        this.comandasAtivas.update(lista => lista.filter(c => c.cliente.id !== idFechado));
-
-        // Se fechou todas as comandas, garante a abertura da comanda Balcão novamente
-        if (this.comandasAtivas().length === 0) {
-          this.comandasAtivas.set([{ cliente: { id: 1, nome: 'Cliente Padrão' }, carrinho: [] }]);
-        }
-
-        // Seleciona a primeira comanda restante da lista
-        this.clienteSelecionado.set(this.comandasAtivas()[0].cliente);
-        this.carrinho.set(this.comandasAtivas()[0].carrinho);
+        this.clienteSelecionado.set({ id: 1, nome: 'Cliente Padrão' });
         this.termoBuscaCliente = '';
+        this.idComandaAberta.set(null);
         this.clientesEncontrados.set([]);
       },
       error: (err) => {
         console.error('Erro ao finalizar venda:', err);
-        this.toast.erro('Falha ao concluir a venda. Verifique as regras de negócio.');
+        this.toast.erro('Falha ao concluir a venda.');
       }
     });
   }
 
   ajustarQuantidadeItem(index: number): void {
-    const itensAtuais = [...this.carrinho()];
-    const item = itensAtuais[index];
-    if (!item) return;
+    const item = this.carrinho()[index];
+    if (!item || !item.produto) return;
 
-    const novaQuantidade = item.quantidade + -1;
+    // CORREÇÃO: Declarada aqui em cima para funcionar em todo o escopo do método
+    const novaQtd = item.quantidade - 1;
 
-    if (novaQuantidade <= 0) {
-      this.removerDoCarrinho(index);
-      return;
+    // CASO 1: SE FOR CLIENTE PADRÃO (ID 1) -> Gerencia apenas em memória local
+    if (this.clienteSelecionado().id === 1) {
+      if (novaQtd <= 0) {
+        this.carrinho.update(lista => lista.filter((_, i) => i !== index));
+      } else {
+        const itensAtuais = [...this.carrinho()];
+        itensAtuais[index].quantidade = novaQtd;
+        itensAtuais[index].subTotal = novaQtd * item.precoUnitario;
+        this.carrinho.set(itensAtuais);
+      }
+      this.sincronizarListaLateral();
+      this.toast.sucesso('Quantidade ajustada no balcão.');
+      return; // Interrompe aqui para não fazer o PUT no banco
     }
 
-    item.quantidade = novaQuantidade;
-    item.subTotal = item.quantidade * item.precoUnitario;
-    this.carrinho.set(itensAtuais);
+    // CASO 2: CLIENTES REAIS -> Envia para a comanda aberta no banco
+    const itemRequest: ItemVendaRequest = {
+      produtoId: item.produto.id,
+      quantidade: novaQtd,
+      precoUnitario: item.precoUnitario
+    };
 
-    this.comandasAtivas.update(lista => lista.map(c => {
-      if (c.cliente.id === this.clienteSelecionado().id) {
-        return { ...c, carrinho: this.carrinho() }
+    this.vendaService.atualizarComanda(this.clienteSelecionado().id, itemRequest).subscribe({
+      next: (vendaAtualizada: any) => {
+        if (novaQtd <= 0) {
+          this.carrinho.update(lista => lista.filter((_, i) => i !== index));
+        } else {
+          // Reconstrói o objeto Produto a partir do DTO plano do Java
+          const novoCarrinho = vendaAtualizada.itens.map((it: any) => ({
+            produto: {
+              id: it.produtoId,
+              nome: it.produtoNome || 'Produto',
+              preco: it.precoUnitario,
+              codigoBarras: '',
+              quantidade: 9999,
+              categoria: { id: 0, nome: '' }
+            } as Produto,
+            quantidade: it.quantidade,
+            precoUnitario: it.precoUnitario,
+            subTotal: it.subtotal
+          }));
+          this.carrinho.set(novoCarrinho);
+        }
+        this.sincronizarListaLateral();
+        this.toast.sucesso('Quantidade ajustada no banco.');
+      },
+      error: (err) => {
+        console.error('Erro ao ajustar quantidade:', err);
+        this.toast.erro('Falha ao ajustar a quantidade no banco.');
       }
-      return c;
-    }))
+    });
   }
+
 
   private sincronizarListaLateral(): void {
     this.comandasAtivas.update(lista => lista.map(c => {
       if (c.cliente.id === this.clienteSelecionado().id) {
-        return { ...c, carrinho: this.carrinho(), vendaId: this.vendaIdAtual}
+        return { ...c, carrinho: this.carrinho(), vendaId: this.vendaIdAtual }
       }
       return c;
     }))
@@ -395,27 +495,77 @@ export class NovaVenda implements OnInit {
   }
 
   confirmarFechamento(tipo: 'PAGO' | 'PENDENTE'): void {
-    if (!this.vendaIdAtual) return;
+    const idCliente = Number(this.clienteSelecionado().id);
 
-    this.vendaService.finalizarComanda(this.vendaIdAtual, tipo).subscribe( {
+    // CASO 1: SE FOR CLIENTE PADRÃO (ID 1) -> Dispara a venda direta de balcão (POST /api/vendas)
+    if (idCliente === 1 || this.clienteSelecionado().nome.toLowerCase() === 'cliente padrão') {
+      const itensRequest = this.carrinho()
+        .filter(item => item.produto !== undefined && item.produto !== null)
+        .map(item => ({
+          produtoId: item.produto!.id,
+          quantidade: item.quantidade,
+          precoUnitario: item.precoUnitario
+        }));
+
+      const payload = {
+        clienteId: 1,
+        itens: itensRequest
+      };
+
+      this.vendaService.realizarVenda(payload).subscribe({
+        next: () => {
+          this.toast.sucesso('Venda de balcão finalizada com sucesso!');
+          this.limparEstadoPdvAposFechamento(1);
+        },
+        error: (err) => {
+          console.error('Erro ao processar venda de balcão:', err);
+          this.toast.erro('Erro ao processar venda de balcão.');
+        }
+      });
+      return; // Interrompe para não seguir para o fluxo de comanda
+    }
+
+    // CASO 2: CLIENTES REAIS (Wesley, Eliana...) -> Finaliza comanda no banco (PUT /api/vendas/{id}/finalizar)
+    // Se a vendaIdAtual sumiu da memória, tentamos buscar a referência guardada na lista lateral
+    if (!this.vendaIdAtual) {
+      const comandaMemoria = this.comandasAtivas().find(c => c.cliente.id === idCliente);
+      this.vendaIdAtual = comandaMemoria?.vendaId;
+    }
+
+    if (!this.vendaIdAtual) {
+      this.toast.erro('Não foi possível localizar o ID da comanda para este cliente no servidor.');
+      return;
+    }
+
+    this.vendaService.finalizarComanda(this.vendaIdAtual, tipo).subscribe({
       next: () => {
         const mensagem = tipo === 'PAGO' ? 'Venda quitada com sucesso!' : 'Conta pendurada (Fiado) registrada!';
         this.toast.sucesso(mensagem);
-        const idFechado = this.clienteSelecionado().id;
-        this.carrinho.set([]);
-        this.exibirModalFechamento.set(false);
-
-        this.comandasAtivas.update(lista => lista.filter(c => c.cliente.id !== idFechado));
-
-        if (this.comandasAtivas.length === 0) {
-          this.comandasAtivas.set([{ cliente: { id: 1, nome: 'Cliente Padrão' }, carrinho: [] }]);
-        }
-
-        this.clienteSelecionado.set(this.comandasAtivas()[0].cliente);
-        this.carrinho.set(this.comandasAtivas()[0].carrinho);
-        this.vendaIdAtual = this.comandasAtivas()[0].vendaId;
+        this.limparEstadoPdvAposFechamento(idCliente);
       },
-      error: () => this.toast.erro('Falha ao encerrar comanda.')
-    })
+      error: (err) => {
+        console.error('Erro ao finalizar comanda do cliente:', err);
+        this.toast.erro('Falha ao encerrar comanda no servidor.');
+      }
+    });
+  }
+
+  // Método auxiliar para isolar a limpeza das listas após salvar
+  private limparEstadoPdvAposFechamento(idCliente: number): void {
+    this.carrinho.set([]);
+    this.exibirModalFechamento.set(true); // Oculta o modal
+    this.exibirModalFechamento.set(false);
+
+    this.comandasAtivas.update(lista => lista.filter(c => c.cliente.id !== idCliente));
+
+    if (this.comandasAtivas().length === 0) {
+      this.comandasAtivas.set([{ cliente: { id: 1, nome: 'Cliente Padrão' }, carrinho: [] }]);
+    }
+
+    this.clienteSelecionado.set(this.comandasAtivas()[0].cliente);
+    this.carrinho.set(this.comandasAtivas()[0].carrinho);
+    this.vendaIdAtual = (this.comandasAtivas()[0] as any).vendaId;
+    this.termoBuscaCliente = '';
+    this.clientesEncontrados.set([]);
   }
 }

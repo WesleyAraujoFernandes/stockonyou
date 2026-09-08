@@ -33,12 +33,13 @@ public class VendaService {
     private final VendaRepository vendaRepository;
     private final ProdutoRepository produtoRepository;
     private final ClienteRepository clienteRepository;
+    private String username = "Sistema";
 
     @Transactional(readOnly = true)
     public List<VendaResponseDTO> listarComandasAbertas() {
         return vendaRepository.findByStatus(StatusVenda.ABERTA).stream()
-            .map(VendaResponseDTO::fromEntity)
-            .collect(Collectors.toList());
+                .map(VendaResponseDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -46,7 +47,8 @@ public class VendaService {
         Venda venda = vendaRepository.findByClienteIdAndStatus(clienteId, StatusVenda.ABERTA)
                 .orElseGet(() -> {
                     Cliente cliente = clienteRepository.findById(clienteId)
-                            .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com o ID:"+clienteId));
+                            .orElseThrow(() -> new ResourceNotFoundException(
+                                    "Cliente não encontrado com o ID:" + clienteId));
                     return Venda.builder()
                             .cliente(cliente)
                             .status(StatusVenda.ABERTA)
@@ -72,7 +74,7 @@ public class VendaService {
                     .precoUnitario(produto.getPreco())
                     .subtotal(produto.getPreco().multiply(BigDecimal.valueOf(itemDto.quantidade())))
                     .build();
-            venda.getItens().add(novoItem); 
+            venda.getItens().add(novoItem);
         }
         BigDecimal total = venda.getItens().stream()
                 .map(ItemVenda::getSubtotal)
@@ -81,36 +83,44 @@ public class VendaService {
         return VendaResponseDTO.fromEntity(vendaRepository.save(venda));
     }
 
-
-
     @Transactional
     public VendaResponseDTO realizarVenda(VendaRequestDTO dto) {
-        String username = "Sistema";
+        String username = "Desconhecido"; // Inicialização da variável para evitar erro de compilação
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof Jwt jwt) {
             username = jwt.getClaimAsString("preferred_username");
         }
 
         Long idBusca = (dto.clienteId() != null) ? dto.clienteId() : 1L;
-        Cliente cliente = clienteRepository.findById(idBusca)
-                .orElseGet(() -> clienteRepository.findById(1L).orElseThrow(
-                        () -> new ResourceNotFoundException("Cliente Padrão não cadastrado.")));
+        Cliente cliente;
+        if (dto.clienteId() == null || dto.clienteId().equals(1L)) {
+            cliente = clienteRepository.findByNomeContainingIgnoreCase("Cliente Padrão")
+                    .stream().findFirst()
+                    .orElseGet(() -> {
+                        Cliente novoPadrao = Cliente.builder().nome("Cliente Padrão").build();
+                        return clienteRepository.save(novoPadrao);
+                    });
+        } else {
+            cliente = clienteRepository.findById(dto.clienteId())
+                    .orElseThrow(
+                            () -> new ResourceNotFoundException("Cliente não encontrado com o ID: " + dto.clienteId()));
+        }
+        
+        boolean ehClientePadrao = cliente.getNome().equalsIgnoreCase("Cliente Padrão");
 
-        boolean ehClientePadrao = cliente.getId().equals(1L);
-
-        // REGRA RESTRITIVA: Se não for cliente padrão, o Angular deve usar os métodos de atualizar/finalizar comanda
+        // REGRA DE SEGURANÇA: Clientes normais devem usar o fluxo de atualizarComanda/finalizarComanda
         if (!ehClientePadrao) {
-            throw new IllegalArgumentException("Para clientes cadastrados, utilize o fluxo de gerenciamento de comandas.");
+            throw new IllegalArgumentException("Para clientes cadastrados, utilize o fluxo de gerenciamento e fechamento de comandas.");
         }
 
-        // Fluxo exclusivo: Cliente padrão (Abre e fecha na hora - Venda direta de balcão)
+        // Fluxo exclusivo do Cliente Padrão: Abre, desconta estoque e encerra na hora como PAGO
         Venda venda = Venda.builder()
                 .dataVenda(LocalDateTime.now())
                 .clienteNome(cliente.getNome())
                 .cliente(cliente)
                 .usuarioNome(username)
                 .valorTotal(BigDecimal.ZERO)
-                .status(StatusVenda.PAGO) // CORREÇÃO 1: Mudado de FINALIZADA para PAGO
+                .status(StatusVenda.PAGO) // Cliente padrão fecha a venda imediatamente como PAGO
                 .itens(new ArrayList<>())
                 .build();
 
@@ -118,7 +128,8 @@ public class VendaService {
 
         for (ItemVendaRequestDTO itemDto : dto.itens()) {
             Produto produto = produtoRepository.findById(itemDto.produtoId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado ID: " + itemDto.produtoId()));
+                    .orElseThrow(
+                            () -> new ResourceNotFoundException("Produto não encontrado ID: " + itemDto.produtoId()));
 
             if (produto.getQuantidade() < itemDto.quantidade()) {
                 throw new IllegalArgumentException("Estoque insuficiente para: " + produto.getNome());
@@ -151,7 +162,7 @@ public class VendaService {
     @Transactional
     public void finalizarComanda(Long id) {
         Venda comanda = vendaRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Comanda não encontrada com id:"+id));
+                .orElseThrow(() -> new ResourceNotFoundException("Comanda não encontrada com id:" + id));
         if (comanda.getStatus() == StatusVenda.FINALIZADA) {
             throw new IllegalArgumentException("Esta comanda ja foi finalizada.");
         }
@@ -165,7 +176,7 @@ public class VendaService {
             throw new IllegalArgumentException("O novo status deve ser PAGO ou PENDENTE.");
         }
         Venda venda = vendaRepository.findById(comandaId)
-            .orElseThrow(() -> new ResourceNotFoundException("Comanda nao encontrada com id:"+comandaId));
+                .orElseThrow(() -> new ResourceNotFoundException("Comanda nao encontrada com id:" + comandaId));
         if (venda.getStatus() != StatusVenda.ABERTA) {
             throw new IllegalArgumentException("Esta comanda já foi finalizada");
         }

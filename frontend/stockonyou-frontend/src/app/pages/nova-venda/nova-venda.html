@@ -12,23 +12,21 @@
     <!-- Lista de Abas de Clientes Ativos -->
     <div class="space-y-2 max-h-96 overflow-y-auto pr-1">
       @for (comanda of comandasAtivas(); track comanda.cliente.id) {
-        <button
-          (click)="alternarParaComanda(comanda.cliente)"
-          [class.bg-indigo-600\/10]="clienteSelecionado().id === comanda.cliente.id"
-          [class.border-indigo-500\/40]="clienteSelecionado().id === comanda.cliente.id"
-          [class.text-indigo-400]="clienteSelecionado().id === comanda.cliente.id"
-          [class.bg-slate-950\/40]="clienteSelecionado().id !== comanda.cliente.id"
-          [class.border-slate-800\/60]="clienteSelecionado().id !== comanda.cliente.id"
-          class="w-full text-left flex items-center justify-between px-3 py-3 rounded-xl border font-medium text-xs text-slate-400 hover:bg-slate-800\/50 hover:text-slate-200 transition-all cursor-pointer group"
-        >
-          <div class="flex items-center gap-2.5 truncate">
-            <svg [lucideIcon]="IconUser" class="w-3.5 h-3.5 shrink-0"></svg>
-            <span class="truncate">{{ comanda.cliente.nome || 'Cliente sem nome' }}</span>
-          </div>
-          <span class="text-[10px] bg-slate-950 px-2 py-0.5 rounded-full font-semibold group-hover:bg-slate-900">
-            {{ comanda.carrinho.length }} itens
-          </span>
-        </button>
+      <button (click)="alternarParaComanda(comanda.cliente)"
+        [class.bg-indigo-600\/10]="clienteSelecionado().id === comanda.cliente.id"
+        [class.border-indigo-500\/40]="clienteSelecionado().id === comanda.cliente.id"
+        [class.text-indigo-400]="clienteSelecionado().id === comanda.cliente.id"
+        [class.bg-slate-950\/40]="clienteSelecionado().id !== comanda.cliente.id"
+        [class.border-slate-800\/60]="clienteSelecionado().id !== comanda.cliente.id"
+        class="w-full text-left flex items-center justify-between px-3 py-3 rounded-xl border font-medium text-xs text-slate-400 hover:bg-slate-800\/50 hover:text-slate-200 transition-all cursor-pointer group">
+        <div class="flex items-center gap-2.5 truncate">
+          <svg [lucideIcon]="IconUser" class="w-3.5 h-3.5 shrink-0"></svg>
+          <span class="truncate">{{ comanda.cliente.nome || 'Cliente sem nome' }}</span>
+        </div>
+        <span class="text-[10px] bg-slate-950 px-2 py-0.5 rounded-full font-semibold group-hover:bg-slate-900">
+          {{ comanda.carrinho.length }} itens
+        </span>
+      </button>
       }
     </div>
   </aside>
@@ -37,37 +35,37 @@
   <div class="lg:col-span-3 space-y-6">
 
     <!-- Painel superior de Abertura / Busca de Cliente -->
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+    <div
+      class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
       <div class="md:col-span-2 relative">
-        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Atender Cliente / Abrir Comanda</label>
+        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Atender Cliente /
+          Abrir Comanda</label>
         <div class="relative flex items-center w-full">
           <div class="absolute left-3 flex items-center pointer-events-none text-slate-500">
             <svg [lucideIcon]="IconUser" class="w-4 h-4"></svg>
           </div>
-          <input
-            type="text"
-            [(ngModel)]="termoBuscaCliente"
-            (input)="buscarClientesPorTermo()"
-            (blur)="verificarOuCadastrarCliente()"
-            placeholder="Digite o nome do cliente..."
-            class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500 transition-colors"
-          />
+          <input type="text" [(ngModel)]="termoBuscaCliente" (input)="buscarClientesPorTermo()"
+            (blur)="verificarOuCadastrarCliente()" placeholder="Digite o nome do cliente..."
+            class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500 transition-colors" />
         </div>
 
         <!-- Lista de Sugestões de Clientes Cadastrados -->
         @if (clientesEncontrados().length > 0) {
-          <div class="absolute z-50 w-full bg-slate-900 border border-slate-800 rounded-xl mt-1 shadow-2xl overflow-hidden text-xs max-h-40 overflow-y-auto">
-            @for (cli of clientesEncontrados(); track cli.id) {
-              <button (click)="abrirNovaComanda(cli)" class="w-full text-left px-4 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white border-b border-slate-800/40 last:border-0 transition-colors cursor-pointer">
-                {{ cli.nome }}
-              </button>
-            }
-          </div>
+        <div
+          class="absolute z-50 w-full bg-slate-900 border border-slate-800 rounded-xl mt-1 shadow-2xl overflow-hidden text-xs max-h-40 overflow-y-auto">
+          @for (cli of clientesEncontrados(); track cli.id) {
+          <button (click)="abrirNovaComanda(cli)"
+            class="w-full text-left px-4 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white border-b border-slate-800/40 last:border-0 transition-colors cursor-pointer">
+            {{ cli.nome }}
+          </button>
+          }
+        </div>
         }
       </div>
 
       <div>
-        <div class="text-xs text-slate-400 py-2.5 bg-slate-950/40 border border-slate-800 px-3 rounded-xl flex flex-col justify-center">
+        <div
+          class="text-xs text-slate-400 py-2.5 bg-slate-950/40 border border-slate-800 px-3 rounded-xl flex flex-col justify-center">
           <span class="text-[10px] text-slate-500 font-semibold uppercase">Comanda Aberta</span>
           <span class="text-white font-bold truncate mt-0.5">{{ clienteSelecionado().nome }}</span>
         </div>
@@ -75,50 +73,54 @@
     </div>
 
     <!-- Seção de Lançamento de Itens -->
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+    <div
+      class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
       <div class="md:col-span-2 relative">
-        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Lançar Produto</label>
+        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Lançar
+          Produto</label>
         <div class="relative flex items-center w-full">
           <div class="absolute left-3 flex items-center pointer-events-none text-slate-500">
             <svg [lucideIcon]="IconSearch" class="w-4 h-4"></svg>
           </div>
-          <input
-            type="text"
-            [(ngModel)]="termoBuscaProduto"
-            (input)="buscarProdutosPorTermo()"
+          <input type="text" [(ngModel)]="termoBuscaProduto" (input)="buscarProdutosPorTermo()"
             placeholder="Pesquisar por nome ou código..."
-            class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500 transition-colors"
-          />
+            class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500 transition-colors" />
         </div>
 
         <!-- Sugestões de Produtos -->
         @if (produtosEncontrados().length > 0) {
-          <div class="absolute z-50 w-full bg-slate-900 border border-slate-800 rounded-xl mt-1 shadow-2xl overflow-hidden text-xs">
-            @for (prod of produtosEncontrados(); track prod.id) {
-              <button (click)="selecionarProduto(prod)" class="w-full flex justify-between px-4 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white border-b border-slate-800/40 last:border-0 cursor-pointer">
-                <span>{{ prod.nome }}</span>
-                <span class="text-indigo-400 font-semibold">{{ prod.preco | currency:'BRL' }}</span>
-              </button>
-            }
-          </div>
+        <div
+          class="absolute z-50 w-full bg-slate-900 border border-slate-800 rounded-xl mt-1 shadow-2xl overflow-hidden text-xs">
+          @for (prod of produtosEncontrados(); track prod.id) {
+          <button (click)="selecionarProduto(prod)"
+            class="w-full flex justify-between px-4 py-2.5 text-slate-300 hover:bg-slate-800 hover:text-white border-b border-slate-800/40 last:border-0 cursor-pointer">
+            <span>{{ prod.nome }}</span>
+            <span class="text-indigo-400 font-semibold">{{ prod.preco | currency:'BRL' }}</span>
+          </button>
+          }
+        </div>
         }
       </div>
 
       <div>
         <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Quantidade</label>
-        <input type="number" [(ngModel)]="quantidadeInserir" min="1" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500" />
+        <input type="number" [(ngModel)]="quantidadeInserir" min="1"
+          class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500" />
       </div>
 
-      <button (click)="adicionarNoCarrinho()" class="w-full inline-flex items-center justify-center gap-2 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition cursor-pointer shadow-lg shadow-indigo-600/20 active:scale-95">
+      <button (click)="adicionarNoCarrinho()"
+        class="w-full inline-flex items-center justify-center gap-2 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition cursor-pointer shadow-lg shadow-indigo-600/20 active:scale-95">
         <svg [lucideIcon]="IconPlus" class="w-4 h-4"></svg> Adicionar
       </button>
     </div>
 
     <!-- Carrinho da Comanda Selecionada -->
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-sm overflow-hidden flex flex-col justify-between">
+    <div
+      class="bg-slate-900 border border-slate-800 rounded-2xl shadow-sm overflow-hidden flex flex-col justify-between">
       <table class="w-full text-left border-collapse">
         <thead>
-          <tr class="bg-slate-950/60 border-b border-slate-800 text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
+          <tr
+            class="bg-slate-950/60 border-b border-slate-800 text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
             <th class="py-3 px-4">Item</th>
             <th class="py-3 px-4 text-center">Qtd</th>
             <th class="py-3 px-4">Preço Unitário</th>
@@ -128,98 +130,119 @@
         </thead>
         <tbody class="divide-y divide-slate-800/60 text-xs text-slate-300">
           @for (item of carrinho(); track $index) {
-            <tr class="hover:bg-slate-800/30 transition-colors">
-              <td class="py-3 px-4 font-medium text-slate-200">{{ item.produto.nome }}</td>
+          <tr class="hover:bg-slate-800/30 transition-colors">
+            <td class="py-3 px-4 font-medium text-slate-200">{{ item.produto?.nome }}</td>
 
 
-              <!--<td class="py-3 px-4 text-center font-mono">{{ item.quantidade }}</td>-->
+            <!--<td class="py-3 px-4 text-center font-mono">{{ item.quantidade }}</td>-->
 
-              <!-- TD DE QUANTIDADE APENAS COM O BOTÃO DE DIMINUIR -->
-              <td class="py-3 px-4">
-                <div class="inline-flex items-center gap-2 bg-slate-950/60 border border-slate-800 rounded-xl px-2.5 py-1.5 overflow-hidden">
-                  <!-- Exibição da quantidade atual no carrinho -->
-                  <span class="text-slate-200 font-mono text-xs font-semibold select-none min-w-[16px] text-center">
-                    {{ item.quantidade }}
-                  </span>
+            <!-- TD DE QUANTIDADE APENAS COM O BOTÃO DE DIMINUIR -->
+            <td class="py-3 px-4">
+              <div
+                class="inline-flex items-center gap-2 bg-slate-950/60 border border-slate-800 rounded-xl px-2.5 py-1.5 overflow-hidden">
+                <!-- Exibição da quantidade atual no carrinho -->
+                <span class="text-slate-200 font-mono text-xs font-semibold select-none min-w-[16px] text-center">
+                  {{ item.quantidade }}
+                </span>
 
-                  <!-- Divisor sutil entre o número e a ação -->
-                  <div class="h-3 w-[1px] bg-slate-800"></div>
+                <!-- Divisor sutil entre o número e a ação -->
+                <div class="h-3 w-[1px] bg-slate-800"></div>
 
-                  <!-- Botão de diminuir (-1 unidade) -->
-                  <button
-                    type="button"
-                    (click)="ajustarQuantidadeItem($index)"
-                    class="text-slate-400 hover:text-red-400 font-bold text-xs select-none transition-colors cursor-pointer px-1"
-                    title="Diminuir 1 unidade"
-                  >
-                    -
-                  </button>
-                </div>
-              </td>
-
-              <td class="py-3 px-4">{{ item.precoUnitario | currency:'BRL' }}</td>
-              <td class="py-3 px-4 font-semibold text-white">{{ item.subTotal | currency:'BRL' }}</td>
-              <td class="py-3 px-4 text-right">
-                <button (click)="removerDoCarrinho($index)" class="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition cursor-pointer" title="Remover item">
-                  <svg [lucideIcon]="IconTrash" class="w-3.5 h-3.5"></svg>
+                <!-- Botão de diminuir (-1 unidade) -->
+                <button type="button" (click)="ajustarQuantidadeItem($index)"
+                  class="text-slate-400 hover:text-red-400 font-bold text-xs select-none transition-colors cursor-pointer px-1"
+                  title="Diminuir 1 unidade">
+                  -
                 </button>
-              </td>
-            </tr>
+              </div>
+            </td>
+
+            <td class="py-3 px-4">{{ item.precoUnitario | currency:'BRL' }}</td>
+            <td class="py-3 px-4 font-semibold text-white">{{ item.subTotal | currency:'BRL' }}</td>
+            <td class="py-3 px-4 text-right">
+              <button (click)="removerDoCarrinho($index)"
+                class="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition cursor-pointer"
+                title="Remover item">
+                <svg [lucideIcon]="IconTrash" class="w-3.5 h-3.5"></svg>
+              </button>
+            </td>
+          </tr>
           } @empty {
-            <tr>
-              <td colspan="5" class="py-12 text-center text-slate-500">Nenhum item adicionado à comanda de {{ clienteSelecionado().nome }} ainda.</td>
-            </tr>
+          <tr>
+            <td colspan="5" class="py-12 text-center text-slate-500">Nenhum item adicionado à comanda de {{
+              clienteSelecionado().nome }} ainda.</td>
+          </tr>
           }
         </tbody>
       </table>
 
-      <!-- Barra de Fechamento do Pedido -->
-      <div class="bg-slate-950/40 p-4 border-t border-slate-800 flex items-center justify-between">
-        <div class="flex flex-col">
-          <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Total do Atendimento</span>
-          <span class="text-xl font-bold text-emerald-400">{{ valorTotalCarrinho() | currency:'BRL' }}</span>
+      <!-- Rodapé com Totalizadores e Conclusão (Design Consolidado e Limpo) -->
+      <div class="bg-slate-950/60 p-4 border-t border-slate-800 space-y-4">
+        <div class="flex justify-between items-center">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Acumulado</span>
+          <span class="text-xl font-bold text-emerald-400 font-mono">{{ valorTotalCarrinho() | currency: 'BRL' }}</span>
         </div>
-        <button
-          (click)="abrirModalFinalizacao()"
-          [disabled]="carrinho().length === 0"
-          class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl transition shadow-lg shadow-emerald-600/20 active:scale-95 cursor-pointer"
-        >
-          Finalizar e Fechar Comanda
-        </button>
+
+        <div class="flex flex-col gap-2.5">
+          <!-- BOTÃO ÚNICO DE LANÇAMENTO: Muda de cor e texto dinamicamente baseado no estado da comanda -->
+          <button
+            type="button"
+            (click)="finalizarVenda()"
+            [disabled]="carrinho().length === 0"
+            class="w-full inline-flex items-center justify-center py-2.5 font-semibold text-white text-xs rounded-xl shadow-lg border transition cursor-pointer disabled:cursor-not-allowed text-center uppercase tracking-wider active:scale-95 disabled:opacity-40"
+            [ngClass]="{
+              'bg-emerald-600 hover:bg-emerald-500 border-emerald-500/20 shadow-emerald-600/10': idComandaAberta() === null,
+              'bg-indigo-600 hover:bg-indigo-500 border-indigo-500/20 shadow-indigo-600/10': idComandaAberta() !== null
+            }"
+          >
+            {{ idComandaAberta() !== null ? 'Lançar na Comanda' : 'Finalizar Cupom' }}
+          </button>
+
+          <!-- BOTÃO AUXILIAR: Aparece em vermelho APENAS se a comanda já existir no banco e o cliente quiser fechar a conta e ir embora -->
+          @if (idComandaAberta() !== null) {
+            <button
+              type="button"
+              (click)="fecharComandaAtiva()"
+              class="w-full inline-flex items-center justify-center py-2 bg-red-600/10 hover:bg-red-600 border border-red-500/20 text-red-400 hover:text-white text-xs font-semibold rounded-xl transition cursor-pointer text-center uppercase tracking-wider active:scale-95"
+            >
+              Fechar Conta (Receber Pagamento)
+            </button>
+          }
+        </div>
       </div>
     </div>
 
   </div>
 </div>
 @if (exibirModalFechamento()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4">
-    <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-5 text-center">
-      <div class="w-12 h-12 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto">
-        <svg [lucideIcon]="IconMoney" class = 'w-6 h-6'></svg>
-      </div>
-      <div>
-        <h3 class="text-base font-bold text-white">Fechar Atendimento</h3>
-        <p class="text-xs text-slate-400 mt-1">
-          Escolha o destino financeiro para a conta de <span class="text-white font-semibold">{{ clienteSelecionado().nome }}</span> no valor de <span class="text-emerald-400 font-bold">{{ valorTotalCarrinho() | currency:'BRL' }}</span>
-        </p>
-      </div>
-      <div class="grid grid-cols-1 gap-2 pt-2">
-        <button type="button"
-          class="w-full px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition shadow-md shadow-emerald-600/20 cursor-pointer"
-        >
-          Pagar Agora (Dinheiro/Cartão/Pix)
-        </button>
-        <button type="button" (click)="confirmarFechamento('PENDENTE')"
-          class="w-full px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 transition shadow-md shadow-amber-600/20 cursor-pointer"
-        >
-          Pendurar Conta (Fiado / Pagar depois)
-        </button>
-        <button type="button" (click)="exibirModalFechamento.set(false)"
-          class="w-full px-4 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 bg-slate-800 hover:bg-slate-700 transition cursor-pointer"
-        >
-          Voltar ao carrinho
-        </button>
-      </div>
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4">
+  <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-5 text-center">
+    <div
+      class="w-12 h-12 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto">
+      <svg [lucideIcon]="IconMoney" class='w-6 h-6'></svg>
+    </div>
+    <div>
+      <h3 class="text-base font-bold text-white">Fechar Atendimento</h3>
+      <p class="text-xs text-slate-400 mt-1">
+        Escolha o destino financeiro para a conta de <span class="text-white font-semibold">{{ clienteSelecionado().nome
+          }}</span> no valor de <span class="text-emerald-400 font-bold">{{ valorTotalCarrinho() | currency:'BRL'
+          }}</span>
+      </p>
+    </div>
+    <div class="grid grid-cols-1 gap-2 pt-2">
+      <button type="button" (click)="confirmarFechamento('PAGO')"
+        class="w-full px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition shadow-md shadow-emerald-600/20 cursor-pointer">
+        Pagar Agora (Dinheiro/Cartão/Pix)
+      </button>
+      <button type="button" (click)="confirmarFechamento('PENDENTE')"
+        class="w-full px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 transition shadow-md shadow-amber-600/20 cursor-pointer">
+        Pendurar Conta (Fiado / Pagar depois)
+      </button>
+      <button type="button" (click)="exibirModalFechamento.set(false)"
+        class="w-full px-4 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 bg-slate-800 hover:bg-slate-700 transition cursor-pointer">
+        Voltar ao carrinho
+      </button>
     </div>
   </div>
+</div>
 }

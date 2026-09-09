@@ -275,6 +275,12 @@ export class NovaVenda implements OnInit {
   }
 
   selecionarProduto(produto: Produto): void {
+    if (produto.quantidade <= 0) {
+      this.toast.erro(`O produto "${produto.nome}" está esgotado no estoque!`);
+      this.termoBuscaProduto = ''
+      this.produtosEncontrados.set([]);
+      return;
+    }
     this.produtoSelecionado = produto;
     this.termoBuscaProduto = produto.nome;
     this.produtosEncontrados.set([]);
@@ -365,53 +371,6 @@ export class NovaVenda implements OnInit {
       error: (err) => {
         console.error('Erro ao remover item:', err);
         this.toast.erro('Falha ao remover o item do banco.');
-      }
-    });
-  }
-
-
-  finalizarVenda(): void {
-    if (this.carrinho().length === 0) {
-      this.toast.erro('O carrinho está vazio.');
-      return;
-    }
-
-    // 1. Filtra garantindo que só fiquem itens com produtos e IDs válidos
-    const itensValidos = this.carrinho().filter(item => item && item.produto && item.produto.id);
-
-    if (itensValidos.length === 0) {
-      this.toast.erro('Inconsistência nos produtos do carrinho. Tente reinserir os itens.');
-      return;
-    }
-
-    // 2. Mapeia os dados usando o operador '!' para garantir ao compilador que o produto existe
-    const itensRequest: ItemVendaRequest[] = itensValidos.map(item => ({
-      produtoId: item.produto!.id, // Adicionado '!' para resolver o erro de compilação
-      quantidade: item.quantidade,
-      precoUnitario: item.precoUnitario
-    }));
-
-    const idClienteFinal = (this.clienteSelecionado() && this.clienteSelecionado().id)
-      ? Number(this.clienteSelecionado().id)
-      : 1;
-
-    const payload = {
-      clienteId: idClienteFinal,
-      itens: itensRequest
-    };
-
-    this.vendaService.realizarVenda(payload).subscribe({
-      next: () => {
-        this.toast.sucesso('Venda processada com sucesso!');
-        this.carrinho.set([]);
-        this.clienteSelecionado.set({ id: 1, nome: 'Cliente Padrão' });
-        this.termoBuscaCliente = '';
-        this.idComandaAberta.set(null);
-        this.clientesEncontrados.set([]);
-      },
-      error: (err) => {
-        console.error('Erro ao finalizar venda:', err);
-        this.toast.erro('Falha ao concluir a venda.');
       }
     });
   }

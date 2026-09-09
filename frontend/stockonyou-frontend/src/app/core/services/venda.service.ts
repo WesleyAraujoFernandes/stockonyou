@@ -13,6 +13,7 @@ export class VendaService {
 
   listarComFiltros(
     clienteNome?: string,
+    status?: string,
     dataInicio?: string,
     dataFim?: string,
     page: number = 0,
@@ -22,11 +23,41 @@ export class VendaService {
       .set('page', page.toString())
       .set('size', size.toString())
       .set('sort', 'id,desc')
-    if (clienteNome) params = params.set('clienteNome', clienteNome);
-    if (dataInicio) params = params.set('dataInicio', dataInicio);
-    if (dataFim) params = params.set('dataFim', dataFim);
+    if (clienteNome && clienteNome.trim()) {
+      params = params.set('clienteNome', clienteNome.trim());
+    }
+    if (status && status.trim()) {
+      params = params.set('status', status.trim());
+    }
+    if (dataInicio && dataInicio.trim()) {
+      params = params.set('dataInicio', dataInicio.trim())
+    }
+    if (dataFim && dataFim.trim()) {
+      params = params.set('dataFim', dataFim.trim())
+    }
+    return this.http.get<PageResponse<VendaResponse>>(this.apiUrl, { params });
+  }
+
+  /*
+  listarVendasHistorico(
+    clienteNome?: string,
+    status?: string,
+    page: number = 0,
+    size: number = 10
+  ): Observable<PageResponse<VendaResponse>> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sort', 'id,desc');
+    if (clienteNome && clienteNome.trim()) {
+      params = params.set('clienteNome', clienteNome.trim())
+    }
+    if (status && status.trim()) {
+      params = params.set('status', status.trim());
+    }
     return this.http.get<PageResponse<VendaResponse>>(this.apiUrl, { params })
   }
+  */
 
   buscarPorId(id: number): Observable<VendaResponse> {
     return this.http.get<VendaResponse>(`${this.apiUrl}/${id}`);

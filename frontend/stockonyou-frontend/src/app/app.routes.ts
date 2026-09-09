@@ -38,13 +38,10 @@ export const routes: Routes = [
         path: 'vendas/pdv',
         loadComponent: () => import('./pages/nova-venda/nova-venda').then((m) => m.NovaVenda),
       },
-      /*
-        COMENTADO TEMPORARIAMENTE (Para não quebrar o ng serve até criarmos o arquivo)
-        {
-          path: 'vendas/historico',
-          loadComponent: () => import('./pages/historico-venda/historico-venda').then((m) => m.HistoricoVendas),
-        }
-      */
+      {
+        path: 'vendas/historico',
+        loadComponent: () => import('./pages/historico-venda/historico-venda').then((m) => m.HistoricoVenda),
+      }
     ],
   },
 

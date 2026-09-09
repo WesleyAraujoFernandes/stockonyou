@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import br.com.knowledge.stockonyou.api.model.StatusVenda;
 import br.com.knowledge.stockonyou.api.model.Venda;
 
 public record VendaResponseDTO(
@@ -12,6 +13,7 @@ public record VendaResponseDTO(
     String clienteNome,
     BigDecimal valorTotal,
     String usuarioNome,
+    StatusVenda status,
     List<ItemVendaResponseDTO> itens
 ) {
     public static VendaResponseDTO fromEntity(Venda venda) {
@@ -21,6 +23,7 @@ public record VendaResponseDTO(
             venda.getClienteNome(),
             venda.getValorTotal(),
             venda.getUsuarioNome(),
+            venda.getStatus(),
             venda.getItens().stream().map(ItemVendaResponseDTO::fromEntity).toList()
         );
     }

@@ -4,6 +4,10 @@ import br.com.knowledge.stockonyou.api.repository.VendaRepository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.knowledge.stockonyou.api.dto.ItemVendaRequestDTO;
@@ -29,6 +34,17 @@ import lombok.RequiredArgsConstructor;
 public class VendaController {
     private final VendaRepository vendaRepository;
     private final VendaService vendaService;
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<Page<VendaResponseDTO>> listarComFiltros(
+        @RequestParam(required = false) String clienteNome, 
+        @RequestParam(required = false) StatusVenda status, 
+        @RequestParam(required = false) String dataInicio, 
+        @RequestParam(required = false) String dataFim, 
+        @PageableDefault(page =0, size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(vendaService.listarComFiltros(clienteNome, status, dataInicio, dataFim, pageable));
+    }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")

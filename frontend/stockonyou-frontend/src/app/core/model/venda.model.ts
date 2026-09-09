@@ -23,6 +23,7 @@ export interface VendaResponse {
   dataVenda: string;
   clienteNome?: string;
   valorTotal: number;
+  status: 'PAGO' | 'PENDENTE';
   itens: ItemVendaResponse[];
   usuarioNome?: string;
 }

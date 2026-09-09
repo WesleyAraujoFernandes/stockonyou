@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -25,6 +28,7 @@ import br.com.knowledge.stockonyou.api.model.Venda;
 import br.com.knowledge.stockonyou.api.repository.ClienteRepository;
 import br.com.knowledge.stockonyou.api.repository.ProdutoRepository;
 import br.com.knowledge.stockonyou.api.repository.VendaRepository;
+import br.com.knowledge.stockonyou.api.specification.VendaSpecification;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -191,4 +195,16 @@ public class VendaService {
         venda.setStatus(novoStatus);
         return VendaResponseDTO.fromEntity(vendaRepository.save(venda));
     }
+
+    @Transactional
+    public Page<VendaResponseDTO> listarComFiltros(
+        String clienteNome,
+        StatusVenda status,
+        String dataInicio,
+        String dataFim,
+        Pageable pageable) {
+            Specification<Venda> spec = VendaSpecification.comFiltros(clienteNome, status, dataInicio, dataFim);
+            return vendaRepository.findAll(spec, pageable)
+                .map(VendaResponseDTO::fromEntity); 
+        }
 }

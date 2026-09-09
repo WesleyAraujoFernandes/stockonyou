@@ -1,0 +1,166 @@
+<div class="space-y-6">
+  <div class="border-b border-slate-800 pb-5">
+    <h1 class="text-2xl font-bold tracking-tight text-white">Histórico de Vendas</h1>
+    <p class="text-xs text-slate-400 mt-1">Consulte faturamento, audite cupons e gerencie contas fiadas.</p>
+  </div>
+
+  <!-- Barra de filtros -->
+  <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl grid grid-cols-1 md:grid-cols-3 gap-4 shadow-sm">
+    <div>
+      <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Buscar
+        Cliente</label>
+      <div class="relative flex items-center w-full">
+        <div class="absolute left-3 flex items-center pointer-events-none text-slate-500">
+          <svg [lucideIcon]="IconUser" class="w-4 h-4"></svg>
+        </div>
+        <input type="text" [(ngModel)]="filtroCliente" (input)="aplicarFiltros()" placeholder="Nome do cliente..."
+          class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs foucus:outline-none focus:border-indigo-500 transition-colors">
+      </div>
+    </div>
+    <div>
+      <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Status do
+        Recebimento</label>
+      <select [(ngModel)]="filtroStatus" (change)="aplicarFiltros()"
+        class="w-full px-3 p-y2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500"
+        transition-colors cursor-pointer>
+        <option value="">Todos os status</option>
+        <option value="PAGO">Pago (Finalizado)</option>
+        <option value="PENDENTE">Pendente (Conta Pendurada)</option>
+      </select>
+    </div>
+    <div class="flex items-end">
+      <button (click)="limparFiltros()"
+        class="w-full inline-flex items-center justify-center gap-2 py-2 bg-slate-800 hover:bg-slate-700/80 border border-slate-700/50 text-slate-300 text-xs font-medium rounded-xl transition cursor-pointer">
+        Limpar Filtros
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabela de histórico -->
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr
+            class="bg-slate-950/60 border-b border-slate-800 text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
+            <th class="py-3.5 px-4">ID Venda</th>
+            <th class="py-3.5 px-4">Data/Hora</th>
+            <th class="py-3.5 px-4">Cliente</th>
+            <th class="py-3.5 px-4">Operador</th>
+            <th class="py-3.5 px-4">Status</th>
+            <th class="py-3.5 px-4">Valor Total</th>
+            <th class="py-3.5 px-4 text-right">Detalhes</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/60 text-xs text-slate-300">
+          @for (venda of vendas(); track venda.id) {
+          <tr class="hover:bg-slate-800/40 trasition-colors">
+            <td class="py-3.5 px-4 font-mono text-indigo-400 font-semibold"># {{ venda.id }}</td>
+            <td class="py-3.5 px-4">{{ venda.dataVenda | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td class="py-3.5 px-4">{{ venda.clienteNome || 'Cliente Padrão' }}</td>
+            <td class="py-3.5 px-4">{{ venda.usuarioNome || 'Sistema' }}</td>
+            <td class="py-3.5 px-4">
+              <span [ngClass]="{
+                    'bg-emerald-500/10 text-emerald-400 border-emerald-500/20': venda.status === 'PAGO',
+                    'bg-amber-500/10 text-amber-400 border-amber-500/20': venda.status === 'PENDENTE',
+                  }" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold border">
+                {{ venda.status === 'PAGO' ? 'Pago' : 'Pendurou Conta' }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 font-bold text-white">{{ venda.valorTotal | currency:'BRL' }}</td>
+            <td class="py-3.5 px-4 text-right">
+              <button (click)="abrirDetalhes(venda)"
+                class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition cursor-pointer">
+                <svg [lucideIcon]="IconEye" class="w-4 h-4"></svg>
+              </button>
+            </td>
+          </tr>
+          } @empty {
+          <tr>
+            <td colspan="7" class="py-12 text-center text-slate-500">
+              Nenhuma venda encontrada no histórico.
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (totalPaginas() > 1) {
+    <div
+      class="bg-slate-950/40 px-4 py-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+      <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-5">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+          <h2 class="text-base font-bold text-white">Detalhamento do Cupom # {{ vendaDetalhada()?.id }}</h2>
+          <button (click)="exibirModalDetalhes.set(false)"
+            class="text-slate-400 hover:text-slate-200 transition cursor-pointer">Fechar</button>
+        </div>
+        <div
+          class="grid grid-cols-2 gap-3 text-xs bg-slate-950/40 p-3 border border-slate-800/60 rounded-xl text-slate-300">
+          <div>
+            <span class="text-slate-500 font-medium">Cliente:</span>
+            {{ vendaDetalhada()?.clienteNome || 'Cliente Padrão' }}
+          </div>
+          <div>
+            <span class="text-slate-500 font-medium">Data:</span>
+            {{ vendaDetalhada()?.dataVenda | date:'dd/MM/yyyy HH:mm' }}
+          </div>
+          <div>
+            <span class="text-slate-500 font-medium">Atendente:</span>
+            {{ vendaDetalhada()?.usuarioNome || 'Sistema' }}
+          </div>
+          <div>
+            <span class="text-slate-500 font-medium">
+              Situação:
+            </span>
+            <span class="'font-semibold ml-1"
+              [ngClass]="vendaDetalhada()?.status === 'PAGO' ? 'text-emerald-400' : 'text-amber-400'">
+              {{ vendaDetalhada()?.status === 'PAGO' ? 'Pago' : 'Pendente (Fiado)' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Lista de itens do cupom -->
+        <div class="border border-slate-800 rounded-xl overflow-hidden text-xs">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-slate-940/40 border-b border-slate-800 text-slate-400 font-semibold">
+              <tr>
+                <th class="p-2.5">Produto</th>
+                <th class="p-2.5">Qtd</th>
+                <th class="p-2.5">Preço Un.</th>
+                <th class="p-2.5">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/40 text-slate-300">
+              @for (item of vendaDetalhada()?.itens; track item.id) {
+                <tr>
+                  <td class="p-2.5 font-medium text-slate-200">{{ item.produto?.nome || 'Produto' }}</td>
+                  <td class="p-2.5 text-center font-mono">{{ item.quantidade }}</td>
+                  <td class="p-2.5">{{ item.precoUnitario | currency:'BRL' }}</td>
+                  <td class="p-2.5 font-medium text-white">{{ item.subtotal | currency:'BRL' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="flex items-center justify-between border-t border-slate-800 pt-4">
+          <div class="flex flex-col">
+            <span class="text-[10px] text-slate-500 uppercase font-bold">Total do Cupom</span>
+            <span>{{ vendaDetalhada()?.valorTotal | currency:'BRL' }}</span>
+          </div>
+          <div class="flex gap-2">
+            @if (vendaDetalhada()?.status === 'PENDENTE') {
+              <button (click)="quitarContaPendurada(vendaDetalhada()!.id)" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl transition shadow-lg shadow-emerald-600/20 cursor-pointer">
+                Dar Baixa e Quitar Conta
+              </button>
+            }
+            <button (click)="exibirModalDetalhes.set(false)" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-xs rounded-xl transition cursor-pointer">
+              Fechar Janela
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+</div>

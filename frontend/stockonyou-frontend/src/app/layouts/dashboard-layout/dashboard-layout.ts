@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { Header } from '../../components/header/header';
 // IMPORTAÇÃO CORRETA: LucideDynamicIcon gerencia os binds [lucideIcon] dinâmicos
-import { LucideDynamicIcon, LucideMenu, LucideTags, LucideBox, LucideShoppingCart } from '@lucide/angular';
+import { LucideDynamicIcon, LucideMenu, LucideTags, LucideBox, LucideShoppingCart, LucideGalleryHorizontalEnd } from '@lucide/angular';
 import { Toast } from "../../components/toast/toast";
 
 interface MenuItem {
@@ -49,6 +49,11 @@ export class DashboardLayout {
       label: 'Nova Venda',
       route: '/vendas/pdv', // Deve bater exatamente com o path do app.routes.ts
       icon: LucideShoppingCart // ou o seu ícone correspondente
+    },
+    {
+      label: 'Histórico de Vendas',
+      route: '/vendas/historico',
+      icon: LucideGalleryHorizontalEnd
     }
   ];
 

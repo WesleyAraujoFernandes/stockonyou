@@ -200,8 +200,15 @@ export class NovaVenda implements OnInit {
   abrirNovaComanda(cliente: Cliente): void {
     const jaExiste = this.comandasAtivas().some(c => c.cliente.id === cliente.id);
     if (jaExiste && cliente.id !== 1) {
-      this.toast.erro(`A comanda para ${cliente.nome} já está aberta.`);
-      this.alternarParaComanda(cliente);
+      const desejaCarregar = confirm(`A comanda para ${cliente.nome} já está aberta. Deseja carregar o atendimento existente dela?`);
+      if (desejaCarregar) {
+        this.alternarParaComanda(cliente);
+        this.termoBuscaCliente = '';
+      } else {
+        alert(`Para abrir um novo atendimento separado, adicione um sobrenome ou identificador ao nome do cliente (Ex: ${cliente.nome} Silva, ou ${cliente.nome} Mesa 2).`)
+        this.termoBuscaCliente = `${cliente.nome}`;
+      }
+      this.clientesEncontrados.set([]);
       return;
     }
 

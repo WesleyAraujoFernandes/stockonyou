@@ -1,6 +1,7 @@
 package br.com.knowledge.stockonyou.api.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,10 +34,18 @@ public class ClienteController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')") // TODO: implementar regra de acesso
-    public ResponseEntity<ClienteDTO> cadastrarRapido(@RequestBody ClienteDTO dto) {
-        Cliente cliente = Cliente.builder().nome(dto.nome()).email(dto.email()).telefone(dto.telefone()).build();
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<?> cadastrarRapido(@RequestBody ClienteDTO dto) {
+        if (clienteRepository.existsByNomeIgnoreCase(dto.nome().trim())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Já existe um cliente cadastrado com o nome: " + dto.nome()));
+        }
+        Cliente cliente = Cliente.builder()
+            .nome(dto.nome().trim())
+            .email(dto.email())
+            .telefone(dto.telefone())
+            .build();
         Cliente salvo = clienteRepository.save(cliente);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ClienteDTO(salvo.getId(), salvo.getNome(), salvo.getEmail(), salvo.getTelefone()));
+        ClienteDTO response = new ClienteDTO(salvo.getId(), salvo.getNome(), salvo.getEmail(), salvo.getTelefone());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

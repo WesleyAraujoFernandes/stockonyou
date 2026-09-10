@@ -8,4 +8,6 @@ import br.com.knowledge.stockonyou.api.model.Cliente;
 
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     List<Cliente> findByNomeContainingIgnoreCase(String nome);
+
+    boolean existsByNomeIgnoreCase(String nome);
 }

@@ -206,7 +206,7 @@ export class NovaVenda implements OnInit {
         this.termoBuscaCliente = '';
       } else {
         alert(`Para abrir um novo atendimento separado, adicione um sobrenome ou identificador ao nome do cliente (Ex: ${cliente.nome} Silva, ou ${cliente.nome} Mesa 2).`)
-        this.termoBuscaCliente = `${cliente.nome}`;
+        this.termoBuscaCliente = `${cliente.nome} `;
       }
       this.clientesEncontrados.set([]);
       return;

@@ -97,6 +97,12 @@ public class VendaService {
 
         Long idBusca = (dto.clienteId() != null) ? dto.clienteId() : 1L;
         Cliente cliente;
+
+        boolean jaTemComanda = vendaRepository.existsByClienteIdAndStatus(dto.clienteId(), StatusVenda.ABERTA);
+        if (jaTemComanda) {
+            throw new BusinessException("Este cliente já possui uma comanda aberta no sistema.");
+        }
+
         if (dto.clienteId() == null || dto.clienteId().equals(1L)) {
             cliente = clienteRepository.findByNomeContainingIgnoreCase("Cliente Padrão")
                     .stream().findFirst()

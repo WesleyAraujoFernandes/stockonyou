@@ -14,8 +14,10 @@ import {
   LucideUser,
   LucideChevronLeft,
   LucideChevronRight,
-  LucideEye
+  LucideEye,
+  LucideAlertTriangle
 } from '@lucide/angular';
+import { KeycloakService } from '../../core/auth/keycloak.service';
 
 @Component({
   selector: 'app-historico-venda',
@@ -26,6 +28,7 @@ import {
 export class HistoricoVenda implements OnInit {
   private readonly vendaService = inject(VendaService);
   private readonly toast = inject(ToastService);
+  private readonly keycloakService = inject(KeycloakService);
 
   readonly IconSearch = LucideSearch;
   readonly IconCalendar = LucideCalendar;
@@ -36,6 +39,10 @@ export class HistoricoVenda implements OnInit {
   readonly IconLeft = LucideChevronLeft;
   readonly IconRight = LucideChevronRight;
   readonly IconEye = LucideEye;
+  readonly IconAlert = LucideAlertTriangle;
+
+  profile = this.keycloakService.getUserProfile();
+  name = this.keycloakService.getUserDisplayName();
 
   vendas = signal<VendaResponse[]>([]);
   vendaDetalhada = signal<VendaResponse | null>(null);
@@ -48,6 +55,18 @@ export class HistoricoVenda implements OnInit {
   totalPaginas = signal<number>(0);
   totalElementos = signal<number>(0);
   itensPorPagina = 10;
+
+  totalFaturado = computed(() => {
+    return this.vendas()
+      .filter(v => (v as any).status === 'PAGO' || (v as any).status === 'FINALIZADA')
+      .reduce((acc, v) => acc + v.valorTotal, 0);
+  })
+
+  totalPendente = computed(() => {
+    return this.vendas()
+      .filter(v => (v as any).status === 'PENDENTE')
+      .reduce((acc, v) => acc + v.valorTotal, 0);
+  })
 
   ngOnInit(): void {
     this.carregarHistorico();

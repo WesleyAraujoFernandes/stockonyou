@@ -37,7 +37,7 @@ public class VendaService {
     private final VendaRepository vendaRepository;
     private final ProdutoRepository produtoRepository;
     private final ClienteRepository clienteRepository;
-    private String username = "Sistema";
+    //private String username = "Sistema";
 
     @Transactional(readOnly = true)
     public List<VendaResponseDTO> listarComandasAbertas() {
@@ -48,6 +48,8 @@ public class VendaService {
 
     @Transactional
     public VendaResponseDTO atualizarComandaAberta(Long clienteId, ItemVendaRequestDTO itemDto) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String username = ((Jwt) principal).getClaimAsString("preferred_username");
         Venda venda = vendaRepository.findByClienteIdAndStatus(clienteId, StatusVenda.ABERTA)
                 .orElseGet(() -> {
                     Cliente cliente = clienteRepository.findById(clienteId)
@@ -55,6 +57,8 @@ public class VendaService {
                                     "Cliente não encontrado com o ID:" + clienteId));
                     return Venda.builder()
                             .cliente(cliente)
+                            .clienteNome(cliente.getNome())
+                            .usuarioNome(username)
                             .status(StatusVenda.ABERTA)
                             .dataVenda(LocalDateTime.now())
                             .itens(new ArrayList<>())
@@ -210,7 +214,8 @@ public class VendaService {
         String dataFim,
         Pageable pageable) {
             Specification<Venda> spec = VendaSpecification.comFiltros(clienteNome, status, dataInicio, dataFim);
-            return vendaRepository.findAll(spec, pageable)
-                .map(VendaResponseDTO::fromEntity); 
+            Page<VendaResponseDTO> vendas = vendaRepository.findAll(spec, pageable)
+                .map(VendaResponseDTO::fromEntity);
+            return vendas;
         }
 }

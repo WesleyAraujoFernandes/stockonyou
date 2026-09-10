@@ -22,8 +22,9 @@ export interface VendaResponse {
   id: number;
   dataVenda: string;
   clienteNome?: string;
+  clienteId: number,
   valorTotal: number;
-  status: 'PAGO' | 'PENDENTE';
+  status: 'PAGO' | 'PENDENTE' | 'ABERTA';
   itens: ItemVendaResponse[];
   usuarioNome?: string;
 }

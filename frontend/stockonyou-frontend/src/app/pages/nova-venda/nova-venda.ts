@@ -19,6 +19,7 @@ import {
   LucideDollarSign,
   LucideUserPlus
 } from '@lucide/angular';
+import { KeycloakService } from '../../core/auth/keycloak.service';
 
 interface ItemCarrinho {
   produto?: Produto;
@@ -30,6 +31,7 @@ interface ItemCarrinho {
 interface ComandaAtiva {
   vendaId?: number;
   cliente: Cliente;
+  usuario: string;
   carrinho: ItemCarrinho[];
 }
 
@@ -44,6 +46,9 @@ export class NovaVenda implements OnInit {
   private readonly vendaService = inject(VendaService);
   private readonly produtoService = inject(ProdutoService);
   private readonly toast = inject(ToastService);
+  private readonly keycloakService = inject(KeycloakService);
+  private readonly usuarioLogado = this.keycloakService.getUserDisplayName()
+
 
   readonly IconCart = LucideShoppingCart;
   readonly IconPlus = LucidePlus;
@@ -104,6 +109,7 @@ export class NovaVenda implements OnInit {
             return {
               vendaId: venda.id,
               cliente: clienteValido, // Sempre garante um objeto Cliente preenchido
+              usuario: this.usuarioLogado,
               carrinho: (venda.itens || []).map((item: any) => ({
                 produto: item.produto || { id: item.produtoId, nome: item.produtoNome, preco: item.precoUnitario },
                 quantidade: item.quantidade,
@@ -121,7 +127,10 @@ export class NovaVenda implements OnInit {
           this.vendaIdAtual = primeira.vendaId;
 
         } else {
-          this.comandasAtivas.set([{ cliente: { id: 1, nome: 'Cliente Padrão' }, carrinho: [] }]);
+          this.comandasAtivas.set([{
+            cliente: { id: 1, nome: 'Cliente Padrão' },
+            usuario: this.usuarioLogado,
+            carrinho: [] }]);
           this.clienteSelecionado.set({ id: 1, nome: 'Cliente Padrão' });
           this.carrinho.set([]);
           this.vendaIdAtual = undefined;
@@ -212,7 +221,7 @@ export class NovaVenda implements OnInit {
       return;
     }
 
-    const nova: ComandaAtiva = { cliente, carrinho: [] };
+    const nova: ComandaAtiva = { cliente, usuario: this.usuarioLogado , carrinho: [] };
     this.comandasAtivas.update(lista => [...lista, nova]);
     this.clienteSelecionado.set(cliente);
     this.carrinho.set([]);
@@ -295,7 +304,7 @@ export class NovaVenda implements OnInit {
 
   adicionarNoCarrinho(): void {
     if (!this.produtoSelecionado) return;
-
+    console.log('adicionarNoCarrinho -> usuarioLogado:',this.usuarioLogado);
     // CASO 1: SE FOR CLIENTE PADRÃO (ID 1) -> Gerencia apenas em memória local
     if (this.clienteSelecionado().id === 1) {
       const itensAtuais = [...this.carrinho()];
@@ -517,15 +526,16 @@ export class NovaVenda implements OnInit {
   }
 
   // Método auxiliar para isolar a limpeza das listas após salvar
-  private limparEstadoPdvAposFechamento(idCliente: number): void {
+  limparEstadoPdvAposFechamento(idCliente: number): void {
     this.carrinho.set([]);
     this.exibirModalFechamento.set(true); // Oculta o modal
     this.exibirModalFechamento.set(false);
+    const usuario = this.usuarioLogado;
 
     this.comandasAtivas.update(lista => lista.filter(c => c.cliente.id !== idCliente));
 
     if (this.comandasAtivas().length === 0) {
-      this.comandasAtivas.set([{ cliente: { id: 1, nome: 'Cliente Padrão' }, carrinho: [] }]);
+      this.comandasAtivas.set([{ cliente: { id: 1, nome: 'Cliente Padrão' }, usuario, carrinho: [] }]);
     }
 
     this.clienteSelecionado.set(this.comandasAtivas()[0].cliente);

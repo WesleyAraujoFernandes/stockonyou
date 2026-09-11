@@ -22,6 +22,16 @@ public class ClienteService {
         return repository.findAll(pageable).map(ClienteResponseDTO::fromEntity);
     }
 
+    @Transactional
+    public ClienteResponseDTO criar(ClienteRequestDTO dto) {
+        Cliente cliente = Cliente.builder()
+            .nome(dto.nome())
+            .email(dto.email())
+            .telefone(dto.telefone())
+            .build();
+        return ClienteResponseDTO.fromEntity(repository.save(cliente));
+    }
+
     @Transactional 
     public ClienteResponseDTO atualizar(Long id, ClienteRequestDTO dto) {
         Cliente cliente = repository.findById(id)
@@ -38,6 +48,5 @@ public class ClienteService {
             throw new ResourceNotFoundException("Cliente não encontrado com o ID:"+id);
         }
         repository.deleteById(id);
-
     }
 }

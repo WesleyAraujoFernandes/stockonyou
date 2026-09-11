@@ -3,6 +3,7 @@ package br.com.knowledge.stockonyou.api.model;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -26,6 +27,8 @@ public class UnidadeFederativa {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false, length = 2, unique = true)
     private String sigla;
+    @Column(nullable = false, length = 255)
     private String nome;
 }

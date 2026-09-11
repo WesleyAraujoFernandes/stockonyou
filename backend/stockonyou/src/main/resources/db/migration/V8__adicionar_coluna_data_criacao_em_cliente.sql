@@ -1,1 +1,1 @@
-alter table clientes add column data_criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+alter table clientes add column data_criacao TIMESTAMP NOT NULL DEFAULT NOW();

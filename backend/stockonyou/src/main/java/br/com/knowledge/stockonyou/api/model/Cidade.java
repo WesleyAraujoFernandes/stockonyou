@@ -26,9 +26,9 @@ public class Cidade {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false)
+    @Column(nullable = false, length = 120)
     private String nome;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "uf_id")
-    private UnidadeFederativa ufId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "uf_id", nullable = false)
+    private UnidadeFederativa uf;
 }

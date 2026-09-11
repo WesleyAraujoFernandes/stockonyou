@@ -6,7 +6,7 @@ public record CidadeResponseDTO(
     Long id,
     String nome
 ) {
-    public static CidadeResponseDTO fromEntity(Cidade cidade) {
+    public static CidadeResponseDTO fromEntity(Cidade cidade) { 
         return new CidadeResponseDTO(cidade.getId(), cidade.getNome());
     }
 }

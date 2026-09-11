@@ -1,0 +1,1 @@
+alter table clientes alter column data_atualizacao set not null;

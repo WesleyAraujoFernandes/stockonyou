@@ -8,7 +8,7 @@ public record CidadeRequestDTO(
     @NotBlank(message = "O nome da cidade é obrigatório.") 
     @Size(max = 80, message = "O nome da cidade não pode exceder 80 caracteres.") 
     String nome,
-    @NotNull(message = "O ID da UF.") 
+    @NotNull(message = "O ID da UF é obrigatório.") 
     Long ufId
 ) {
 }

@@ -1,6 +1,9 @@
 package br.com.knowledge.stockonyou.api.service;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +14,6 @@ import br.com.knowledge.stockonyou.api.model.Cliente;
 import br.com.knowledge.stockonyou.api.repository.ClienteRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-
 
 @Service
 @RequiredArgsConstructor
@@ -25,28 +27,37 @@ public class ClienteService {
     @Transactional
     public ClienteResponseDTO criar(ClienteRequestDTO dto) {
         Cliente cliente = Cliente.builder()
-            .nome(dto.nome())
-            .email(dto.email())
-            .telefone(dto.telefone())
-            .build();
+                .nome(dto.nome())
+                .email(dto.email())
+                .telefone(dto.telefone())
+                .build();
         return ClienteResponseDTO.fromEntity(repository.save(cliente));
     }
 
-    @Transactional 
+    @Transactional
     public ClienteResponseDTO atualizar(Long id, ClienteRequestDTO dto) {
         Cliente cliente = repository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Cliente nao encontrado com o ID:"+id));
+                .orElseThrow(() -> new RuntimeException("Cliente nao encontrado com o ID:" + id));
         cliente.setNome(dto.nome());
         cliente.setEmail(dto.email());
         cliente.setTelefone(dto.telefone());
         return ClienteResponseDTO.fromEntity(repository.save(cliente));
     }
 
-    @Transactional 
+    @Transactional
     public void deletar(Long id) {
         if (repository.findById(id) != null) {
-            throw new ResourceNotFoundException("Cliente não encontrado com o ID:"+id);
+            throw new ResourceNotFoundException("Cliente não encontrado com o ID:" + id);
         }
         repository.deleteById(id);
+    }
+
+    public Page<ClienteResponseDTO> autocomplete(String nome, Pageable pageable) {
+        List<ClienteResponseDTO> clientes = repository.findByNomeContainingIgnoreCase(nome)
+                .stream()
+                .map(cliente -> new ClienteResponseDTO(cliente.getId(), cliente.getNome(), cliente.getEmail(),
+                        cliente.getTelefone()))
+                .toList();
+        return new PageImpl<>(clientes, pageable, clientes.size());
     }
 }

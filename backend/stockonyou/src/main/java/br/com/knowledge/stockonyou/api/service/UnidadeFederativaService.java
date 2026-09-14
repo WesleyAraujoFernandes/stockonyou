@@ -1,10 +1,10 @@
 package br.com.knowledge.stockonyou.api.service;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import br.com.knowledge.stockonyou.api.model.UnidadeFederativa;
+import br.com.knowledge.stockonyou.api.dto.UnidadeFederativaResponseDTO;
 import br.com.knowledge.stockonyou.api.repository.UnidadeFederativaRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -13,12 +13,13 @@ import lombok.RequiredArgsConstructor;
 public class UnidadeFederativaService {
     private final UnidadeFederativaRepository repository;
 
-    public List<UnidadeFederativa> listarTodos() {
-        return repository.findAll();
+    public Page<UnidadeFederativaResponseDTO> listarTodos(Pageable pageable) {
+        return repository.findAll(pageable)
+            .map(UnidadeFederativaResponseDTO::fromEntity); 
     }
 
-    public UnidadeFederativa buscarPorId(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Unidade Federativa nao encontrada com o ID: " + id));
+    public UnidadeFederativaResponseDTO buscarPorId(Long id) {
+        return UnidadeFederativaResponseDTO.fromEntity(repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Unidade Federativa nao encontrada com o ID: " + id)));
     }
 }

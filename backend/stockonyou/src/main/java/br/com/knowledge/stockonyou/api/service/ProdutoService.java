@@ -32,6 +32,7 @@ public class ProdutoService {
     private final ProdutoRepository produtoRepository;
     private final CategoriaRepository categoriaRepository;
 
+    // CRUD
     @Transactional(readOnly = true)
     public Page<ProdutoResponseDTO> listarTodos(Pageable pageable) {
         return produtoRepository.findAll(pageable)
@@ -45,23 +46,14 @@ public class ProdutoService {
         return ProdutoResponseDTO.fromEntity(produto);
     }
 
-    @Transactional(readOnly = true)
-    public Page<ProdutoResponseDTO> buscarDinamica(String nome, BigDecimal precoMin, BigDecimal precoMax, List<Long> categoriasIds, Pageable pageable) {
-        Specification<Produto> spec = ProdutoSpecification.comFiltros(nome, precoMin, precoMax, categoriasIds);
-        return produtoRepository.findAll(spec, pageable)
-            .map(ProdutoResponseDTO::fromEntity);
-    }
-
     @Transactional
     public ProdutoResponseDTO criar(ProdutoRequestDTO dto) {
         if (produtoRepository.existsByCodigoBarras(dto.codigoBarras())) {
             throw new DuplicateResourceException("Código de barras já cadastrado: " + dto.codigoBarras());
         }
-
         Categoria categoria = categoriaRepository.findById(dto.categoriaId())
                 .orElseThrow(
                         () -> new ResourceNotFoundException("Categoria não encontrada com id: " + dto.categoriaId()));
-
         Produto produto = Produto.builder()
                 .nome(dto.nome())
                 .codigoBarras(dto.codigoBarras())
@@ -70,7 +62,6 @@ public class ProdutoService {
                 .preco(dto.preco())
                 .categoria(categoria)
                 .build();
-
         return ProdutoResponseDTO.fromEntity(produtoRepository.save(produto));
     }
 
@@ -91,15 +82,6 @@ public class ProdutoService {
     }
 
     @Transactional
-    public ProdutoResponseDTO atualizarEstoque(Long id, Integer novaQuantidade) {
-        Produto produto = produtoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com id: " + id));
-
-        produto.setQuantidade(novaQuantidade);
-        return ProdutoResponseDTO.fromEntity(produtoRepository.save(produto));
-    }
-
-    @Transactional
     public void deletar(Long id) {
         if (!produtoRepository.existsById(id)) {
             throw new ResourceNotFoundException("Produto não encontrado com id: " + id);
@@ -107,17 +89,29 @@ public class ProdutoService {
         produtoRepository.deleteById(id);
     }
 
+    // Específicos
+    @Transactional
+    public ProdutoResponseDTO atualizarEstoque(Long id, Integer novaQuantidade) {
+        Produto produto = produtoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com id: " + id));
+        produto.setQuantidade(novaQuantidade);
+        return ProdutoResponseDTO.fromEntity(produtoRepository.save(produto));
+    }
+
     @Transactional(readOnly = true)
     public Page<ProdutoResponseDTO> buscarPorCategoria(Long categoriaId, Pageable pageable) {
-        // 1. Valida se a categoria existe para lançar 404 caso não seja encontrada
         if (!categoriaRepository.existsById(categoriaId)) {
             throw new ResourceNotFoundException("Categoria não encontrada com id: " + categoriaId);
         }
-
-        // 2. Busca os produtos e mapeia para DTOs
         return produtoRepository.findByCategoriaId(categoriaId, pageable)
                 .map(ProdutoResponseDTO::fromEntity);
 
     }
 
+    @Transactional(readOnly = true)
+    public Page<ProdutoResponseDTO> buscarDinamica(String nome, BigDecimal precoMin, BigDecimal precoMax, List<Long> categoriasIds, Pageable pageable) {
+        Specification<Produto> spec = ProdutoSpecification.comFiltros(nome, precoMin, precoMax, categoriasIds);
+        return produtoRepository.findAll(spec, pageable)
+            .map(ProdutoResponseDTO::fromEntity);
+    }
 }

@@ -3,7 +3,7 @@ package br.com.knowledge.stockonyou.api.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public record ForncedorRequestDTO(
+public record FornecedorRequestDTO(
     @NotBlank(message = "O nome do fornecedor é obrigatório.")
     @Size(max = 120, message = "O nome do fornecedor não pode exceder 120 caracteres.")
     String nome,

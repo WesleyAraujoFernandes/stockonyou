@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.knowledge.stockonyou.api.dto.ClienteRequestDTO;
@@ -44,19 +43,9 @@ public class ClienteController {
     }
 
     @GetMapping("/autocomplete")
-    public ResponseEntity<List<ClienteResponseDTO>> autocomplete(@RequestParam String termo) {
-        List<ClienteResponseDTO> clientes = clienteRepository.findByNomeContainingIgnoreCase(termo)
-                .stream()
-                .map(cliente -> new ClienteResponseDTO(cliente.getId(), cliente.getNome(), cliente.getEmail(), cliente.getTelefone()))
-                .toList();
+    public ResponseEntity<Page<ClienteResponseDTO>> autocomplete(@RequestParam String nome, Pageable pageable) {
+        Page<ClienteResponseDTO> clientes = clienteService.autocomplete(nome, pageable);
         return ResponseEntity.ok(clientes);
-    }
-
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        clienteService.deletar(id);
-        return ResponseEntity.noContent().build();
     }
 
     @PostMapping
@@ -79,5 +68,12 @@ public class ClienteController {
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<ClienteResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody ClienteRequestDTO dto) {
         return ResponseEntity.ok(clienteService.atualizar(id, dto));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+        clienteService.deletar(id);
+        return ResponseEntity.noContent().build();
     }
 }

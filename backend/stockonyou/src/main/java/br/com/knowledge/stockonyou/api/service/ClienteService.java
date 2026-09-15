@@ -46,7 +46,7 @@ public class ClienteService {
 
     @Transactional
     public void deletar(Long id) {
-        if (repository.findById(id) != null) {
+        if (repository.findById(id) == null) {
             throw new ResourceNotFoundException("Cliente não encontrado com o ID:" + id);
         }
         repository.deleteById(id);

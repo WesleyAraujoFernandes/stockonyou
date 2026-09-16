@@ -12,4 +12,6 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long>, JpaSpec
 
     Page<Produto> findByCategoriaId(Long categoriaId, Pageable pageable);
 
+    boolean existsByCodigoBarrasAndIdNot(String codigoBarras, Long id);
+
 }

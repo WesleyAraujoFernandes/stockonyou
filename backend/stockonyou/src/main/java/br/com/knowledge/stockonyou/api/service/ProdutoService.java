@@ -9,7 +9,6 @@ import br.com.knowledge.stockonyou.api.model.Produto;
 import br.com.knowledge.stockonyou.api.repository.CategoriaRepository;
 import br.com.knowledge.stockonyou.api.repository.ProdutoRepository;
 import br.com.knowledge.stockonyou.api.specification.ProdutoSpecification;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
@@ -18,7 +17,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -66,11 +64,15 @@ public class ProdutoService {
     }
 
     @Transactional
-    public ProdutoResponseDTO atualizar(Long id, @Valid @RequestBody ProdutoRequestDTO produtoRequestDTO) {
+    public ProdutoResponseDTO atualizar(Long id, ProdutoRequestDTO produtoRequestDTO) {
         Produto produto = produtoRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Produto não encontrado com o ID:"+id));
+            .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID:"+id));
         Categoria categoria = categoriaRepository.findById(produtoRequestDTO.categoriaId())
-            .orElseThrow(() -> new RuntimeException("Categoria não encontrada com o ID:"+produtoRequestDTO.categoriaId()));
+            .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada com o ID:"+produtoRequestDTO.categoriaId()));
+        if (produtoRepository.existsByCodigoBarrasAndIdNot(
+                produtoRequestDTO.codigoBarras(), id)) {
+            throw new DuplicateResourceException("Código de barras já cadastrado: " + produtoRequestDTO.codigoBarras());
+        }
         produto.setNome(produtoRequestDTO.nome());
         produto.setCategoria(categoria);
         produto.setCodigoBarras(produtoRequestDTO.codigoBarras());

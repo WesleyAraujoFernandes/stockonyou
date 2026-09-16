@@ -73,6 +73,12 @@ public class FornecedorService {
             .orElseThrow(() -> new ResourceNotFoundException("Cidade não encontrada com o ID: " + dto.cidadeId()));
         Fornecedor fornecedor = repository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Fornecedor não encontrado com o ID: " + id));
+        if (repository.existsByCnpjAndIdNot(dto.cnpj(), id)) {
+            throw new DuplicateResourceException("Fornecedor com CNPJ: " + dto.cnpj() + " ja cadastrado.");
+        }
+        if (repository.existsByEmailIgnoreCaseAndIdNot(dto.email(), id)) {
+            throw new DuplicateResourceException("Fornecedor com email: " + dto.email() + " ja cadastrado.");
+        }
         fornecedor.setCep(dto.cep());
         fornecedor.setCidade(cidade);
         fornecedor.setCnpj(dto.cnpj());

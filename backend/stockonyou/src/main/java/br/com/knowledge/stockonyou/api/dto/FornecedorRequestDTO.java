@@ -1,6 +1,7 @@
 package br.com.knowledge.stockonyou.api.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record FornecedorRequestDTO(
@@ -19,6 +20,6 @@ public record FornecedorRequestDTO(
     String cep,
     @Size(max = 500, message = "A observação não pode exceder 500 caracteres.")
     String observacao,
-    @NotBlank(message = "O ID da cidade é obrigatório.")
+    @NotNull(message = "O ID da cidade é obrigatório.")
     Long cidadeId
 ) {}

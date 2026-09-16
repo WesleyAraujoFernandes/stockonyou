@@ -6,6 +6,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.nimbusds.jose.util.Resource;
+
 import br.com.knowledge.stockonyou.api.dto.FornecedorRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.FornecedorResponseDTO;
 import br.com.knowledge.stockonyou.api.exception.ResourceNotFoundException;
@@ -44,7 +46,7 @@ public class FornecedorService {
     @Transactional 
     public FornecedorResponseDTO criar(FornecedorRequestDTO dto) {
         Cidade cidade = cidadeRepository.findById(dto.cidadeId())
-            .orElseThrow(() -> new RuntimeException("Cidade não encontrada com o ID: " + dto.cidadeId()));
+            .orElseThrow(() -> new ResourceNotFoundException("Cidade não encontrada com o ID: " + dto.cidadeId()));
         Fornecedor fornecedor = Fornecedor.builder()
             .nome(dto.nome())
             .cep(dto.cep())
@@ -61,9 +63,9 @@ public class FornecedorService {
     @Transactional
     public FornecedorResponseDTO atualizar(Long id, FornecedorRequestDTO dto) {
         Cidade cidade = cidadeRepository.findById(dto.cidadeId())
-            .orElseThrow(() -> new RuntimeException("Cidade não encontrada com o ID: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Cidade não encontrada com o ID: " + dto.cidadeId()));
         Fornecedor fornecedor = repository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Fornecedor não encontrado com o ID: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Fornecedor não encontrado com o ID: " + id));
         fornecedor.setCep(dto.cep());
         fornecedor.setCidade(cidade);
         fornecedor.setCnpj(dto.cnpj());
@@ -77,8 +79,8 @@ public class FornecedorService {
 
     @Transactional 
     public void deletar(Long id) {
-        if (repository.findById(id) != null) {
-            throw new ResourceNotFoundException("Fornecedor não encontrado com o ID: " + id);
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Fornecedor nao encontrado com o ID: " + id);
         }
         repository.deleteById(id);
     }

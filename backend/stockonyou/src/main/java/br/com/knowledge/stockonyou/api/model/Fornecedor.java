@@ -54,7 +54,9 @@ public class Fornecedor {
 
     @PrePersist
     protected void onCreate() {
-        this.dataCriacao = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
+        this.dataCriacao = now;
+        this.dataAtualizacao = now;
     }
 
     @PreUpdate

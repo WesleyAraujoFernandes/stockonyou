@@ -10,6 +10,7 @@ import com.nimbusds.jose.util.Resource;
 
 import br.com.knowledge.stockonyou.api.dto.FornecedorRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.FornecedorResponseDTO;
+import br.com.knowledge.stockonyou.api.exception.DuplicateResourceException;
 import br.com.knowledge.stockonyou.api.exception.ResourceNotFoundException;
 import br.com.knowledge.stockonyou.api.model.Cidade;
 import br.com.knowledge.stockonyou.api.model.Fornecedor;
@@ -47,6 +48,12 @@ public class FornecedorService {
     public FornecedorResponseDTO criar(FornecedorRequestDTO dto) {
         Cidade cidade = cidadeRepository.findById(dto.cidadeId())
             .orElseThrow(() -> new ResourceNotFoundException("Cidade não encontrada com o ID: " + dto.cidadeId()));
+        if (repository.existsByCnpj(dto.cnpj())) {
+            throw new DuplicateResourceException("Fornecedor com CNPJ: " + dto.cnpj() + " ja cadastrado.");
+        }
+        if (repository.existsByEmailIgnoreCase(dto.email())) {
+            throw new DuplicateResourceException("Fornecedor com email: " + dto.email() + " ja cadastrado.");
+        }
         Fornecedor fornecedor = Fornecedor.builder()
             .nome(dto.nome())
             .cep(dto.cep())

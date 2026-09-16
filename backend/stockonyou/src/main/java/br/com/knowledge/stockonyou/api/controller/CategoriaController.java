@@ -40,7 +40,7 @@ public class CategoriaController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
         categoriaService.excluir(id);
         return ResponseEntity.noContent().build();

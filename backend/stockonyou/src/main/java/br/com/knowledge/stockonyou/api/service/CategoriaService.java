@@ -6,6 +6,7 @@ import br.com.knowledge.stockonyou.api.exception.DuplicateResourceException;
 import br.com.knowledge.stockonyou.api.exception.ResourceNotFoundException;
 import br.com.knowledge.stockonyou.api.model.Categoria;
 import br.com.knowledge.stockonyou.api.repository.CategoriaRepository;
+import br.com.knowledge.stockonyou.api.repository.ProdutoRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
@@ -13,21 +14,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class CategoriaService {
 
     private final CategoriaRepository categoriaRepository;
-
-    @Transactional(readOnly = true)
-    public List<CategoriaResponseDTO> listarTodas() {
-        return categoriaRepository.findAll().stream()
-                .map(CategoriaResponseDTO::fromEntity)
-                .toList();
-    }
-
+    private final ProdutoRepository produtoRepository;
+   
     @Transactional(readOnly = true)
     public CategoriaResponseDTO buscarPorId(Long id) {
         Categoria categoria = categoriaRepository.findById(id)
@@ -58,7 +51,12 @@ public class CategoriaService {
     @Transactional
     public void excluir(Long id) {
         if (!categoriaRepository.existsById(id)) {
-            throw new RuntimeException("Categoria não encontrada com o ID: " + id);
+            throw new ResourceNotFoundException("Categoria não encontrada com o ID: " + id);
+        }
+        if (produtoRepository.existsByCategoriaId(id)) {
+            throw new DuplicateResourceException(
+                "Não é possível excluir a categoria, pois existem produtos associados a ela."
+            );
         }
         categoriaRepository.deleteById(id);
     }
@@ -66,9 +64,13 @@ public class CategoriaService {
     @Transactional
     public CategoriaResponseDTO atualizar(Long id, CategoriaRequestDTO dto) {
         Categoria categoria = categoriaRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Categoria não encontrada com o ID:"+id));
+            .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada com o ID:"+id));
+        if (categoriaRepository.existsByNomeAndIdNot(dto.nome(), id)) {
+            throw new DuplicateResourceException("Já existe uma categoria cadastrada com o nome: " + dto.nome());
+        }
         categoria.setNome(dto.nome());
         categoria.setDescricao(dto.descricao());
         return CategoriaResponseDTO.fromEntity(categoriaRepository.save(categoria));
     }
+
 }

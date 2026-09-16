@@ -14,4 +14,6 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long>, JpaSpec
 
     boolean existsByCodigoBarrasAndIdNot(String codigoBarras, Long id);
 
+    boolean existsByCategoriaId(Long categoriaId);
+
 }

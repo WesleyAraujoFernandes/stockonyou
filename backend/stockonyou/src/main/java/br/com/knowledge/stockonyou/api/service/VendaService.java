@@ -37,7 +37,7 @@ public class VendaService {
     private final VendaRepository vendaRepository;
     private final ProdutoRepository produtoRepository;
     private final ClienteRepository clienteRepository;
-    //private String username = "Sistema";
+    // private String username = "Sistema";
 
     @Transactional(readOnly = true)
     public List<VendaResponseDTO> listarComandasAbertas() {
@@ -99,38 +99,32 @@ public class VendaService {
             username = jwt.getClaimAsString("preferred_username");
         }
 
-        Long idBusca = (dto.clienteId() != null) ? dto.clienteId() : 1L;
-        Cliente cliente;
+        Cliente cliente = null;
 
-        boolean jaTemComanda = vendaRepository.existsByClienteIdAndStatus(dto.clienteId(), StatusVenda.ABERTA);
-        if (jaTemComanda) {
-            throw new BusinessException("Este cliente já possui uma comanda aberta no sistema.");
-        }
+        if (dto.clienteId() != null) {
 
-        if (dto.clienteId() == null || dto.clienteId().equals(1L)) {
-            cliente = clienteRepository.findByNomeContainingIgnoreCase("Cliente Padrão")
-                    .stream().findFirst()
-                    .orElseGet(() -> {
-                        Cliente novoPadrao = Cliente.builder().nome("Cliente Padrão").build();
-                        return clienteRepository.save(novoPadrao);
-                    });
-        } else {
+            boolean jaTemComanda = vendaRepository.existsByClienteIdAndStatus(
+                    dto.clienteId(),
+                    StatusVenda.ABERTA);
+
+            if (jaTemComanda) {
+                throw new BusinessException(
+                        "Este cliente já possui uma comanda aberta no sistema.");
+            }
+
             cliente = clienteRepository.findById(dto.clienteId())
-                    .orElseThrow(
-                            () -> new ResourceNotFoundException("Cliente não encontrado com o ID: " + dto.clienteId()));
-        }
-        
-        boolean ehClientePadrao = cliente.getNome().equalsIgnoreCase("Cliente Padrão");
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Cliente não encontrado com o ID: " + dto.clienteId()));
 
-        // REGRA DE SEGURANÇA: Clientes normais devem usar o fluxo de atualizarComanda/finalizarComanda
-        if (!ehClientePadrao) {
-            throw new IllegalArgumentException("Para clientes cadastrados, utilize o fluxo de gerenciamento e fechamento de comandas.");
+            throw new IllegalArgumentException(
+                    "Para clientes cadastrados, utilize o fluxo de gerenciamento e fechamento de comandas.");
         }
 
-        // Fluxo exclusivo do Cliente Padrão: Abre, desconta estoque e encerra na hora como PAGO
+        // Fluxo exclusivo do Cliente Padrão: Abre, desconta estoque e encerra na hora
+        // como PAGO
         Venda venda = Venda.builder()
                 .dataVenda(LocalDateTime.now())
-                .clienteNome(cliente.getNome())
+                .clienteNome(dto.clienteNome())
                 .cliente(cliente)
                 .usuarioNome(username)
                 .valorTotal(BigDecimal.ZERO)
@@ -153,14 +147,15 @@ public class VendaService {
             produto.setQuantidade(produto.getQuantidade() - itemDto.quantidade());
             produtoRepository.save(produto);
 
-            BigDecimal subtotal = itemDto.precoUnitario().multiply(BigDecimal.valueOf(itemDto.quantidade()));
+            BigDecimal precoUnitario = produto.getPreco();
+            BigDecimal subtotal = precoUnitario.multiply(BigDecimal.valueOf(itemDto.quantidade()));
             valorTotalVenda = valorTotalVenda.add(subtotal);
 
             ItemVenda novoItem = ItemVenda.builder()
                     .venda(venda)
                     .produto(produto)
                     .quantidade(itemDto.quantidade())
-                    .precoUnitario(itemDto.precoUnitario())
+                    .precoUnitario(precoUnitario)
                     .subtotal(subtotal)
                     .build();
             venda.getItens().add(novoItem);
@@ -171,7 +166,6 @@ public class VendaService {
 
         return VendaResponseDTO.fromEntity(vendaSalva);
     }
-
 
     @Transactional
     public void finalizarComanda(Long id) {
@@ -208,14 +202,14 @@ public class VendaService {
 
     @Transactional
     public Page<VendaResponseDTO> listarComFiltros(
-        String clienteNome,
-        StatusVenda status,
-        String dataInicio,
-        String dataFim,
-        Pageable pageable) {
-            Specification<Venda> spec = VendaSpecification.comFiltros(clienteNome, status, dataInicio, dataFim);
-            Page<VendaResponseDTO> vendas = vendaRepository.findAll(spec, pageable)
+            String clienteNome,
+            StatusVenda status,
+            String dataInicio,
+            String dataFim,
+            Pageable pageable) {
+        Specification<Venda> spec = VendaSpecification.comFiltros(clienteNome, status, dataInicio, dataFim);
+        Page<VendaResponseDTO> vendas = vendaRepository.findAll(spec, pageable)
                 .map(VendaResponseDTO::fromEntity);
-            return vendas;
-        }
+        return vendas;
+    }
 }

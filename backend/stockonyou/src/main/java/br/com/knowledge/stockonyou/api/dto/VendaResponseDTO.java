@@ -20,7 +20,7 @@ public record VendaResponseDTO(
         return new VendaResponseDTO(
             venda.getId(),
             venda.getDataVenda(),
-            venda.getCliente().getNome(),
+            venda.getClienteNome(),
             venda.getValorTotal(),
             venda.getUsuarioNome(),
             venda.getStatus(),

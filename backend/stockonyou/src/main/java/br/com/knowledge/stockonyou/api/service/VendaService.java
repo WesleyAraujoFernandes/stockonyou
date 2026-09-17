@@ -184,8 +184,14 @@ public class VendaService {
                 return VendaResponseDTO.fromEntity(vendaSalva);
         }
 
+        @Transactional(readOnly = true)
+        public VendaResponseDTO buscarComandaAberta(Long clienteId) {
+                return vendaRepository.findByClienteIdAndStatus(clienteId, StatusVenda.ABERTA).map(VendaResponseDTO::fromEntity)
+                                .orElse(null);
+        }
+
         @Transactional
-        public VendaResponseDTO finalizarComanda(Long comandaId, StatusVenda novoStatus) {
+        public VendaResponseDTO concluirComanda(Long comandaId, StatusVenda novoStatus) {
                 if (novoStatus != StatusVenda.PAGO && novoStatus != StatusVenda.PENDENTE) {
                         throw new IllegalArgumentException("O novo status deve ser PAGO ou PENDENTE.");
                 }

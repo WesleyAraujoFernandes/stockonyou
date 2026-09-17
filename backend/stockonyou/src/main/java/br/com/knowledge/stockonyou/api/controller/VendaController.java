@@ -1,7 +1,5 @@
 package br.com.knowledge.stockonyou.api.controller;
 
-import br.com.knowledge.stockonyou.api.repository.VendaRepository;
-
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -32,7 +30,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/vendas")
 @RequiredArgsConstructor
 public class VendaController {
-    private final VendaRepository vendaRepository;
     private final VendaService vendaService;
 
     @GetMapping
@@ -56,9 +53,11 @@ public class VendaController {
     @GetMapping("/cliente/{clienteId}/aberta")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<VendaResponseDTO> buscarComandaAberta(@PathVariable Long clienteId) {
-        return vendaRepository.findByClienteIdAndStatus(clienteId, StatusVenda.ABERTA).map(venda -> ResponseEntity.ok(VendaResponseDTO.fromEntity(venda)))
-                .orElse(ResponseEntity.noContent().build());
-                
+        VendaResponseDTO comanda = vendaService.buscarComandaAberta(clienteId);
+        if (comanda == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(comanda);
     }
 
     @GetMapping("/comandas")
@@ -69,16 +68,16 @@ public class VendaController {
 
     @PutMapping("/cliente/{clienteId}/comanda")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
-    public ResponseEntity<VendaResponseDTO> atualizarComdanda(
+    public ResponseEntity<VendaResponseDTO> atualizarComanda(
         @PathVariable Long clienteId,
         @Valid @RequestBody ItemVendaRequestDTO dto) {
             return ResponseEntity.ok(vendaService.atualizarComandaAberta(clienteId, dto));
         }
 
-    @PutMapping("/{id}/finalizar")
+    @PutMapping("/{id}/concluir")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
-    public ResponseEntity<VendaResponseDTO> finalizarComanda(@PathVariable Long id, StatusVenda status) {
-        return ResponseEntity.ok(vendaService.finalizarComanda(id, status));
+    public ResponseEntity<VendaResponseDTO> concluirComanda(@PathVariable Long id, StatusVenda status) {
+        return ResponseEntity.ok(vendaService.concluirComanda(id, status));
     }
 
     @PutMapping("/{id}/cancelar")

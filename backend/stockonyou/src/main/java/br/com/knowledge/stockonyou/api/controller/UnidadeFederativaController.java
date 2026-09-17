@@ -15,7 +15,7 @@ import br.com.knowledge.stockonyou.api.service.UnidadeFederativaService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/uf")
+@RequestMapping("/api/unidades-federativas")
 @RequiredArgsConstructor
 public class UnidadeFederativaController {
     private final UnidadeFederativaService unidadeFederativaService;

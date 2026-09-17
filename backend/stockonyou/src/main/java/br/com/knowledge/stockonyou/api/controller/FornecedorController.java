@@ -30,25 +30,18 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/fornecedores")
 @RequiredArgsConstructor
 public class FornecedorController {
-    private final FornecedorRepository fornecedorRepository;
     private final FornecedorService fornecedorService;
 
     @GetMapping
     public ResponseEntity<Page<FornecedorResponseDTO>> listarTodos(
+            @RequestParam(required = false) String nome,
             @PageableDefault(page = 0, size = 10, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
-        return ResponseEntity.ok(fornecedorService.listarTodos(pageable));
+        return ResponseEntity.ok(fornecedorService.buscarDinamica(nome, pageable));
     }
 
     @GetMapping("/autocomplete")
     public ResponseEntity<List<FornecedorResponseDTO>> autocomplete(@RequestParam String termo) {
-        List<FornecedorResponseDTO> fornecedores = fornecedorRepository.findByNomeContainingIgnoreCase(termo)
-                .stream()
-                .map(fornecedor -> new FornecedorResponseDTO(fornecedor.getId(), fornecedor.getNome(),
-                        fornecedor.getEmail(), fornecedor.getTelefone(), fornecedor.getCnpj(), fornecedor.getEndereco(),
-                        new CidadeResponseDTO(fornecedor.getCidade().getId(), fornecedor.getCidade().getNome()),
-                        fornecedor.getCep(), fornecedor.getObservacao()))
-                .toList();
-        return ResponseEntity.ok(fornecedores);
+        return ResponseEntity.ok(fornecedorService.autocomplete(termo));
     }
 
     @GetMapping("/{id}")

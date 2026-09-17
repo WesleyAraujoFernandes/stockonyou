@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import br.com.knowledge.stockonyou.api.dto.UnidadeFederativaResponseDTO;
+import br.com.knowledge.stockonyou.api.exception.ResourceNotFoundException;
 import br.com.knowledge.stockonyou.api.repository.UnidadeFederativaRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -20,6 +21,6 @@ public class UnidadeFederativaService {
 
     public UnidadeFederativaResponseDTO buscarPorId(Long id) {
         return UnidadeFederativaResponseDTO.fromEntity(repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Unidade Federativa nao encontrada com o ID: " + id)));
+                .orElseThrow(() -> new ResourceNotFoundException("Unidade Federativa nao encontrada com o ID: " + id)));
     }
 }

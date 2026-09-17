@@ -1,12 +1,13 @@
 package br.com.knowledge.stockonyou.api.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.nimbusds.jose.util.Resource;
 
 import br.com.knowledge.stockonyou.api.dto.FornecedorRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.FornecedorResponseDTO;
@@ -96,5 +97,12 @@ public class FornecedorService {
             throw new ResourceNotFoundException("Fornecedor nao encontrado com o ID: " + id);
         }
         repository.deleteById(id);
+    }
+
+    @Transactional(readOnly=true)
+    public List<FornecedorResponseDTO> autocomplete(String termo) {
+        return repository.findByNomeContainingIgnoreCase(termo).stream()
+            .map(FornecedorResponseDTO::fromEntity)
+            .collect(Collectors.toList());
     }
 }

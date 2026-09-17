@@ -10,7 +10,7 @@ public class FornecedorSpecification {
             if (nome == null || nome.trim().isEmpty()) {
                 return null;
             }
-            return criteriaBuilder.like(root.get("name"), "%" + nome + "%");
+            return criteriaBuilder.like(root.get("nome"), "%" + nome + "%");
         };
     }
 }

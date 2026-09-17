@@ -80,4 +80,16 @@ public class VendaController {
     public ResponseEntity<VendaResponseDTO> finalizarComanda(@PathVariable Long id, StatusVenda status) {
         return ResponseEntity.ok(vendaService.finalizarComanda(id, status));
     }
+
+    @PutMapping("/{id}/cancelar")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<VendaResponseDTO> cancelarComanda(@PathVariable Long id) {
+        return ResponseEntity.ok(vendaService.cancelarComanda(id));
+    }
+
+    @PutMapping("/{id}/pagamento")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<VendaResponseDTO> registrarPagamento(@PathVariable Long id) {
+        return ResponseEntity.ok(vendaService.registrarPagamento(id));
+    }
 }

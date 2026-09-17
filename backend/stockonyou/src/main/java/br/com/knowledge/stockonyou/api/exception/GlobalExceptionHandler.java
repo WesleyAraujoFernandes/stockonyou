@@ -81,7 +81,29 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
-    // Adicione este método dentro da classe GlobalExceptionHandler:
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<StandardErrorDTO> handleIllegalArgumentException(IllegalArgumentException ex,
+            HttpServletRequest request) {
+        StandardErrorDTO error = new StandardErrorDTO(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                ex.getMessage(),
+                request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<StandardErrorDTO> handleBusinessException(BusinessException ex,
+            HttpServletRequest request) {
+        StandardErrorDTO error = new StandardErrorDTO(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                ex.getMessage(),
+                request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<StandardErrorDTO> handleGeneralException(Exception ex, HttpServletRequest request) {

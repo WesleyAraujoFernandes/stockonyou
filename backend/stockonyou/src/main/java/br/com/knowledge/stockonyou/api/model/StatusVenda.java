@@ -4,5 +4,5 @@ public enum StatusVenda {
     ABERTA,
     PENDENTE,
     PAGO,
-    FINALIZADA
+    CANCELADA
 }

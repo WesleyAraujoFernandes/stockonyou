@@ -67,13 +67,27 @@ public class VendaService {
                 });
         Produto produto = produtoRepository.findById(itemDto.produtoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado."));
+
+        System.out.println("Produto recebido: " + itemDto.produtoId());
+        System.out.println("Itens da comanda: " + venda.getItens().size());
+
+        venda.getItens().forEach(item -> System.out.println(
+                "Item ID: " + item.getId()
+                        + " | Produto ID: " + item.getProduto().getId()
+                        + " | Quantidade: " + item.getQuantidade()));
+
         Optional<ItemVenda> itemExistente = venda.getItens().stream()
                 .filter(i -> i.getProduto().getId().equals(itemDto.produtoId()))
                 .findFirst();
         if (itemExistente.isPresent()) {
             ItemVenda item = itemExistente.get();
-            item.setQuantidade(itemDto.quantidade());
-            item.setSubtotal(item.getPrecoUnitario().multiply(BigDecimal.valueOf(itemDto.quantidade())));
+
+            int novaQuantidade = item.getQuantidade() + itemDto.quantidade();
+
+            item.setQuantidade(novaQuantidade);
+            item.setSubtotal(
+                    item.getPrecoUnitario()
+                            .multiply(BigDecimal.valueOf(novaQuantidade)));
         } else {
             ItemVenda novoItem = ItemVenda.builder()
                     .venda(venda)

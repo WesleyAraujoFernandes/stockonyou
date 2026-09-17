@@ -98,10 +98,8 @@ public class VendaService {
                                         .build();
                         venda.getItens().add(novoItem);
                 }
-                BigDecimal total = venda.getItens().stream()
-                                .map(ItemVenda::getSubtotal)
-                                .reduce(BigDecimal.ZERO, BigDecimal::add);
-                venda.setValorTotal(total);
+                
+                venda.setValorTotal(calcularValorTotal(venda));
                 return VendaResponseDTO.fromEntity(vendaRepository.save(venda));
         }
 
@@ -134,8 +132,7 @@ public class VendaService {
                                 cliente,
                                 dto.clienteNome(),
                                 username,
-                                StatusVenda.PAGO
-                );
+                                StatusVenda.PAGO);
 
                 BigDecimal valorTotalVenda = BigDecimal.ZERO;
 
@@ -176,7 +173,8 @@ public class VendaService {
 
         @Transactional(readOnly = true)
         public VendaResponseDTO buscarComandaAberta(Long clienteId) {
-                return vendaRepository.findByClienteIdAndStatus(clienteId, StatusVenda.ABERTA).map(VendaResponseDTO::fromEntity)
+                return vendaRepository.findByClienteIdAndStatus(clienteId, StatusVenda.ABERTA)
+                                .map(VendaResponseDTO::fromEntity)
                                 .orElse(null);
         }
 
@@ -207,9 +205,11 @@ public class VendaService {
         @Transactional
         public VendaResponseDTO registrarPagamento(Long id) {
                 Venda venda = vendaRepository.findById(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("Venda/Comanda nao encontrada com id:" + id));
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Venda/Comanda nao encontrada com id:" + id));
                 if (venda.getStatus() != StatusVenda.PENDENTE) {
-                        throw new IllegalArgumentException("Somente vendas/comandas pendentes podem ter o pagamento registrado.");
+                        throw new IllegalArgumentException(
+                                        "Somente vendas/comandas pendentes podem ter o pagamento registrado.");
                 }
                 venda.setStatus(StatusVenda.PAGO);
                 return VendaResponseDTO.fromEntity(vendaRepository.save(venda));
@@ -241,20 +241,20 @@ public class VendaService {
         }
 
         private Venda criarVenda(
-                Cliente cliente,
-                String clienteNome,
-                String username,
-                StatusVenda status) {
+                        Cliente cliente,
+                        String clienteNome,
+                        String username,
+                        StatusVenda status) {
                 return Venda.builder()
-                        .dataVenda(LocalDateTime.now())
-                        .clienteNome(clienteNome)
-                        .cliente(cliente)
-                        .usuarioNome(username)
-                        .valorTotal(BigDecimal.ZERO)
-                        .status(status)
-                        .itens(new ArrayList<>())
-                        .build();
-                }
+                                .dataVenda(LocalDateTime.now())
+                                .clienteNome(clienteNome)
+                                .cliente(cliente)
+                                .usuarioNome(username)
+                                .valorTotal(BigDecimal.ZERO)
+                                .status(status)
+                                .itens(new ArrayList<>())
+                                .build();
+        }
 
         private String obterUsuarioAtual() {
                 Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -263,4 +263,11 @@ public class VendaService {
                 }
                 return "Desconhecido";
         }
+
+        private BigDecimal calcularValorTotal(Venda venda) {
+                return venda.getItens().stream()
+                                .map(ItemVenda::getSubtotal)
+                                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        }
+
 }

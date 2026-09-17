@@ -1,0 +1,2 @@
+ALTER TABLE vendas
+    ALTER COLUMN cliente_id SET NOT NULL;

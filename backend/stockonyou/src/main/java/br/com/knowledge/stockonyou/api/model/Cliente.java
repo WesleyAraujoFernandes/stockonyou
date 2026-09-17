@@ -39,7 +39,10 @@ public class Cliente {
 
     @PrePersist
     protected void onCreate() {
-        this.dataCriacao = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
+        this.dataCriacao = now;
+        this.dataAtualizacao = now;
+
     }
 
     @PreUpdate

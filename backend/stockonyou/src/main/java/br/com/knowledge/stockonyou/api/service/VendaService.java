@@ -48,8 +48,7 @@ public class VendaService {
 
         @Transactional
         public VendaResponseDTO atualizarComandaAberta(Long clienteId, ItemVendaRequestDTO itemDto) {
-                Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-                String username = ((Jwt) principal).getClaimAsString("preferred_username");
+                String username = obterUsuarioAtual();
                 Venda venda = vendaRepository.findByClienteIdAndStatus(clienteId, StatusVenda.ABERTA)
                                 .orElseGet(() -> {
                                         Cliente cliente = clienteRepository.findById(clienteId)
@@ -108,11 +107,7 @@ public class VendaService {
 
         @Transactional
         public VendaResponseDTO realizarVenda(VendaRequestDTO dto) {
-                String username = "Desconhecido"; // Inicialização da variável para evitar erro de compilação
-                Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-                if (principal instanceof Jwt jwt) {
-                        username = jwt.getClaimAsString("preferred_username");
-                }
+                String username = obterUsuarioAtual();
 
                 Cliente cliente = null;
 
@@ -135,17 +130,12 @@ public class VendaService {
                                         "Para clientes cadastrados, utilize o fluxo de gerenciamento e fechamento de comandas.");
                 }
 
-                // Fluxo exclusivo do Cliente Padrão: Abre, desconta estoque e encerra na hora
-                // como PAGO
-                Venda venda = Venda.builder()
-                                .dataVenda(LocalDateTime.now())
-                                .clienteNome(dto.clienteNome())
-                                .cliente(cliente)
-                                .usuarioNome(username)
-                                .valorTotal(BigDecimal.ZERO)
-                                .status(StatusVenda.PAGO) // Cliente padrão fecha a venda imediatamente como PAGO
-                                .itens(new ArrayList<>())
-                                .build();
+                Venda venda = criarVenda(
+                                cliente,
+                                dto.clienteNome(),
+                                username,
+                                StatusVenda.PAGO
+                );
 
                 BigDecimal valorTotalVenda = BigDecimal.ZERO;
 
@@ -248,5 +238,29 @@ public class VendaService {
                 }
                 comanda.setStatus(StatusVenda.CANCELADA);
                 return VendaResponseDTO.fromEntity(vendaRepository.save(comanda));
+        }
+
+        private Venda criarVenda(
+                Cliente cliente,
+                String clienteNome,
+                String username,
+                StatusVenda status) {
+                return Venda.builder()
+                        .dataVenda(LocalDateTime.now())
+                        .clienteNome(clienteNome)
+                        .cliente(cliente)
+                        .usuarioNome(username)
+                        .valorTotal(BigDecimal.ZERO)
+                        .status(status)
+                        .itens(new ArrayList<>())
+                        .build();
+                }
+
+        private String obterUsuarioAtual() {
+                Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                if (principal instanceof Jwt jwt) {
+                        return jwt.getClaimAsString("preferred_username");
+                }
+                return "Desconhecido";
         }
 }

@@ -18,6 +18,9 @@ public record VendaResponseDTO(
     List<ItemVendaResponseDTO> itens
 ) {
     public static VendaResponseDTO fromEntity(Venda venda) {
+        return fromEntity(venda, List.of());
+    }
+    public static VendaResponseDTO fromEntity(Venda venda, List<String> alertas) {
         return new VendaResponseDTO(
             venda.getId(),
             venda.getDataVenda(),
@@ -25,7 +28,7 @@ public record VendaResponseDTO(
             venda.getValorTotal(),
             venda.getUsuarioNome(),
             venda.getStatus(),
-            List.of(),
+            alertas,
             venda.getItens().stream().map(ItemVendaResponseDTO::fromEntity).toList()
         );
     }

@@ -49,49 +49,42 @@ public class VendaService {
         @Transactional
         public VendaResponseDTO realizarVenda(VendaRequestDTO dto) {
                 String username = obterUsuarioAtual();
-
                 Cliente cliente = null;
-
+                List<String> alertas = new ArrayList<>();
                 if (dto.clienteId() != null) {
-
                         boolean jaTemComanda = vendaRepository.existsByClienteIdAndStatus(
                                         dto.clienteId(),
                                         StatusVenda.ABERTA);
-
                         if (jaTemComanda) {
                                 throw new BusinessException(
                                                 "Este cliente já possui uma comanda aberta no sistema.");
                         }
-
                         cliente = clienteRepository.findById(dto.clienteId())
                                         .orElseThrow(() -> new ResourceNotFoundException(
                                                         "Cliente não encontrado com o ID: " + dto.clienteId()));
-
                         throw new IllegalArgumentException(
                                         "Para clientes cadastrados, utilize o fluxo de gerenciamento e fechamento de comandas.");
                 }
-
                 Venda venda = criarVenda(
                                 cliente,
                                 dto.clienteNome(),
                                 username,
                                 StatusVenda.PAGO);
-
                 BigDecimal valorTotalVenda = BigDecimal.ZERO;
-
                 for (ItemVendaRequestDTO itemDto : dto.itens()) {
                         Produto produto = produtoRepository.findById(itemDto.produtoId())
                                         .orElseThrow(
                                                         () -> new ResourceNotFoundException(
                                                                         "Produto não encontrado ID: "
                                                                                         + itemDto.produtoId()));
-
+                        alertas.addAll(
+                                        verificarAlertasDeEstoque(
+                                                        produto,
+                                                        itemDto.quantidade()));
                         baixarEstoque(produto, itemDto.quantidade());
-
                         BigDecimal precoUnitario = produto.getPreco();
                         BigDecimal subtotal = precoUnitario.multiply(BigDecimal.valueOf(itemDto.quantidade()));
                         valorTotalVenda = valorTotalVenda.add(subtotal);
-
                         ItemVenda novoItem = ItemVenda.builder()
                                         .venda(venda)
                                         .produto(produto)
@@ -101,11 +94,9 @@ public class VendaService {
                                         .build();
                         venda.getItens().add(novoItem);
                 }
-
                 venda.setValorTotal(valorTotalVenda);
                 Venda vendaSalva = vendaRepository.save(venda);
-
-                return VendaResponseDTO.fromEntity(vendaSalva);
+                return VendaResponseDTO.fromEntity(vendaSalva, alertas);
         }
 
         @Transactional(readOnly = true)
@@ -127,12 +118,22 @@ public class VendaService {
                         throw new IllegalArgumentException("Esta comanda já foi finalizada");
                 }
                 validarEstoqueDaComanda(venda);
+                List<String> alertas = new ArrayList<>();
                 for (ItemVenda item : venda.getItens()) {
                         Produto produto = item.getProduto();
-                        baixarEstoque(produto, item.getQuantidade());
+                        alertas.addAll(
+                                        verificarAlertasDeEstoque(
+                                                        produto,
+                                                        item.getQuantidade()));
+                        baixarEstoque(
+                                        produto,
+                                        item.getQuantidade());
                 }
                 venda.setStatus(novoStatus);
-                return VendaResponseDTO.fromEntity(vendaRepository.save(venda));
+                Venda vendaSalva = vendaRepository.save(venda);
+                return VendaResponseDTO.fromEntity(
+                                vendaSalva,
+                                alertas);
         }
 
         @Transactional
@@ -309,17 +310,21 @@ public class VendaService {
 
         }
 
-        private List<String> verificarAlertasDeEstoque(Venda venda) {
+        private List<String> verificarAlertasDeEstoque(
+                        Produto produto,
+                        int quantidade) {
+
                 List<String> alertas = new ArrayList<>();
-                for (ItemVenda item : venda.getItens()) {
-                        Produto produto = item.getProduto();
-                        int estoqueAposVenda = produto.getQuantidade() - item.getQuantidade();
-                        if (estoqueAposVenda < produto.getQuantidadeMinima()) {
-                                alertas.add(
-                                        "O estoque do produto " + produto.getNome() + " ficará abaixo da quantidade minima."
-                                );
-                        }
-                 }
+
+                int estoqueAposVenda = produto.getQuantidade() - quantidade;
+
+                if (estoqueAposVenda < produto.getQuantidadeMinima()) {
+                        alertas.add(
+                                        "O estoque do produto "
+                                                        + produto.getNome()
+                                                        + " ficará abaixo da quantidade mínima.");
+                }
+
                 return alertas;
         }
 }

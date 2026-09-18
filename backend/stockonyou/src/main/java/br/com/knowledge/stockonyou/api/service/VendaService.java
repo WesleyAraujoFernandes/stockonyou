@@ -327,4 +327,20 @@ public class VendaService {
 
                 return alertas;
         }
+
+        private ItemVenda criarItemVenda(
+                Venda venda,
+                Produto produto,
+                int quantidade
+        ) {
+                BigDecimal precoUnitario = produto.getPreco();
+                BigDecimal subtotal = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
+                return ItemVenda.builder()
+                                .venda(venda)
+                                .produto(produto)
+                                .quantidade(quantidade)
+                                .precoUnitario(precoUnitario)
+                                .subtotal(subtotal)
+                                .build();
+        }
 }

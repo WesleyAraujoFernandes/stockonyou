@@ -82,16 +82,8 @@ public class VendaService {
                                                         produto,
                                                         itemDto.quantidade()));
                         baixarEstoque(produto, itemDto.quantidade());
-                        BigDecimal precoUnitario = produto.getPreco();
-                        BigDecimal subtotal = precoUnitario.multiply(BigDecimal.valueOf(itemDto.quantidade()));
-                        valorTotalVenda = valorTotalVenda.add(subtotal);
-                        ItemVenda novoItem = ItemVenda.builder()
-                                        .venda(venda)
-                                        .produto(produto)
-                                        .quantidade(itemDto.quantidade())
-                                        .precoUnitario(precoUnitario)
-                                        .subtotal(subtotal)
-                                        .build();
+                        ItemVenda novoItem = criarItemVenda(venda, produto, itemDto.quantidade());
+                        valorTotalVenda = valorTotalVenda.add(novoItem.getSubtotal());
                         venda.getItens().add(novoItem);
                 }
                 venda.setValorTotal(valorTotalVenda);
@@ -182,17 +174,13 @@ public class VendaService {
                         Produto produto = produtoRepository.findById(itemDto.produtoId())
                                         .orElseThrow(() -> new ResourceNotFoundException(
                                                         "Produto não encontrado com o ID: " + itemDto.produtoId()));
-                        ItemVenda novoItem = ItemVenda.builder()
-                                        .venda(venda)
-                                        .produto(produto)
-                                        .quantidade(itemDto.quantidade())
-                                        .precoUnitario(produto.getPreco())
-                                        .subtotal(produto.getPreco().multiply(BigDecimal.valueOf(itemDto.quantidade())))
-                                        .build();
+                        ItemVenda novoItem = criarItemVenda(venda, produto, itemDto.quantidade());
                         venda.getItens().add(novoItem);
                 }
                 venda.setValorTotal(calcularValorTotal(venda));
-                return VendaResponseDTO.fromEntity(vendaRepository.save(venda));
+                Venda vendaSalva = vendaRepository.save(venda);
+                List<String> alertas = verificarAlertasDaComanda(vendaSalva);
+                return VendaResponseDTO.fromEntity(vendaSalva, alertas);
         }
 
         @Transactional
@@ -342,5 +330,27 @@ public class VendaService {
                                 .precoUnitario(precoUnitario)
                                 .subtotal(subtotal)
                                 .build();
+        }
+
+        private int calcularEstoqueDisponivel(Produto produto, Long comandaId) {
+                int quantidadeComprometida = calcularQuantidadeComprometida(produto.getId(), comandaId);
+                return produto.getQuantidade() - quantidadeComprometida;
+        }
+
+        private List<String> verificarAlertasDaComanda(Venda venda) {
+                List<String> alertas = new ArrayList<>();
+                for (ItemVenda item : venda.getItens()) {
+                        Produto produto = item.getProduto();
+                        int estoqueDisponivel = calcularEstoqueDisponivel(produto, venda.getId());
+                        int estoqueAposComanda = estoqueDisponivel - item.getQuantidade();
+                        if (estoqueAposComanda < produto.getQuantidadeMinima()) {
+                                alertas.add(
+                                        "O estoque do produto "
+                                                + produto.getNome()
+                                                + " ficara abaixo da quantidade minima."
+                                );
+                        }
+                }
+                return alertas;
         }
 }

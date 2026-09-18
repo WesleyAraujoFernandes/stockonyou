@@ -14,6 +14,7 @@ public record VendaResponseDTO(
     BigDecimal valorTotal,
     String usuarioNome,
     StatusVenda status,
+    List<String> alertas,
     List<ItemVendaResponseDTO> itens
 ) {
     public static VendaResponseDTO fromEntity(Venda venda) {
@@ -24,6 +25,7 @@ public record VendaResponseDTO(
             venda.getValorTotal(),
             venda.getUsuarioNome(),
             venda.getStatus(),
+            List.of(),
             venda.getItens().stream().map(ItemVendaResponseDTO::fromEntity).toList()
         );
     }

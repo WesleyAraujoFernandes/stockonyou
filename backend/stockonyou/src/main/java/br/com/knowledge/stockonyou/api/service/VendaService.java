@@ -98,7 +98,7 @@ public class VendaService {
                                         .build();
                         venda.getItens().add(novoItem);
                 }
-                
+
                 venda.setValorTotal(calcularValorTotal(venda));
                 return VendaResponseDTO.fromEntity(vendaRepository.save(venda));
         }
@@ -219,6 +219,74 @@ public class VendaService {
         }
 
         @Transactional
+        public VendaResponseDTO criarComanda(VendaRequestDTO dto) {
+                String username = obterUsuarioAtual();
+                Cliente cliente = clienteRepository.findById(dto.clienteId())
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Cliente não encontrado com o ID: " + dto.clienteId()));
+                boolean jaTemComanda = vendaRepository.existsByClienteIdAndStatus(cliente.getId(), StatusVenda.ABERTA);
+                if (jaTemComanda) {
+                        throw new BusinessException(
+                                        "Este cliente já possui uma comanda aberta no sistema.");
+                }
+                Venda venda = criarVenda(
+                                cliente,
+                                cliente.getNome(),
+                                username,
+                                StatusVenda.ABERTA);
+                for (ItemVendaRequestDTO itemDto : dto.itens()) {
+                        Produto produto = produtoRepository.findById(itemDto.produtoId())
+                                        .orElseThrow(() -> new ResourceNotFoundException(
+                                                        "Produto não encontrado com o ID: " + itemDto.produtoId()));
+                        ItemVenda novoItem = ItemVenda.builder()
+                                        .venda(venda)
+                                        .produto(produto)
+                                        .quantidade(itemDto.quantidade())
+                                        .precoUnitario(produto.getPreco())
+                                        .subtotal(produto.getPreco().multiply(BigDecimal.valueOf(itemDto.quantidade())))
+                                        .build();
+                        venda.getItens().add(novoItem);
+                }
+                venda.setValorTotal(calcularValorTotal(venda));
+                return VendaResponseDTO.fromEntity(vendaRepository.save(venda));
+        }
+
+        @Transactional
+        public VendaResponseDTO adicionarItemComanda(
+                        Long comandaId,
+                        ItemVendaRequestDTO itemDto) {
+                Venda venda = vendaRepository.findById(comandaId)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Comanda nao encontrada com id:" + comandaId));
+                if (venda.getStatus() != StatusVenda.ABERTA) {
+                        throw new IllegalArgumentException("Somente comandas abertas podem ter itens adicionados.");
+                }
+                Produto produto = produtoRepository.findById(itemDto.produtoId())
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Produto nao encontrado com o ID: " + itemDto.produtoId()));
+                Optional<ItemVenda> itemExistente = venda.getItens().stream()
+                                .filter(item -> item.getProduto().getId().equals(itemDto.produtoId()))
+                                .findFirst();
+                if (itemExistente.isPresent()) {
+                        ItemVenda item = itemExistente.get();
+                        int novaQuantidade = item.getQuantidade() + itemDto.quantidade();
+                        item.setQuantidade(novaQuantidade);
+                        item.setSubtotal(produto.getPreco().multiply(BigDecimal.valueOf(novaQuantidade)));
+                } else {
+                        ItemVenda novoItem = ItemVenda.builder()
+                                        .venda(venda)
+                                        .produto(produto)
+                                        .quantidade(itemDto.quantidade())
+                                        .precoUnitario(produto.getPreco())
+                                        .subtotal(produto.getPreco().multiply(BigDecimal.valueOf(itemDto.quantidade())))
+                                        .build();
+                        venda.getItens().add(novoItem);
+                }
+                venda.setValorTotal(calcularValorTotal(venda));
+                return VendaResponseDTO.fromEntity(vendaRepository.save(venda));
+        }
+
+        @Transactional
         public VendaResponseDTO cancelarComanda(Long id) {
                 Venda comanda = vendaRepository.findById(id)
                                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -277,8 +345,8 @@ public class VendaService {
                 for (ItemVenda item : venda.getItens()) {
                         Produto produto = item.getProduto();
                         int quantidadeComprometida = calcularQuantidadeComprometida(
-                                produto.getId(),
-                                venda.getId());
+                                        produto.getId(),
+                                        venda.getId());
                         int estoqueDisponivel = produto.getQuantidade() - quantidadeComprometida;
                         if (estoqueDisponivel < item.getQuantidade()) {
                                 throw new BusinessException(
@@ -289,12 +357,12 @@ public class VendaService {
 
         private int calcularQuantidadeComprometida(Long produtoId, Long comandaId) {
                 return vendaRepository.findByStatus(StatusVenda.ABERTA)
-                        .stream()
-                        .filter(venda -> !venda.getId().equals(comandaId))
-                        .flatMap(venda -> venda.getItens().stream())
-                        .filter(item -> item.getProduto().getId().equals(produtoId))
-                        .mapToInt(ItemVenda::getQuantidade)
-                        .sum();
+                                .stream()
+                                .filter(venda -> !venda.getId().equals(comandaId))
+                                .flatMap(venda -> venda.getItens().stream())
+                                .filter(item -> item.getProduto().getId().equals(produtoId))
+                                .mapToInt(ItemVenda::getQuantidade)
+                                .sum();
 
         }
 }

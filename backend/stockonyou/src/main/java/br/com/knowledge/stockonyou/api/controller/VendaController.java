@@ -66,6 +66,13 @@ public class VendaController {
         return ResponseEntity.ok(vendaService.listarComandasAbertas());
     }
 
+    @PostMapping("/comandas")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<VendaResponseDTO> criarComanda(@Valid @RequestBody VendaRequestDTO dto) {
+        VendaResponseDTO response = vendaService.criarComanda(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
     @PutMapping("/cliente/{clienteId}/comanda")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<VendaResponseDTO> atualizarComanda(
@@ -90,5 +97,11 @@ public class VendaController {
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<VendaResponseDTO> registrarPagamento(@PathVariable Long id) {
         return ResponseEntity.ok(vendaService.registrarPagamento(id));
+    }
+
+    @PutMapping("/{id}/itens")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<VendaResponseDTO> atualizarItens(@PathVariable Long id, @Valid @RequestBody ItemVendaRequestDTO dto) {
+        return ResponseEntity.ok(vendaService.adicionarItemComanda(id, dto));
     }
 }

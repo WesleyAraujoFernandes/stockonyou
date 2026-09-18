@@ -47,63 +47,6 @@ public class VendaService {
         }
 
         @Transactional
-        public VendaResponseDTO atualizarComandaAberta(Long clienteId, ItemVendaRequestDTO itemDto) {
-                String username = obterUsuarioAtual();
-                Venda venda = vendaRepository.findByClienteIdAndStatus(clienteId, StatusVenda.ABERTA)
-                                .orElseGet(() -> {
-                                        Cliente cliente = clienteRepository.findById(clienteId)
-                                                        .orElseThrow(() -> new ResourceNotFoundException(
-                                                                        "Cliente não encontrado com o ID:"
-                                                                                        + clienteId));
-                                        return Venda.builder()
-                                                        .cliente(cliente)
-                                                        .clienteNome(cliente.getNome())
-                                                        .usuarioNome(username)
-                                                        .status(StatusVenda.ABERTA)
-                                                        .dataVenda(LocalDateTime.now())
-                                                        .itens(new ArrayList<>())
-                                                        .valorTotal(BigDecimal.ZERO)
-                                                        .build();
-                                });
-                Produto produto = produtoRepository.findById(itemDto.produtoId())
-                                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado."));
-
-                System.out.println("Produto recebido: " + itemDto.produtoId());
-                System.out.println("Itens da comanda: " + venda.getItens().size());
-
-                venda.getItens().forEach(item -> System.out.println(
-                                "Item ID: " + item.getId()
-                                                + " | Produto ID: " + item.getProduto().getId()
-                                                + " | Quantidade: " + item.getQuantidade()));
-
-                Optional<ItemVenda> itemExistente = venda.getItens().stream()
-                                .filter(i -> i.getProduto().getId().equals(itemDto.produtoId()))
-                                .findFirst();
-                if (itemExistente.isPresent()) {
-                        ItemVenda item = itemExistente.get();
-
-                        int novaQuantidade = item.getQuantidade() + itemDto.quantidade();
-
-                        item.setQuantidade(novaQuantidade);
-                        item.setSubtotal(
-                                        item.getPrecoUnitario()
-                                                        .multiply(BigDecimal.valueOf(novaQuantidade)));
-                } else {
-                        ItemVenda novoItem = ItemVenda.builder()
-                                        .venda(venda)
-                                        .produto(produto)
-                                        .quantidade(itemDto.quantidade())
-                                        .precoUnitario(produto.getPreco())
-                                        .subtotal(produto.getPreco().multiply(BigDecimal.valueOf(itemDto.quantidade())))
-                                        .build();
-                        venda.getItens().add(novoItem);
-                }
-
-                venda.setValorTotal(calcularValorTotal(venda));
-                return VendaResponseDTO.fromEntity(vendaRepository.save(venda));
-        }
-
-        @Transactional
         public VendaResponseDTO realizarVenda(VendaRequestDTO dto) {
                 String username = obterUsuarioAtual();
 

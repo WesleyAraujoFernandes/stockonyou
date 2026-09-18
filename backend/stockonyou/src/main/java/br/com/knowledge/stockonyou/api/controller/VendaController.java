@@ -35,11 +35,11 @@ public class VendaController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<Page<VendaResponseDTO>> listarComFiltros(
-        @RequestParam(required = false) String clienteNome, 
-        @RequestParam(required = false) StatusVenda status, 
-        @RequestParam(required = false) String dataInicio, 
-        @RequestParam(required = false) String dataFim, 
-        @PageableDefault(page =0, size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+            @RequestParam(required = false) String clienteNome,
+            @RequestParam(required = false) StatusVenda status,
+            @RequestParam(required = false) String dataInicio,
+            @RequestParam(required = false) String dataFim,
+            @PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(vendaService.listarComFiltros(clienteNome, status, dataInicio, dataFim, pageable));
     }
 
@@ -73,14 +73,6 @@ public class VendaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PutMapping("/cliente/{clienteId}/comanda")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
-    public ResponseEntity<VendaResponseDTO> atualizarComanda(
-        @PathVariable Long clienteId,
-        @Valid @RequestBody ItemVendaRequestDTO dto) {
-            return ResponseEntity.ok(vendaService.atualizarComandaAberta(clienteId, dto));
-        }
-
     @PutMapping("/{id}/concluir")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<VendaResponseDTO> concluirComanda(@PathVariable Long id, StatusVenda status) {
@@ -101,7 +93,8 @@ public class VendaController {
 
     @PutMapping("/{id}/itens")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
-    public ResponseEntity<VendaResponseDTO> atualizarItens(@PathVariable Long id, @Valid @RequestBody ItemVendaRequestDTO dto) {
+    public ResponseEntity<VendaResponseDTO> atualizarItens(@PathVariable Long id,
+            @Valid @RequestBody ItemVendaRequestDTO dto) {
         return ResponseEntity.ok(vendaService.adicionarItemComanda(id, dto));
     }
 }

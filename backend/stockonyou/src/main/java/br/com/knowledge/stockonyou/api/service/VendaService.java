@@ -183,6 +183,7 @@ public class VendaService {
                 if (venda.getStatus() != StatusVenda.ABERTA && venda.getStatus() != StatusVenda.PENDENTE) {
                         throw new IllegalArgumentException("Esta comanda já foi finalizada");
                 }
+                validarEstoqueDaComanda(venda);
                 for (ItemVenda item : venda.getItens()) {
                         Produto produto = item.getProduto();
                         baixarEstoque(produto, item.getQuantidade());
@@ -272,4 +273,28 @@ public class VendaService {
                 produtoRepository.save(produto);
         }
 
+        private void validarEstoqueDaComanda(Venda venda) {
+                for (ItemVenda item : venda.getItens()) {
+                        Produto produto = item.getProduto();
+                        int quantidadeComprometida = calcularQuantidadeComprometida(
+                                produto.getId(),
+                                venda.getId());
+                        int estoqueDisponivel = produto.getQuantidade() - quantidadeComprometida;
+                        if (estoqueDisponivel < item.getQuantidade()) {
+                                throw new BusinessException(
+                                                "Estoque insuficiente para o produto: " + produto.getNome());
+                        }
+                }
+        }
+
+        private int calcularQuantidadeComprometida(Long produtoId, Long comandaId) {
+                return vendaRepository.findByStatus(StatusVenda.ABERTA)
+                        .stream()
+                        .filter(venda -> !venda.getId().equals(comandaId))
+                        .flatMap(venda -> venda.getItens().stream())
+                        .filter(item -> item.getProduto().getId().equals(produtoId))
+                        .mapToInt(ItemVenda::getQuantidade)
+                        .sum();
+
+        }
 }

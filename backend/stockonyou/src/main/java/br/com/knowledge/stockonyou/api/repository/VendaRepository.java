@@ -13,4 +13,5 @@ public interface VendaRepository extends JpaRepository<Venda, Long>, JpaSpecific
     Optional<Venda> findByClienteIdAndStatus(Long clienteId, StatusVenda status);
     List<Venda> findByStatus(StatusVenda status);
     boolean existsByClienteIdAndStatus(Long clienteId, StatusVenda status);
+
 }

@@ -215,7 +215,9 @@ public class VendaService {
                         venda.getItens().add(novoItem);
                 }
                 venda.setValorTotal(calcularValorTotal(venda));
-                return VendaResponseDTO.fromEntity(vendaRepository.save(venda));
+                Venda vendaSalva = vendaRepository.save(venda);
+                List<String> alertas = verificarAlertasDaComanda(vendaSalva);
+                return VendaResponseDTO.fromEntity(vendaSalva, alertas);
         }
 
         @Transactional

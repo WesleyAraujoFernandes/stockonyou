@@ -308,4 +308,18 @@ public class VendaService {
                                 .sum();
 
         }
+
+        private List<String> verificarAlertasDeEstoque(Venda venda) {
+                List<String> alertas = new ArrayList<>();
+                for (ItemVenda item : venda.getItens()) {
+                        Produto produto = item.getProduto();
+                        int estoqueAposVenda = produto.getQuantidade() - item.getQuantidade();
+                        if (estoqueAposVenda < produto.getQuantidadeMinima()) {
+                                alertas.add(
+                                        "O estoque do produto " + produto.getNome() + " ficará abaixo da quantidade minima."
+                                );
+                        }
+                 }
+                return alertas;
+        }
 }

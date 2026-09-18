@@ -143,13 +143,7 @@ public class VendaService {
                                                                         "Produto não encontrado ID: "
                                                                                         + itemDto.produtoId()));
 
-                        if (produto.getQuantidade() < itemDto.quantidade()) {
-                                throw new IllegalArgumentException("Estoque insuficiente para: " + produto.getNome());
-                        }
-
-                        // Dá baixa no estoque na hora porque a venda de balcão finaliza imediatamente
-                        produto.setQuantidade(produto.getQuantidade() - itemDto.quantidade());
-                        produtoRepository.save(produto);
+                        baixarEstoque(produto, itemDto.quantidade());
 
                         BigDecimal precoUnitario = produto.getPreco();
                         BigDecimal subtotal = precoUnitario.multiply(BigDecimal.valueOf(itemDto.quantidade()));
@@ -191,12 +185,7 @@ public class VendaService {
                 }
                 for (ItemVenda item : venda.getItens()) {
                         Produto produto = item.getProduto();
-                        if (produto.getQuantidade() < item.getQuantidade()) {
-                                throw new BusinessException(
-                                                "Estoque insuficiente para o produto: " + produto.getNome());
-                        }
-                        produto.setQuantidade(produto.getQuantidade() - item.getQuantidade());
-                        produtoRepository.save(produto);
+                        baixarEstoque(produto, item.getQuantidade());
                 }
                 venda.setStatus(novoStatus);
                 return VendaResponseDTO.fromEntity(vendaRepository.save(venda));
@@ -268,6 +257,19 @@ public class VendaService {
                 return venda.getItens().stream()
                                 .map(ItemVenda::getSubtotal)
                                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+        }
+
+        private void validarEstoqueDisponivel(Produto produto, int quantidade) {
+                if (produto.getQuantidade() < quantidade) {
+                        throw new BusinessException(
+                                        "Estoque insuficiente para o produto: " + produto.getNome());
+                }
+        }
+
+        private void baixarEstoque(Produto produto, int quantidade) {
+                validarEstoqueDisponivel(produto, quantidade);
+                produto.setQuantidade(produto.getQuantidade() - quantidade);
+                produtoRepository.save(produto);
         }
 
 }

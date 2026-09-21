@@ -201,17 +201,9 @@ public class VendaService {
                                 .findFirst();
                 if (itemExistente.isPresent()) {
                         ItemVenda item = itemExistente.get();
-                        int novaQuantidade = item.getQuantidade() + itemDto.quantidade();
-                        item.setQuantidade(novaQuantidade);
-                        item.setSubtotal(produto.getPreco().multiply(BigDecimal.valueOf(novaQuantidade)));
+                        atualizarItemVenda(item, itemDto.quantidade());
                 } else {
-                        ItemVenda novoItem = ItemVenda.builder()
-                                        .venda(venda)
-                                        .produto(produto)
-                                        .quantidade(itemDto.quantidade())
-                                        .precoUnitario(produto.getPreco())
-                                        .subtotal(produto.getPreco().multiply(BigDecimal.valueOf(itemDto.quantidade())))
-                                        .build();
+                        ItemVenda novoItem = criarItemVenda(venda, produto, itemDto.quantidade());
                         venda.getItens().add(novoItem);
                 }
                 venda.setValorTotal(calcularValorTotal(venda));
@@ -335,9 +327,8 @@ public class VendaService {
                 List<String> alertas = new ArrayList<>();
                 for (ItemVenda item : venda.getItens()) {
                         Produto produto = item.getProduto();
-                        int estoqueDisponivel = calcularEstoqueDisponivel(produto, venda.getId());
-                        int estoqueAposComanda = estoqueDisponivel - item.getQuantidade();
-                        if (estoqueAposComanda < produto.getQuantidadeMinima()) {
+                        int estoqueAposComanda = calcularEstoqueAposComanda(produto, item.getQuantidade(), venda.getId());
+                        if (estoqueAbaixoDoMinimo(produto, estoqueAposComanda)) {
                                 alertas.add(
                                                 criarAlertaEstoqueMinimo(produto));
                         }
@@ -355,5 +346,24 @@ public class VendaService {
                         Produto produto,
                         int estoqueProjetado) {
                 return estoqueProjetado < produto.getQuantidadeMinima();
+        }
+
+        private void atualizarItemVenda(
+                ItemVenda item,
+                int quantidadeAdicionar
+        ) {
+                int novaQuantidade = item.getQuantidade() + quantidadeAdicionar;
+                item.setQuantidade(novaQuantidade);
+                item.setSubtotal(item.getPrecoUnitario().multiply(BigDecimal.valueOf(novaQuantidade)));
+        }
+
+        private int calcularEstoqueAposComanda(
+                Produto produto,
+                int quantidade,
+                Long comandaId
+        ) {
+                int estoqueDisponivel = 
+                        calcularEstoqueDisponivel(produto, comandaId);
+                return estoqueDisponivel - quantidade;
         }
 }

@@ -100,9 +100,7 @@ public class VendaService {
 
         @Transactional
         public VendaResponseDTO concluirComanda(Long comandaId, StatusVenda novoStatus) {
-                if (novoStatus != StatusVenda.PAGO && novoStatus != StatusVenda.PENDENTE) {
-                        throw new IllegalArgumentException("O novo status deve ser PAGO ou PENDENTE.");
-                }
+                validarNovoStatusDaComanda(novoStatus);
                 Venda venda = vendaRepository.findById(comandaId)
                                 .orElseThrow(() -> new ResourceNotFoundException(
                                                 "Comanda nao encontrada com id:" + comandaId));
@@ -367,6 +365,12 @@ public class VendaService {
         private void validarComandaPodeSerConcluida(Venda venda) {
                 if (venda.getStatus() != StatusVenda.ABERTA && venda.getStatus() != StatusVenda.PENDENTE) {
                         throw new IllegalArgumentException("Esta comanda já foi finalizada");
+                }
+        }
+
+        private void validarNovoStatusDaComanda(StatusVenda novoStatus) {
+                if (novoStatus != StatusVenda.PAGO && novoStatus != StatusVenda.PENDENTE) {
+                        throw new IllegalArgumentException("O novo status deve ser PAGO ou PENDENTE");
                 }
         }
 }

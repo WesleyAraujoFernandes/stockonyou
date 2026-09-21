@@ -106,9 +106,7 @@ public class VendaService {
                 Venda venda = vendaRepository.findById(comandaId)
                                 .orElseThrow(() -> new ResourceNotFoundException(
                                                 "Comanda nao encontrada com id:" + comandaId));
-                if (venda.getStatus() != StatusVenda.ABERTA && venda.getStatus() != StatusVenda.PENDENTE) {
-                        throw new IllegalArgumentException("Esta comanda já foi finalizada");
-                }
+                validarComandaPodeSerConcluida(venda);
                 validarEstoqueDaComanda(venda);
                 List<String> alertas = new ArrayList<>();
                 for (ItemVenda item : venda.getItens()) {
@@ -327,10 +325,12 @@ public class VendaService {
                 List<String> alertas = new ArrayList<>();
                 for (ItemVenda item : venda.getItens()) {
                         Produto produto = item.getProduto();
-                        int estoqueAposComanda = calcularEstoqueAposComanda(produto, item.getQuantidade(), venda.getId());
+                        int estoqueAposComanda = calcularEstoqueAposComanda(produto, item.getQuantidade(),
+                                        venda.getId());
                         if (estoqueAbaixoDoMinimo(produto, estoqueAposComanda)) {
                                 alertas.add(
-                                                criarAlertaEstoqueMinimo(produto));
+                                                criarAlertaEstoqueMinimo(produto)
+                                );
                         }
                 }
                 return alertas;
@@ -349,21 +349,24 @@ public class VendaService {
         }
 
         private void atualizarItemVenda(
-                ItemVenda item,
-                int quantidadeAdicionar
-        ) {
+                        ItemVenda item,
+                        int quantidadeAdicionar) {
                 int novaQuantidade = item.getQuantidade() + quantidadeAdicionar;
                 item.setQuantidade(novaQuantidade);
                 item.setSubtotal(item.getPrecoUnitario().multiply(BigDecimal.valueOf(novaQuantidade)));
         }
 
         private int calcularEstoqueAposComanda(
-                Produto produto,
-                int quantidade,
-                Long comandaId
-        ) {
-                int estoqueDisponivel = 
-                        calcularEstoqueDisponivel(produto, comandaId);
+                        Produto produto,
+                        int quantidade,
+                        Long comandaId) {
+                int estoqueDisponivel = calcularEstoqueDisponivel(produto, comandaId);
                 return estoqueDisponivel - quantidade;
+        }
+
+        private void validarComandaPodeSerConcluida(Venda venda) {
+                if (venda.getStatus() != StatusVenda.ABERTA && venda.getStatus() != StatusVenda.PENDENTE) {
+                        throw new IllegalArgumentException("Esta comanda já foi finalizada");
+                }
         }
 }

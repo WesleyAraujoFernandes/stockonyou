@@ -305,17 +305,16 @@ public class VendaService {
                         int quantidade) {
                 List<String> alertas = new ArrayList<>();
                 int estoqueAposVenda = produto.getQuantidade() - quantidade;
-                if (estoqueAposVenda < produto.getQuantidadeMinima()) {
+                if (estoqueAbaixoDoMinimo(produto, estoqueAposVenda)) {
                         alertas.add(criarAlertaEstoqueMinimo(produto));
                 }
                 return alertas;
         }
 
         private ItemVenda criarItemVenda(
-                Venda venda,
-                Produto produto,
-                int quantidade
-        ) {
+                        Venda venda,
+                        Produto produto,
+                        int quantidade) {
                 BigDecimal precoUnitario = produto.getPreco();
                 BigDecimal subtotal = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
                 return ItemVenda.builder()
@@ -340,8 +339,7 @@ public class VendaService {
                         int estoqueAposComanda = estoqueDisponivel - item.getQuantidade();
                         if (estoqueAposComanda < produto.getQuantidadeMinima()) {
                                 alertas.add(
-                                        criarAlertaEstoqueMinimo(produto)
-                                );
+                                                criarAlertaEstoqueMinimo(produto));
                         }
                 }
                 return alertas;
@@ -351,5 +349,11 @@ public class VendaService {
                 return "O estoque do produto "
                                 + produto.getNome()
                                 + " ficara abaixo da quantidade minima.";
+        }
+
+        private boolean estoqueAbaixoDoMinimo(
+                        Produto produto,
+                        int estoqueProjetado) {
+                return estoqueProjetado < produto.getQuantidadeMinima();
         }
 }

@@ -355,4 +355,10 @@ public class VendaService {
                 }
                 return alertas;
         }
+
+        private String criarAlertaEstoqueMinimo(Produto produto) {
+                return "O estoque do produto "
+                                + produto.getNome()
+                                + " ficara abaixo da quantidade minima.";
+        }
 }

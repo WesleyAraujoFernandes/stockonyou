@@ -303,18 +303,11 @@ public class VendaService {
         private List<String> verificarAlertasDeEstoque(
                         Produto produto,
                         int quantidade) {
-
                 List<String> alertas = new ArrayList<>();
-
                 int estoqueAposVenda = produto.getQuantidade() - quantidade;
-
                 if (estoqueAposVenda < produto.getQuantidadeMinima()) {
-                        alertas.add(
-                                        "O estoque do produto "
-                                                        + produto.getNome()
-                                                        + " ficará abaixo da quantidade mínima.");
+                        alertas.add(criarAlertaEstoqueMinimo(produto));
                 }
-
                 return alertas;
         }
 
@@ -347,9 +340,7 @@ public class VendaService {
                         int estoqueAposComanda = estoqueDisponivel - item.getQuantidade();
                         if (estoqueAposComanda < produto.getQuantidadeMinima()) {
                                 alertas.add(
-                                        "O estoque do produto "
-                                                + produto.getNome()
-                                                + " ficara abaixo da quantidade minima."
+                                        criarAlertaEstoqueMinimo(produto)
                                 );
                         }
                 }

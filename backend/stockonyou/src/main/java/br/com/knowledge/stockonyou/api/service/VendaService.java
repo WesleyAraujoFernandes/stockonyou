@@ -101,9 +101,7 @@ public class VendaService {
         @Transactional
         public VendaResponseDTO concluirComanda(Long comandaId, StatusVenda novoStatus) {
                 validarNovoStatusDaComanda(novoStatus);
-                Venda venda = vendaRepository.findById(comandaId)
-                                .orElseThrow(() -> new ResourceNotFoundException(
-                                                "Comanda nao encontrada com id:" + comandaId));
+                Venda venda = buscarComanda(comandaId);
                 validarComandaPodeSerConcluida(venda);
                 validarEstoqueDaComanda(venda);
                 List<String> alertas = new ArrayList<>();
@@ -183,9 +181,7 @@ public class VendaService {
         public VendaResponseDTO adicionarItemComanda(
                         Long comandaId,
                         ItemVendaRequestDTO itemDto) {
-                Venda venda = vendaRepository.findById(comandaId)
-                                .orElseThrow(() -> new ResourceNotFoundException(
-                                                "Comanda nao encontrada com id:" + comandaId));
+                Venda venda = buscarComanda(comandaId);
                 if (venda.getStatus() != StatusVenda.ABERTA) {
                         throw new IllegalArgumentException("Somente comandas abertas podem ter itens adicionados.");
                 }
@@ -210,9 +206,7 @@ public class VendaService {
 
         @Transactional
         public VendaResponseDTO cancelarComanda(Long id) {
-                Venda comanda = vendaRepository.findById(id)
-                                .orElseThrow(() -> new ResourceNotFoundException(
-                                                "Comanda nao encontrada com id:" + id));
+                Venda comanda = buscarComanda(id);
                 if (comanda.getStatus() != StatusVenda.ABERTA) {
                         throw new IllegalArgumentException("Somente comandas abertas podem ser canceladas.");
                 }
@@ -372,5 +366,11 @@ public class VendaService {
                 if (novoStatus != StatusVenda.PAGO && novoStatus != StatusVenda.PENDENTE) {
                         throw new IllegalArgumentException("O novo status deve ser PAGO ou PENDENTE");
                 }
+        }
+
+        private Venda buscarComanda(Long id) {
+                return vendaRepository.findById(id)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Comanda nao encontrada com id:" + id));
         }
 }

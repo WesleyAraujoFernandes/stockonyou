@@ -75,23 +75,17 @@ public class VendaService {
         @Transactional
         public VendaResponseDTO cancelarComanda(Long id) {
                 Venda comanda = buscarComanda(id);
-                if (comanda.getStatus() != StatusVenda.ABERTA) {
-                        throw new IllegalArgumentException("Somente comandas abertas podem ser canceladas.");
-                }
+                validarComandaPodeSerCancelada(comanda);
                 comanda.setStatus(StatusVenda.CANCELADA);
                 return VendaResponseDTO.fromEntity(vendaRepository.save(comanda));
         }
 
         @Transactional
-        public VendaResponseDTO concluirComanda(Long comandaId, StatusVenda novoStatus) {
-                validarNovoStatusDaComanda(novoStatus);
+        public VendaResponseDTO concluirComanda(Long comandaId) {
                 Venda venda = buscarComanda(comandaId);
                 validarComandaPodeSerConcluida(venda);
-                List<String> alertas = List.of();
-                if (comandaPrecisaBaixarEstoque(venda)) {
-                        alertas = processarEstoqueDaConclusao(venda);
-                }
-                venda.setStatus(novoStatus);
+                List<String> alertas = processarEstoqueDaConclusao(venda);
+                venda.setStatus(StatusVenda.PENDENTE);
                 Venda vendaSalva = vendaRepository.save(venda);
                 return VendaResponseDTO.fromEntity(
                                 vendaSalva,
@@ -271,10 +265,6 @@ public class VendaService {
                                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         }
 
-        private boolean comandaPrecisaBaixarEstoque(Venda venda) {
-                return venda.getStatus() == StatusVenda.ABERTA;
-        }
-
         private String criarAlertaEstoqueMinimo(Produto produto) {
                 return "O estoque do produto "
                                 + produto.getNome()
@@ -333,8 +323,14 @@ public class VendaService {
                 return alertas;
         }
 
+        private void validarComandaPodeSerCancelada(Venda comanda) {
+                if (comanda.getStatus() != StatusVenda.ABERTA) {
+                        throw new IllegalArgumentException("Somente comandas abertas podem ser canceladas.");
+                }
+        }
+
         private void validarComandaPodeSerConcluida(Venda venda) {
-                if (venda.getStatus() != StatusVenda.ABERTA && venda.getStatus() != StatusVenda.PENDENTE) {
+                if (venda.getStatus() != StatusVenda.ABERTA) {
                         throw new IllegalArgumentException("Esta comanda já foi finalizada");
                 }
         }
@@ -354,12 +350,6 @@ public class VendaService {
                 if (produto.getQuantidade() < quantidade) {
                         throw new BusinessException(
                                         "Estoque insuficiente para o produto: " + produto.getNome());
-                }
-        }
-
-        private void validarNovoStatusDaComanda(StatusVenda novoStatus) {
-                if (novoStatus != StatusVenda.PAGO && novoStatus != StatusVenda.PENDENTE) {
-                        throw new IllegalArgumentException("O novo status deve ser PAGO ou PENDENTE");
                 }
         }
 

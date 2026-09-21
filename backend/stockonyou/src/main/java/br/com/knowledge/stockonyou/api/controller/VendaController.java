@@ -75,8 +75,8 @@ public class VendaController {
 
     @PutMapping("/{id}/concluir")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
-    public ResponseEntity<VendaResponseDTO> concluirComanda(@PathVariable Long id, StatusVenda status) {
-        return ResponseEntity.ok(vendaService.concluirComanda(id, status));
+    public ResponseEntity<VendaResponseDTO> concluirComanda(@PathVariable Long id) {
+        return ResponseEntity.ok(vendaService.concluirComanda(id));
     }
 
     @PutMapping("/{id}/cancelar")

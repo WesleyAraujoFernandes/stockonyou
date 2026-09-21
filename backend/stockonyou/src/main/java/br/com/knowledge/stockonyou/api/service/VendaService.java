@@ -70,7 +70,6 @@ public class VendaService {
                                 dto.clienteNome(),
                                 username,
                                 StatusVenda.PAGO);
-                BigDecimal valorTotalVenda = BigDecimal.ZERO;
                 for (ItemVendaRequestDTO itemDto : dto.itens()) {
                         Produto produto = produtoRepository.findById(itemDto.produtoId())
                                         .orElseThrow(
@@ -83,10 +82,9 @@ public class VendaService {
                                                         itemDto.quantidade()));
                         baixarEstoque(produto, itemDto.quantidade());
                         ItemVenda novoItem = criarItemVenda(venda, produto, itemDto.quantidade());
-                        valorTotalVenda = valorTotalVenda.add(novoItem.getSubtotal());
                         venda.getItens().add(novoItem);
                 }
-                venda.setValorTotal(valorTotalVenda);
+                venda.setValorTotal(calcularValorTotal(venda));
                 Venda vendaSalva = vendaRepository.save(venda);
                 return VendaResponseDTO.fromEntity(vendaSalva, alertas);
         }
@@ -260,10 +258,7 @@ public class VendaService {
         private void validarEstoqueDaComanda(Venda venda) {
                 for (ItemVenda item : venda.getItens()) {
                         Produto produto = item.getProduto();
-                        int quantidadeComprometida = calcularQuantidadeComprometida(
-                                        produto.getId(),
-                                        venda.getId());
-                        int estoqueDisponivel = produto.getQuantidade() - quantidadeComprometida;
+                        int estoqueDisponivel = calcularEstoqueDisponivel(produto, venda.getId());
                         if (estoqueDisponivel < item.getQuantidade()) {
                                 throw new BusinessException(
                                                 "Estoque insuficiente para o produto: " + produto.getNome());
@@ -298,7 +293,7 @@ public class VendaService {
                         Produto produto,
                         int quantidade) {
                 BigDecimal precoUnitario = produto.getPreco();
-                BigDecimal subtotal = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
+                BigDecimal subtotal = calcularSubtotal(precoUnitario, quantidade);
                 return ItemVenda.builder()
                                 .venda(venda)
                                 .produto(produto)
@@ -309,8 +304,11 @@ public class VendaService {
         }
 
         private int calcularEstoqueDisponivel(Produto produto, Long comandaId) {
-                int quantidadeComprometida = calcularQuantidadeComprometida(produto.getId(), comandaId);
-                return produto.getQuantidade() - quantidadeComprometida;
+                int quantidadeComprometida = calcularQuantidadeComprometida(
+                                produto.getId(),
+                                comandaId);
+                return produto.getQuantidade()
+                                - quantidadeComprometida;
         }
 
         private List<String> verificarAlertasDaComanda(Venda venda) {
@@ -321,8 +319,7 @@ public class VendaService {
                                         venda.getId());
                         if (estoqueAbaixoDoMinimo(produto, estoqueAposComanda)) {
                                 alertas.add(
-                                                criarAlertaEstoqueMinimo(produto)
-                                );
+                                                criarAlertaEstoqueMinimo(produto));
                         }
                 }
                 return alertas;
@@ -345,7 +342,7 @@ public class VendaService {
                         int quantidadeAdicionar) {
                 int novaQuantidade = item.getQuantidade() + quantidadeAdicionar;
                 item.setQuantidade(novaQuantidade);
-                item.setSubtotal(item.getPrecoUnitario().multiply(BigDecimal.valueOf(novaQuantidade)));
+                item.setSubtotal(calcularSubtotal(item.getPrecoUnitario(), novaQuantidade));
         }
 
         private int calcularEstoqueAposComanda(
@@ -373,4 +370,20 @@ public class VendaService {
                                 .orElseThrow(() -> new ResourceNotFoundException(
                                                 "Comanda nao encontrada com id:" + id));
         }
+
+        private BigDecimal calcularSubtotal(
+                        BigDecimal precoUnitario,
+                        int quantidade) {
+                return precoUnitario.multiply(BigDecimal.valueOf(quantidade));
+        }
+        /*
+         * private int calcularEstoqueDisponivelParaComanda(
+         * Produto produto, Long comandaId
+         * ) {
+         * int quantidadeComprometida = calcularQuantidadeComprometida(produto.getId(),
+         * comandaId);
+         * return produto.getQuantidade() - quantidadeComprometida;
+         * }
+         */
+
 }

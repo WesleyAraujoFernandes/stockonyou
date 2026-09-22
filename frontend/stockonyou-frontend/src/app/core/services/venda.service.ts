@@ -38,27 +38,6 @@ export class VendaService {
     return this.http.get<PageResponse<VendaResponse>>(this.apiUrl, { params });
   }
 
-  /*
-  listarVendasHistorico(
-    clienteNome?: string,
-    status?: string,
-    page: number = 0,
-    size: number = 10
-  ): Observable<PageResponse<VendaResponse>> {
-    let params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString())
-      .set('sort', 'id,desc');
-    if (clienteNome && clienteNome.trim()) {
-      params = params.set('clienteNome', clienteNome.trim())
-    }
-    if (status && status.trim()) {
-      params = params.set('status', status.trim());
-    }
-    return this.http.get<PageResponse<VendaResponse>>(this.apiUrl, { params })
-  }
-  */
-
   buscarPorId(id: number): Observable<VendaResponse> {
     return this.http.get<VendaResponse>(`${this.apiUrl}/${id}`);
   }
@@ -75,13 +54,24 @@ export class VendaService {
     return this.http.get<VendaResponse[]>(`${this.apiUrl}/comandas`);
   }
 
-  atualizarComanda(clienteId: number, item: ItemVendaRequest): Observable<VendaResponse> {
-    return this.http.put<VendaResponse>(`${this.apiUrl}/cliente/${clienteId}/comanda`, item);
+  criarComanda(venda: VendaRequest): Observable<VendaResponse> {
+    return this.http.post<VendaResponse> (`${this.apiUrl}/comandas`, venda);
   }
 
-  finalizarComanda(vendaId: number, status: 'PAGO' | 'PENDENTE'): Observable<VendaResponse> {
-    const params = new HttpParams().set('status', status);
-    return this.http.put<VendaResponse>(`${this.apiUrl}/${vendaId}/finalizar`, {}, {params});
+  concluirComanda(vendaId: number): Observable<VendaResponse> {
+    return this.http.put<VendaResponse> (`${this.apiUrl}/${vendaId}/concluir`,{})
+  }
+
+  cancelarComanda(vendaId: number): Observable<VendaResponse> {
+    return this.http.put<VendaResponse>(`${this.apiUrl}/${vendaId}/cancelar`, {})
+  }
+
+  registrarPagamento(vendaId: number): Observable<VendaResponse> {
+    return this.http.put<VendaResponse>(`${this.apiUrl}/${vendaId}/pagamento`, {})
+  }
+
+  adicionarItemComanda(comandaId: number, item: ItemVendaRequest): Observable<VendaResponse> {
+    return this.http.put<VendaResponse>(`${this.apiUrl}/${comandaId}/itens`, item)
   }
 
 }

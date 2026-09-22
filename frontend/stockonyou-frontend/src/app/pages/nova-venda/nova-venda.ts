@@ -1,11 +1,12 @@
 import { Component, inject, OnInit, signal, computed, effect } from '@angular/core';
+import { switchMap } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VendaService } from '../../core/services/venda.service';
 import { ProdutoService } from '../../core/services/produto.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Produto } from '../../core/model/produto.model';
-import { ItemVendaRequest } from '../../core/model/venda.model';
+import { ItemVendaRequest, VendaRequest } from '../../core/model/venda.model';
 import { Cliente, ClienteService } from '../../core/services/cliente.service';
 
 import {
@@ -97,7 +98,7 @@ export class NovaVenda implements OnInit {
 
   recuperarTodasComandasDoBanco(): void {
     this.vendaService.listarComandasAbertas().subscribe({
-      next: (comandasBanco : any[]) => {
+      next: (comandasBanco: any[]) => {
         if (comandasBanco && comandasBanco.length > 0) {
           const mapeadas: ComandaAtiva[] = comandasBanco.map(venda => {
             const idDoClienteReal = venda.cliente?.id || venda.clienteId || 999;
@@ -130,7 +131,8 @@ export class NovaVenda implements OnInit {
           this.comandasAtivas.set([{
             cliente: { id: 1, nome: 'Cliente Padrão' },
             usuario: this.usuarioLogado,
-            carrinho: [] }]);
+            carrinho: []
+          }]);
           this.clienteSelecionado.set({ id: 1, nome: 'Cliente Padrão' });
           this.carrinho.set([]);
           this.vendaIdAtual = undefined;
@@ -189,7 +191,7 @@ export class NovaVenda implements OnInit {
     }
     const confirmar = confirm(`Deseja realmente encerrar e fechar a conta de "${this.clienteSelecionado().nome}" no valor de ${this.valorTotalCarrinho().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`)
     if (confirmar) {
-      this.vendaService.finalizarComanda(idComanda, 'PAGO').subscribe({
+      this.vendaService.registrarPagamento(idComanda).subscribe({
         next: () => {
           this.toast.sucesso('Conta fechada com sucesso! Comanda Finalizada.');
           this.carrinho.set([]);
@@ -221,7 +223,7 @@ export class NovaVenda implements OnInit {
       return;
     }
 
-    const nova: ComandaAtiva = { cliente, usuario: this.usuarioLogado , carrinho: [] };
+    const nova: ComandaAtiva = { cliente, usuario: this.usuarioLogado, carrinho: [] };
     this.comandasAtivas.update(lista => [...lista, nova]);
     this.clienteSelecionado.set(cliente);
     this.carrinho.set([]);
@@ -304,12 +306,12 @@ export class NovaVenda implements OnInit {
 
   adicionarNoCarrinho(): void {
     if (!this.produtoSelecionado) return;
-    console.log('adicionarNoCarrinho -> usuarioLogado:',this.usuarioLogado);
+    console.log('adicionarNoCarrinho -> usuarioLogado:', this.usuarioLogado);
     // CASO 1: SE FOR CLIENTE PADRÃO (ID 1) -> Gerencia apenas em memória local
     if (this.clienteSelecionado().id === 1) {
       const itensAtuais = [...this.carrinho()];
       const itemExistente = itensAtuais
-      .find(item => item.produto!.id === this.produtoSelecionado!.id);
+        .find(item => item.produto!.id === this.produtoSelecionado!.id);
       if (itemExistente) {
         itemExistente.quantidade += this.quantidadeInserir;
         itemExistente.subTotal = itemExistente.quantidade * itemExistente.precoUnitario;
@@ -334,11 +336,15 @@ export class NovaVenda implements OnInit {
     // CASO 2: CLIENTES REAIS (Etevaldo, Eliana...) -> Envia para a comanda aberta no banco
     const itemRequest: ItemVendaRequest = {
       produtoId: this.produtoSelecionado.id,
-      quantidade: this.quantidadeInserir,
-      precoUnitario: this.produtoSelecionado.preco
+      quantidade: this.quantidadeInserir
     };
 
-    this.vendaService.atualizarComanda(this.clienteSelecionado().id, itemRequest).subscribe({
+    if (this.vendaIdAtual === undefined) {
+      this.toast.erro('Nenhuma comanda aberta foi selecionada.')
+      return;
+    }
+
+    this.vendaService.adicionarItemComanda(this.vendaIdAtual, itemRequest).subscribe({
       next: (vendaAtualizada: any) => {
         this.vendaIdAtual = vendaAtualizada.id;
 
@@ -369,37 +375,26 @@ export class NovaVenda implements OnInit {
   }
   removerDoCarrinho(index: number): void {
     const item = this.carrinho()[index];
-    // CORREÇÃO: Garante que o item e a propriedade produto existam antes de prosseguir
-    if (!item || !item.produto) return;
+    if (!item || item.produto) return;
 
-    const itemRequest: ItemVendaRequest = {
-      produtoId: item.produto.id,
-      quantidade: 0,
-      precoUnitario: item.precoUnitario
-    };
-
-    this.vendaService.atualizarComanda(this.clienteSelecionado().id, itemRequest).subscribe({
-      next: () => {
-        this.carrinho.update(lista => lista.filter((_, i) => i !== index));
-        this.sincronizarListaLateral();
-        this.toast.sucesso('Item removido do banco.');
-      },
-      error: (err) => {
-        console.error('Erro ao remover item:', err);
-        this.toast.erro('Falha ao remover o item do banco.');
-      }
-    });
+    if (this.clienteSelecionado().id === 1) {
+      this.carrinho.update(lista => lista.filter((_, i) => i !== index))
+      this.sincronizarListaLateral();
+      this.toast.sucesso('Item removedo do balcão.');
+      return;
+    }
+    this.toast.info(
+      'A remoção de itens da comanda será implementada no próximo incremento'
+    )
   }
 
   ajustarQuantidadeItem(index: number): void {
     const item = this.carrinho()[index];
     if (!item || !item.produto) return;
 
-    // CORREÇÃO: Declarada aqui em cima para funcionar em todo o escopo do método
-    const novaQtd = item.quantidade - 1;
-
     // CASO 1: SE FOR CLIENTE PADRÃO (ID 1) -> Gerencia apenas em memória local
     if (this.clienteSelecionado().id === 1) {
+      const novaQtd = item.quantidade - 1;
       if (novaQtd <= 0) {
         this.carrinho.update(lista => lista.filter((_, i) => i !== index));
       } else {
@@ -410,45 +405,12 @@ export class NovaVenda implements OnInit {
       }
       this.sincronizarListaLateral();
       this.toast.sucesso('Quantidade ajustada no balcão.');
-      return; // Interrompe aqui para não fazer o PUT no banco
+      return;
     }
 
-    // CASO 2: CLIENTES REAIS -> Envia para a comanda aberta no banco
-    const itemRequest: ItemVendaRequest = {
-      produtoId: item.produto.id,
-      quantidade: novaQtd,
-      precoUnitario: item.precoUnitario
-    };
+    // Comanda real: ainda não existe endpoint para reduzir a quantidade de um item.
 
-    this.vendaService.atualizarComanda(this.clienteSelecionado().id, itemRequest).subscribe({
-      next: (vendaAtualizada: any) => {
-        if (novaQtd <= 0) {
-          this.carrinho.update(lista => lista.filter((_, i) => i !== index));
-        } else {
-          // Reconstrói o objeto Produto a partir do DTO plano do Java
-          const novoCarrinho = vendaAtualizada.itens.map((it: any) => ({
-            produto: {
-              id: it.produtoId,
-              nome: it.produtoNome || 'Produto',
-              preco: it.precoUnitario,
-              codigoBarras: '',
-              quantidade: 9999,
-              categoria: { id: 0, nome: '' }
-            } as Produto,
-            quantidade: it.quantidade,
-            precoUnitario: it.precoUnitario,
-            subTotal: it.subtotal
-          }));
-          this.carrinho.set(novoCarrinho);
-        }
-        this.sincronizarListaLateral();
-        this.toast.sucesso('Quantidade ajustada no banco.');
-      },
-      error: (err) => {
-        console.error('Erro ao ajustar quantidade:', err);
-        this.toast.erro('Falha ao ajustar a quantidade no banco.');
-      }
-    });
+    this.toast.info('O ajuste de quantidade da comanda será implementado no próximo incremento.')
   }
 
 
@@ -472,18 +434,19 @@ export class NovaVenda implements OnInit {
   confirmarFechamento(tipo: 'PAGO' | 'PENDENTE'): void {
     const idCliente = Number(this.clienteSelecionado().id);
 
-    // CASO 1: SE FOR CLIENTE PADRÃO (ID 1) -> Dispara a venda direta de balcão (POST /api/vendas)
-    if (idCliente === 1 || this.clienteSelecionado().nome.toLowerCase() === 'cliente padrão') {
-      const itensRequest = this.carrinho()
+    // CASO 1: CLIENTE PADRÃO -> venda direta de balcão
+    if (
+      idCliente === 1 ||
+      this.clienteSelecionado().nome.toLowerCase() === 'cliente padrão'
+    ) {
+      const itensRequest: ItemVendaRequest[] = this.carrinho()
         .filter(item => item.produto !== undefined && item.produto !== null)
         .map(item => ({
           produtoId: item.produto!.id,
-          quantidade: item.quantidade,
-          precoUnitario: item.precoUnitario
+          quantidade: item.quantidade
         }));
 
-      const payload = {
-        clienteId: 1,
+      const payload: VendaRequest = {
         itens: itensRequest
       };
 
@@ -497,33 +460,54 @@ export class NovaVenda implements OnInit {
           this.toast.erro('Erro ao processar venda de balcão.');
         }
       });
-      return; // Interrompe para não seguir para o fluxo de comanda
+
+      return;
     }
 
-    // CASO 2: CLIENTES REAIS (Wesley, Eliana...) -> Finaliza comanda no banco (PUT /api/vendas/{id}/finalizar)
-    // Se a vendaIdAtual sumiu da memória, tentamos buscar a referência guardada na lista lateral
+    // CASO 2: CLIENTE REAL -> comanda no banco
     if (!this.vendaIdAtual) {
-      const comandaMemoria = this.comandasAtivas().find(c => c.cliente.id === idCliente);
+      const comandaMemoria = this.comandasAtivas()
+        .find(c => c.cliente.id === idCliente);
+
       this.vendaIdAtual = comandaMemoria?.vendaId;
     }
 
     if (!this.vendaIdAtual) {
-      this.toast.erro('Não foi possível localizar o ID da comanda para este cliente no servidor.');
+      this.toast.erro(
+        'Não foi possível localizar o ID da comanda para este cliente no servidor.'
+      );
       return;
     }
 
-    this.vendaService.finalizarComanda(this.vendaIdAtual, tipo).subscribe({
-      next: () => {
-        const mensagem = tipo === 'PAGO' ? 'Venda quitada com sucesso!' : 'Conta pendurada (Fiado) registrada!';
-        this.toast.sucesso(mensagem);
-        this.limparEstadoPdvAposFechamento(idCliente);
-      },
-      error: (err) => {
-        console.error('Erro ao finalizar comanda do cliente:', err);
-        this.toast.erro('Falha ao encerrar comanda no servidor.');
-      }
-    });
+    const vendaId = this.vendaIdAtual;
+
+    this.vendaService.concluirComanda(vendaId)
+      .pipe(
+        switchMap(() => {
+          if (tipo === 'PAGO') {
+            return this.vendaService.registrarPagamento(vendaId);
+          }
+
+          return this.vendaService.buscarPorId(vendaId);
+        })
+      )
+      .subscribe({
+        next: () => {
+          const mensagem =
+            tipo === 'PAGO'
+              ? 'Venda quitada com sucesso!'
+              : 'Conta pendurada (Fiado) registrada!';
+
+          this.toast.sucesso(mensagem);
+          this.limparEstadoPdvAposFechamento(idCliente);
+        },
+        error: (err) => {
+          console.error('Erro ao finalizar comanda do cliente:', err);
+          this.toast.erro('Falha ao encerrar comanda no servidor.');
+        }
+      });
   }
+
 
   // Método auxiliar para isolar a limpeza das listas após salvar
   limparEstadoPdvAposFechamento(idCliente: number): void {

@@ -122,7 +122,7 @@ export class HistoricoVenda implements OnInit {
     const desejaQuitar = confirm('Confirma o recebimento total e quitação desta conta pendurada?')
     if (!desejaQuitar) return;
 
-    this.vendaService.finalizarComanda(vendaId, 'PAGO').subscribe({
+    this.vendaService.registrarPagamento(vendaId).subscribe({
       next: () => {
         this.toast.sucesso('Conta quitada com sucesso! Fluxo de caixa atualizado!')
         this.exibirModalDetalhes.set(false);

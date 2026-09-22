@@ -46,9 +46,7 @@ public class VendaService {
                 if (venda.getStatus() != StatusVenda.ABERTA) {
                         throw new IllegalArgumentException("Somente comandas abertas podem ter itens adicionados.");
                 }
-                Produto produto = produtoRepository.findById(itemDto.produtoId())
-                                .orElseThrow(() -> new ResourceNotFoundException(
-                                                "Produto nao encontrado com o ID: " + itemDto.produtoId()));
+                Produto produto = buscarProduto(itemDto.produtoId());
                 Optional<ItemVenda> itemExistente = venda.getItens().stream()
                                 .filter(item -> item.getProduto().getId().equals(itemDto.produtoId()))
                                 .findFirst();
@@ -95,23 +93,15 @@ public class VendaService {
         @Transactional
         public VendaResponseDTO criarComanda(VendaRequestDTO dto) {
                 String username = obterUsuarioAtual();
-                Cliente cliente = clienteRepository.findById(dto.clienteId())
-                                .orElseThrow(() -> new ResourceNotFoundException(
-                                                "Cliente não encontrado com o ID: " + dto.clienteId()));
-                boolean jaTemComanda = vendaRepository.existsByClienteIdAndStatus(cliente.getId(), StatusVenda.ABERTA);
-                if (jaTemComanda) {
-                        throw new BusinessException(
-                                        "Este cliente já possui uma comanda aberta no sistema.");
-                }
+                Cliente cliente = buscarCliente(dto.clienteId());
+                validarClienteNaoPossuiComandaAberta(cliente.getId());
                 Venda venda = criarVenda(
                                 cliente,
                                 cliente.getNome(),
                                 username,
                                 StatusVenda.ABERTA);
                 for (ItemVendaRequestDTO itemDto : dto.itens()) {
-                        Produto produto = produtoRepository.findById(itemDto.produtoId())
-                                        .orElseThrow(() -> new ResourceNotFoundException(
-                                                        "Produto não encontrado com o ID: " + itemDto.produtoId()));
+                        Produto produto = buscarProduto(itemDto.produtoId());
                         ItemVenda novoItem = criarItemVenda(venda, produto, itemDto.quantidade());
                         venda.getItens().add(novoItem);
                 }
@@ -125,7 +115,7 @@ public class VendaService {
         public List<VendaResponseDTO> listarComandasAbertas() {
                 return vendaRepository.findByStatus(StatusVenda.ABERTA).stream()
                                 .map(VendaResponseDTO::fromEntity)
-                                .collect(Collectors.toList());
+                                .toList();
         }
 
         @Transactional
@@ -136,9 +126,8 @@ public class VendaService {
                         String dataFim,
                         Pageable pageable) {
                 Specification<Venda> spec = VendaSpecification.comFiltros(clienteNome, status, dataInicio, dataFim);
-                Page<VendaResponseDTO> vendas = vendaRepository.findAll(spec, pageable)
+                return vendaRepository.findAll(spec, pageable)
                                 .map(VendaResponseDTO::fromEntity);
-                return vendas;
         }
 
         @Transactional
@@ -147,16 +136,8 @@ public class VendaService {
                 Cliente cliente = null;
                 List<String> alertas = new ArrayList<>();
                 if (dto.clienteId() != null) {
-                        boolean jaTemComanda = vendaRepository.existsByClienteIdAndStatus(
-                                        dto.clienteId(),
-                                        StatusVenda.ABERTA);
-                        if (jaTemComanda) {
-                                throw new BusinessException(
-                                                "Este cliente já possui uma comanda aberta no sistema.");
-                        }
-                        cliente = clienteRepository.findById(dto.clienteId())
-                                        .orElseThrow(() -> new ResourceNotFoundException(
-                                                        "Cliente não encontrado com o ID: " + dto.clienteId()));
+                        validarClienteNaoPossuiComandaAberta(dto.clienteId());
+                        cliente = buscarCliente(dto.clienteId());
                         throw new IllegalArgumentException(
                                         "Para clientes cadastrados, utilize o fluxo de gerenciamento e fechamento de comandas.");
                 }
@@ -166,11 +147,7 @@ public class VendaService {
                                 username,
                                 StatusVenda.PAGO);
                 for (ItemVendaRequestDTO itemDto : dto.itens()) {
-                        Produto produto = produtoRepository.findById(itemDto.produtoId())
-                                        .orElseThrow(
-                                                        () -> new ResourceNotFoundException(
-                                                                        "Produto não encontrado ID: "
-                                                                                        + itemDto.produtoId()));
+                        Produto produto = buscarProduto(itemDto.produtoId());
                         alertas.addAll(
                                         verificarAlertasDeEstoque(
                                                         produto,
@@ -218,10 +195,22 @@ public class VendaService {
                 }
         }
 
+        private Cliente buscarCliente(Long id) {
+                return clienteRepository.findById(id)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Cliente nao encontrado com o ID: " + id));
+        }
+
         private Venda buscarComanda(Long id) {
                 return vendaRepository.findById(id)
                                 .orElseThrow(() -> new ResourceNotFoundException(
-                                                "Comanda nao encontrada com id:" + id));
+                                                "Comanda não encontrada com id: " + id));
+        }
+
+        private Produto buscarProduto(Long id) {
+                return produtoRepository.findById(id)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Produto nao encontrado com o ID: " + id));
         }
 
         private int calcularEstoqueAposComanda(
@@ -266,7 +255,7 @@ public class VendaService {
         private String criarAlertaEstoqueMinimo(Produto produto) {
                 return "O estoque do produto "
                                 + produto.getNome()
-                                + " ficara abaixo da quantidade minima.";
+                                + " ficara abaixo da quantidade mínima.";
         }
 
         private ItemVenda criarItemVenda(
@@ -319,6 +308,13 @@ public class VendaService {
                 List<String> alertas = verificarAlertasDaConclusao(venda);
                 baixarEstoqueDaComanda(venda);
                 return alertas;
+        }
+
+        private void validarClienteNaoPossuiComandaAberta(Long clienteId) {
+                boolean jaTemComanda = vendaRepository.existsByClienteIdAndStatus(clienteId, StatusVenda.ABERTA);
+                if (jaTemComanda) {
+                        throw new IllegalArgumentException("Este cliente possui uma comanda aberta no sistema.");
+                }
         }
 
         private void validarComandaPodeSerCancelada(Venda comanda) {

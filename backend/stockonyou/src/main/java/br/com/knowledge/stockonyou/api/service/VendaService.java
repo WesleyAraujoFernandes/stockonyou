@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -190,7 +189,7 @@ public class VendaService {
         }
 
         private void baixarEstoqueDaComanda(Venda venda) {
-                for (ItemVenda item: venda.getItens()) {
+                for (ItemVenda item : venda.getItens()) {
                         baixarEstoque(item.getProduto(), item.getQuantidade());
                 }
         }
@@ -364,7 +363,7 @@ public class VendaService {
                         Produto produto = item.getProduto();
                         int estoqueAposComanda = calcularEstoqueAposComanda(produto, item.getQuantidade(),
                                         venda.getId());
-                        if (estoqueAbaixoDoMinimo(item.getProduto(), estoqueAposComanda)) {
+                        if (estoqueAbaixoDoMinimo(produto, estoqueAposComanda)) {
                                 alertas.add(
                                                 criarAlertaEstoqueMinimo(produto));
                         }

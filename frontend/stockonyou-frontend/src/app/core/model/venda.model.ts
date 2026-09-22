@@ -1,19 +1,22 @@
 import { Produto } from "./produto.model";
+
+export type StatusVenda = 'ABERTA' | 'PENDENTE' | 'PAGO' | 'CANCELADA'
 export interface ItemVendaRequest {
   produtoId: number;
   quantidade: number;
-  precoUnitario: number;
 }
 
 export interface ItemVendaResponse {
   id: number;
-  produto: Produto;
+  produtoId: number;
+  produtoNome: string;
   quantidade: number;
   precoUnitario: number;
   subtotal: number;
 }
 
 export interface VendaRequest {
+  clienteId?: number;
   clienteNome?: string;
   itens: ItemVendaRequest[];
 }
@@ -22,9 +25,9 @@ export interface VendaResponse {
   id: number;
   dataVenda: string;
   clienteNome?: string;
-  clienteId: number,
   valorTotal: number;
-  status: 'PAGO' | 'PENDENTE' | 'ABERTA';
+  usuarioNome: string;
+  status: StatusVenda;
+  alertas: string[];
   itens: ItemVendaResponse[];
-  usuarioNome?: string;
 }

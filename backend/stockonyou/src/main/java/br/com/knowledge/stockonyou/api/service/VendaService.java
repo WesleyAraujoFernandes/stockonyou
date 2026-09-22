@@ -214,9 +214,7 @@ public class VendaService {
 
         private void baixarEstoqueDaComanda(Venda venda) {
                 for (ItemVenda item: venda.getItens()) {
-                        Produto produto = item.getProduto();
-
-                        baixarEstoque(produto, item.getQuantidade());
+                        baixarEstoque(item.getProduto(), item.getQuantidade());
                 }
         }
 
@@ -370,7 +368,7 @@ public class VendaService {
                         Produto produto = item.getProduto();
                         int estoqueAposComanda = calcularEstoqueAposComanda(produto, item.getQuantidade(),
                                         venda.getId());
-                        if (estoqueAbaixoDoMinimo(produto, estoqueAposComanda)) {
+                        if (estoqueAbaixoDoMinimo(item.getProduto(), estoqueAposComanda)) {
                                 alertas.add(
                                                 criarAlertaEstoqueMinimo(produto));
                         }
@@ -381,9 +379,8 @@ public class VendaService {
         private List<String> verificarAlertasDaConclusao(Venda venda) {
                 List<String> alertas = new ArrayList<>();
                 for (ItemVenda item : venda.getItens()) {
-                        Produto produto = item.getProduto();
                         alertas.addAll(
-                                verificarAlertasDeEstoque(produto, item.getQuantidade())
+                                verificarAlertasDeEstoque(item.getProduto(), item.getQuantidade())
                         );
                 }
                 return alertas;

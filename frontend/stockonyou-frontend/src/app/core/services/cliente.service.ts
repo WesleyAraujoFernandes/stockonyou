@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
+import { PageResponse } from '../model/produto.model';
 
 
 export interface Cliente {
@@ -18,8 +19,12 @@ export class ClienteService {
   private readonly apiUrl = 'http://localhost:8080/api/clientes';
 
   buscarPorTermo(termo: string): Observable<Cliente[]> {
-    const params = new HttpParams().set('termo', termo);
-    return this.http.get<Cliente[]>(`${this.apiUrl}/autocomplete`, {params});
+    const params = new HttpParams().set('nome', termo);
+    return this.http
+      .get<PageResponse<Cliente>>(`${this.apiUrl}/autocomplete`, {params})
+      .pipe(
+        map(response => response.content ?? [])
+      )
   }
 
   cadastrarRapido(nome: string): Observable<Cliente> {

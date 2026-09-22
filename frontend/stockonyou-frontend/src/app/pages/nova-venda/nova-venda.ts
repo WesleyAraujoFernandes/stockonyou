@@ -447,6 +447,7 @@ export class NovaVenda implements OnInit {
         }));
 
       const payload: VendaRequest = {
+        clienteNome: 'Cliente Padrão',
         itens: itensRequest
       };
 

@@ -81,6 +81,15 @@ export class VendaService {
     return this.http.put<VendaResponse>(`${this.apiUrl}/${vendaId}/pagamento`, {})
   }
 
+  removerItemComanda(
+    comandaId: number,
+    produtoId: number
+  ): Observable<VendaResponse> {
+    return this.http.delete<VendaResponse>(
+      `${this.apiUrl}/${comandaId}/itens/${produtoId}`
+    )
+  }
+
   adicionarItemComanda(comandaId: number, item: ItemVendaRequest): Observable<VendaResponse> {
     return this.http.put<VendaResponse>(`${this.apiUrl}/${comandaId}/itens`, item)
   }

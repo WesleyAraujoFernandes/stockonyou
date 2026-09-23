@@ -64,10 +64,9 @@ public class VendaService {
 
         @Transactional
         public VendaResponseDTO atualizaQuantidadeItemComanda(
-                Long comandaId,
-                Long produtoId,
-                Integer novaQuantidade
-        ) {
+                        Long comandaId,
+                        Long produtoId,
+                        Integer novaQuantidade) {
                 Venda venda = buscarComanda(comandaId);
                 if (venda.getStatus() != StatusVenda.ABERTA) {
                         throw new IllegalArgumentException("Somente comandas abertas podem ter itens adicionados.");
@@ -78,7 +77,8 @@ public class VendaService {
                 ItemVenda item = venda.getItens().stream()
                                 .filter(i -> i.getProduto().getId().equals(produtoId))
                                 .findFirst()
-                                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado na comanda com o ID: " + produtoId));
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Produto não encontrado na comanda com o ID: " + produtoId));
                 item.setQuantidade(novaQuantidade);
                 item.setSubtotal(item.getPrecoUnitario().multiply(BigDecimal.valueOf(novaQuantidade)));
                 venda.setValorTotal(calcularValorTotal(venda));
@@ -196,6 +196,24 @@ public class VendaService {
                 }
                 venda.setStatus(StatusVenda.PAGO);
                 return VendaResponseDTO.fromEntity(vendaRepository.save(venda));
+        }
+
+        @Transactional
+        public VendaResponseDTO removerItemComanda(Long comandaId, Long produtoId) {
+                Venda venda = buscarComanda(comandaId);
+                if (venda.getStatus() != StatusVenda.ABERTA) {
+                        throw new IllegalArgumentException(
+                                        "Somente comandas abertas podem ter itens removidos.");
+                }
+                ItemVenda item = venda.getItens().stream()
+                                .filter(i -> i.getProduto().getId().equals(produtoId))
+                                .findFirst()
+                                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + produtoId));
+                venda.getItens().remove(item);
+                venda.setValorTotal(calcularValorTotal(venda));
+                Venda vendaSalva = vendaRepository.save(venda);
+                List<String> alertas = verificarAlertasDaComanda(vendaSalva);
+                return VendaResponseDTO.fromEntity(vendaSalva, alertas);
         }
 
         // Métodos auxiliares
@@ -400,8 +418,7 @@ public class VendaService {
                 List<String> alertas = new ArrayList<>();
                 for (ItemVenda item : venda.getItens()) {
                         alertas.addAll(
-                                verificarAlertasDeEstoque(item.getProduto(), item.getQuantidade())
-                        );
+                                        verificarAlertasDeEstoque(item.getProduto(), item.getQuantidade()));
                 }
                 return alertas;
         }

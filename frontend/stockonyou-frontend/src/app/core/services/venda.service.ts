@@ -11,6 +11,17 @@ export class VendaService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = 'http://localhost:8080/api/vendas';
 
+  atualizarQuantidadeItemComanda(
+    comandaId: number,
+    produtoId: number,
+    quantidade: number
+  ): Observable<VendaResponse> {
+    const params = new HttpParams()
+      .set('quantidade', quantidade.toString());
+    return this.http.put<VendaResponse>(`${this.apiUrl}/${comandaId}/itens/${produtoId}`, {}, { params }
+    )
+  }
+
   listarComFiltros(
     clienteNome?: string,
     status?: string,

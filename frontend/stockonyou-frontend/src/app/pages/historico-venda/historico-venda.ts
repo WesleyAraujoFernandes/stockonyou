@@ -50,6 +50,8 @@ export class HistoricoVenda implements OnInit {
 
   filtroCliente = '';
   filtroStatus = '';
+  filtroDataInicio = '';
+  filtroDataFim = '';
 
   paginaAtual = signal<number>(0);
   totalPaginas = signal<number>(0);
@@ -76,8 +78,8 @@ export class HistoricoVenda implements OnInit {
     this.vendaService.listarComFiltros(
       this.filtroCliente,
       this.filtroStatus,
-      undefined,
-      undefined,
+      this.filtroDataInicio,
+      this.filtroDataFim,
       this.paginaAtual(),
       this.itensPorPagina
     ).subscribe({
@@ -101,6 +103,8 @@ export class HistoricoVenda implements OnInit {
   limparFiltros(): void {
     this.filtroCliente = '';
     this.filtroStatus = '';
+    this.filtroDataInicio= '';
+    this.filtroDataFim = '';
     this.paginaAtual.set(0);
     this.carregarHistorico();
   }

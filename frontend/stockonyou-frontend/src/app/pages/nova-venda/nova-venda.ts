@@ -354,7 +354,7 @@ export class NovaVenda implements OnInit {
               preco: item.precoUnitario,
               codigoBarras: '',
               quantidade: 9999,
-              categoria: { id: 0, nome: ''}
+              categoria: { id: 0, nome: '' }
             } as Produto,
             quantidade: item.quantidade,
             precoUnitario: item.precoUnitario,
@@ -369,7 +369,7 @@ export class NovaVenda implements OnInit {
                   vendaId: novaComanda.id,
                   carrinho: novoCarrinho
                 }
-              : comanda
+                : comanda
             )
           )
           this.sincronizarListaLateral();
@@ -381,7 +381,7 @@ export class NovaVenda implements OnInit {
           this.quantidadeInserir = 1;
         },
         error: (err) => {
-          console.error('Erro ao criar comanda: ',err);
+          console.error('Erro ao criar comanda: ', err);
           this.toast.erro('Erro ao criar a comanda no servidor.')
         }
       })
@@ -418,8 +418,10 @@ export class NovaVenda implements OnInit {
     });
   }
   removerDoCarrinho(index: number): void {
+    console.log('🗑️ removerDoCarrinho foi chamado. Index:', index);
     const item = this.carrinho()[index];
-    if (!item || item.produto) return;
+
+    if (!item || !item.produto) return;
 
     if (this.clienteSelecionado().id === 1) {
       this.carrinho.update(lista => lista.filter((_, i) => i !== index))
@@ -427,9 +429,68 @@ export class NovaVenda implements OnInit {
       this.toast.sucesso('Item removedo do balcão.');
       return;
     }
-    this.toast.info(
-      'A remoção de itens da comanda será implementada no próximo incremento'
-    )
+    if (this.vendaIdAtual === undefined) {
+      this.vendaIdAtual = this.idComandaAberta() ?? undefined;
+    }
+    if (this.vendaIdAtual === undefined) {
+      this.toast.erro(
+        'Nenuma comanda aberta foi selecionada.'
+      )
+      return;
+    }
+    const produtoId = item.produto!.id;
+    this.vendaService
+      .removerItemComanda(
+        this.vendaIdAtual,
+        produtoId
+      )
+      .subscribe({
+        next: (vendaAtualizada) => {
+          const novoCarrinho: ItemCarrinho[] =
+            vendaAtualizada.itens.map(itemAtualizado => ({
+              produto: {
+                id: itemAtualizado.produtoId,
+                nome: itemAtualizado.produtoNome,
+                preco: itemAtualizado.precoUnitario,
+                codigoBarras: '',
+                quantidade: 9999,
+                categoria: { id: 0, nome: '' }
+              } as Produto,
+              quantidade: itemAtualizado.quantidade,
+              precoUnitario: itemAtualizado.precoUnitario,
+              subTotal: itemAtualizado.subtotal
+            }));
+
+          this.carrinho.set(novoCarrinho);
+
+          this.comandasAtivas.update(lista =>
+            lista.map(comanda =>
+              comanda.cliente.id === this.clienteSelecionado().id
+                ? {
+                  ...comanda,
+                  carrinho: novoCarrinho
+                }
+                : comanda
+            )
+          );
+
+          this.sincronizarListaLateral();
+
+          this.toast.sucesso(
+            'Item removido da comanda.'
+          );
+        },
+        error: (err) => {
+          console.error(
+            'Erro ao remover item da comanda:',
+            err
+          );
+
+          this.toast.erro(
+            'Erro ao remover o item da comanda.'
+          );
+        }
+      });
   }
 
   ajustarQuantidadeItem(index: number): void {
@@ -454,7 +515,7 @@ export class NovaVenda implements OnInit {
 
     // Comanda real: ainda não existe endpoint para reduzir a quantidade de um item.
 
-    const novaQtd = item.quantidade -1;
+    const novaQtd = item.quantidade - 1;
 
     if (novaQtd <= 0) {
       this.toast.info('Para remover o item da comanda, utilize a opção de remoção.');
@@ -466,34 +527,92 @@ export class NovaVenda implements OnInit {
       item.produto.id,
       novaQtd
     )
-    .subscribe({
-      next: (vendaAtualizada) => {
-        const novoCarrinho = vendaAtualizada.itens.map(itemAtualizado => ({
-          produto: {
-            id: itemAtualizado.produtoId,
-            nome: itemAtualizado.produtoNome,
-            preco: itemAtualizado.precoUnitario,
-            codigoBarras: '',
-            quantidade: 9999,
-            categoria: { id: 0, nome: ''}
-          } as Produto,
-          quantidade: itemAtualizado.quantidade,
-          precoUnitario: itemAtualizado.precoUnitario,
-          subTotal: itemAtualizado.subtotal
-        }));
-        this.carrinho.set(novoCarrinho);
-        this.sincronizarListaLateral();
-        this.toast.sucesso(
-          'Quantidade do item atualizada na comanda.'
-        )
-      },
-      error: (err) => {
-        console.error('Erro ao atualizar a quantidade do item:', err);
-        this.toast.erro('Erro ao atualizar a quantidade do item na comanda.')
-      }
-    })
+      .subscribe({
+        next: (vendaAtualizada) => {
+          const novoCarrinho = vendaAtualizada.itens.map(itemAtualizado => ({
+            produto: {
+              id: itemAtualizado.produtoId,
+              nome: itemAtualizado.produtoNome,
+              preco: itemAtualizado.precoUnitario,
+              codigoBarras: '',
+              quantidade: 9999,
+              categoria: { id: 0, nome: '' }
+            } as Produto,
+            quantidade: itemAtualizado.quantidade,
+            precoUnitario: itemAtualizado.precoUnitario,
+            subTotal: itemAtualizado.subtotal
+          }));
+          this.carrinho.set(novoCarrinho);
+          this.sincronizarListaLateral();
+          this.toast.sucesso(
+            'Quantidade do item atualizada na comanda.'
+          )
+        },
+        error: (err) => {
+          console.error('Erro ao atualizar a quantidade do item:', err);
+          this.toast.erro('Erro ao atualizar a quantidade do item na comanda.')
+        }
+      })
   }
 
+  aumentarQuantidadeItem(index: number): void {
+    const item = this.carrinho()[index];
+    if (!item || !item.produto) return;
+    const novaQtd = item.quantidade + 1;
+    if (this.clienteSelecionado().id === 1) {
+      const itensAtuais = [...this.carrinho()];
+      itensAtuais[index].quantidade = novaQtd;
+      itensAtuais[index].subTotal = novaQtd * item.precoUnitario;
+      this.carrinho.set(itensAtuais);
+      this.sincronizarListaLateral();
+      this.toast.sucesso(
+        'Quantidade aumentada no balção.'
+      );
+      return;
+    }
+
+    if (this.vendaIdAtual === undefined) {
+      this.toast.erro(
+        'Nenhuma comanda aberta foi selecionada.'
+      );
+      return;
+    }
+
+    const produtoId = item.produto!.id;
+
+    this.vendaService.atualizarQuantidadeItemComanda(this.vendaIdAtual, produtoId, novaQtd)
+      .subscribe({
+        next: (vendaAtualizada) => {
+          const novoCarrinho = vendaAtualizada.itens.map(
+            itemAtualizado => ({
+              produto: {
+                id: itemAtualizado.produtoId,
+                nome: itemAtualizado.produtoNome,
+                preco: itemAtualizado.precoUnitario,
+                codigoBarras: '',
+                quantidade: 9999,
+                categoria: {
+                  id: 0,
+                  nome: ''
+                }
+              } as Produto,
+              quantidade: itemAtualizado.quantidade,
+              precoUnitario: itemAtualizado.precoUnitario,
+              subTotal: itemAtualizado.subtotal
+            })
+          )
+          this.carrinho.set(novoCarrinho);
+          this.sincronizarListaLateral();
+          this.toast.sucesso(
+            'Quantidade do item atualizada na comanda.'
+          )
+        },
+        error: (err) => {
+          console.error('Erro ao aumentar quantidade do item:', err);
+          this.toast.erro('Erro ao atualizar a quantidade do item na comanda.')
+        }
+      })
+  }
 
   private sincronizarListaLateral(): void {
     this.comandasAtivas.update(lista => lista.map(c => {

@@ -165,13 +165,22 @@
                   title="Diminuir 1 unidade">
                   -
                 </button>
+
+                <!-- Botão de aumentar (+1 unidade) -->
+                <button
+                  type="button"
+                  (click)="aumentarQuantidadeItem($index)"
+                  class="text-slate-400 hover:text-emerald-400 font-bold text-xs select-none transition-colors cursor-pointer px-1"
+                  title="Aumentar 1 unidade">
+                  +
+                </button>
               </div>
             </td>
 
             <td class="py-3 px-4">{{ item.precoUnitario | currency:'BRL' }}</td>
             <td class="py-3 px-4 font-semibold text-white">{{ item.subTotal | currency:'BRL' }}</td>
             <td class="py-3 px-4 text-right">
-              <button (click)="removerDoCarrinho($index)"
+              <button type="button" (click)="removerDoCarrinho($index)"
                 class="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition cursor-pointer"
                 title="Remover item">
                 <svg [lucideIcon]="IconTrash" class="w-3.5 h-3.5"></svg>

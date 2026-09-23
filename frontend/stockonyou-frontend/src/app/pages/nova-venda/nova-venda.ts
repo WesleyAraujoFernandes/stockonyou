@@ -410,7 +410,44 @@ export class NovaVenda implements OnInit {
 
     // Comanda real: ainda não existe endpoint para reduzir a quantidade de um item.
 
-    this.toast.info('O ajuste de quantidade da comanda será implementado no próximo incremento.')
+    const novaQtd = item.quantidade -1;
+
+    if (novaQtd <= 0) {
+      this.toast.info('Para remover o item da comanda, utilize a opção de remoção.');
+      return;
+    }
+
+    this.vendaService.atualizarQuantidadeItemComanda(
+      this.vendaIdAtual!,
+      item.produto.id,
+      novaQtd
+    )
+    .subscribe({
+      next: (vendaAtualizada) => {
+        const novoCarrinho = vendaAtualizada.itens.map(itemAtualizado => ({
+          produto: {
+            id: itemAtualizado.produtoId,
+            nome: itemAtualizado.produtoNome,
+            preco: itemAtualizado.precoUnitario,
+            codigoBarras: '',
+            quantidade: 9999,
+            categoria: { id: 0, nome: ''}
+          } as Produto,
+          quantidade: itemAtualizado.quantidade,
+          precoUnitario: itemAtualizado.precoUnitario,
+          subTotal: itemAtualizado.subtotal
+        }));
+        this.carrinho.set(novoCarrinho);
+        this.sincronizarListaLateral();
+        this.toast.sucesso(
+          'Quantidade do item atualizada na comanda.'
+        )
+      },
+      error: (err) => {
+        console.error('Erro ao atualizar a quantidade do item:', err);
+        this.toast.erro('Erro ao atualizar a quantidade do item na comanda.')
+      }
+    })
   }
 
 

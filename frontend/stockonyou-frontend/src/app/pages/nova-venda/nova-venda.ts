@@ -340,7 +340,51 @@ export class NovaVenda implements OnInit {
     };
 
     if (this.vendaIdAtual === undefined) {
-      this.toast.erro('Nenhuma comanda aberta foi selecionada.')
+      const payload: VendaRequest = {
+        clienteId: this.clienteSelecionado().id,
+        itens: [itemRequest]
+      }
+      this.vendaService.criarComanda(payload).subscribe({
+        next: (novaComanda) => {
+          this.vendaIdAtual = novaComanda.id;
+          const novoCarrinho: ItemCarrinho[] = novaComanda.itens.map(item => ({
+            produto: {
+              id: item.produtoId,
+              nome: item.produtoNome,
+              preco: item.precoUnitario,
+              codigoBarras: '',
+              quantidade: 9999,
+              categoria: { id: 0, nome: ''}
+            } as Produto,
+            quantidade: item.quantidade,
+            precoUnitario: item.precoUnitario,
+            subTotal: item.subtotal
+          }))
+          this.carrinho.set(novoCarrinho);
+          this.comandasAtivas.update(lista =>
+            lista.map(comanda =>
+              comanda.cliente.id === this.clienteSelecionado().id
+                ? {
+                  ...comanda,
+                  vendaId: novaComanda.id,
+                  carrinho: novoCarrinho
+                }
+              : comanda
+            )
+          )
+          this.sincronizarListaLateral();
+          this.toast.sucesso(
+            'Comanda criada e produto adicionado com sucesso.'
+          )
+          this.produtoSelecionado = null;
+          this.termoBuscaProduto = '';
+          this.quantidadeInserir = 1;
+        },
+        error: (err) => {
+          console.error('Erro ao criar comanda: ',err);
+          this.toast.erro('Erro ao criar a comanda no servidor.')
+        }
+      })
       return;
     }
 

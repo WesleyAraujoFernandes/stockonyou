@@ -32,6 +32,16 @@ import lombok.RequiredArgsConstructor;
 public class VendaController {
     private final VendaService vendaService;
 
+    @PutMapping("/{id}/itens/{produtoId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<VendaResponseDTO> atualizarQuantidadeItem(
+        @PathVariable Long id,
+        @PathVariable Long produtoId,
+        @RequestParam Integer quantidade
+    ) {
+        return ResponseEntity.ok(vendaService.atualizaQuantidadeItemComanda(id, produtoId, quantidade));
+    }
+
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<Page<VendaResponseDTO>> listarComFiltros(

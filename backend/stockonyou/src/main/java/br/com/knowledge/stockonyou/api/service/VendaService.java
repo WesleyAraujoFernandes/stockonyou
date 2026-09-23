@@ -62,6 +62,31 @@ public class VendaService {
                 return VendaResponseDTO.fromEntity(vendaSalva, alertas);
         }
 
+        @Transactional
+        public VendaResponseDTO atualizaQuantidadeItemComanda(
+                Long comandaId,
+                Long produtoId,
+                Integer novaQuantidade
+        ) {
+                Venda venda = buscarComanda(comandaId);
+                if (venda.getStatus() != StatusVenda.ABERTA) {
+                        throw new IllegalArgumentException("Somente comandas abertas podem ter itens adicionados.");
+                }
+                if (novaQuantidade == null || novaQuantidade <= 0) {
+                        throw new IllegalArgumentException("A quantidade deve ser maior que zero.");
+                }
+                ItemVenda item = venda.getItens().stream()
+                                .filter(i -> i.getProduto().getId().equals(produtoId))
+                                .findFirst()
+                                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado na comanda com o ID: " + produtoId));
+                item.setQuantidade(novaQuantidade);
+                item.setSubtotal(item.getPrecoUnitario().multiply(BigDecimal.valueOf(novaQuantidade)));
+                venda.setValorTotal(calcularValorTotal(venda));
+                Venda vendaSalva = vendaRepository.save(venda);
+                List<String> alertas = verificarAlertasDaComanda(vendaSalva);
+                return VendaResponseDTO.fromEntity(vendaSalva, alertas);
+        }
+
         @Transactional(readOnly = true)
         public VendaResponseDTO buscarComandaAberta(Long clienteId) {
                 return vendaRepository.findByClienteIdAndStatus(clienteId, StatusVenda.ABERTA)

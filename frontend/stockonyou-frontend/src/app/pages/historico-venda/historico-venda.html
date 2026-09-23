@@ -82,8 +82,10 @@
         class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500"
         transition-colors cursor-pointer>
         <option value="">Todos os status</option>
-        <option value="PAGO">Pago (Finalizado)</option>
-        <option value="PENDENTE">Pendente (Conta Pendurada)</option>
+        <option value="PAGO">Pago</option>
+        <option value="PENDENTE">Pendente</option>
+        <option value="ABERTA">Aberta</option>
+        <option value="CANCELADA">Cancelada</option>
       </select>
     </div>
     <div class="flex items-end">
@@ -208,8 +210,26 @@
         <div>
           <span class="text-slate-500 font-medium">Situação:</span>
           <span class="font-semibold ml-1"
-            [ngClass]="vendaDetalhada()?.status === 'PAGO' ? 'text-emerald-400' : 'text-amber-400'">
-            {{ vendaDetalhada()?.status === 'PAGO' ? 'Pago' : 'Pendente (Fiado)' }}
+            [ngClass]="{
+              'text-emerald-400': vendaDetalhada()?.status === 'PAGO',
+              'text-amber-400': vendaDetalhada()?.status === 'PENDENTE',
+              'text-blue-400': vendaDetalhada()?.status === 'ABERTA',
+              'text-red-400': vendaDetalhada()?.status === 'CANCELADA'
+            }">
+            @switch (vendaDetalhada()?.status) {
+              @case ('PAGO') {
+                Pago
+              }
+              @case ('PENDENTE') {
+                Pendente
+              }
+              @case ('ABERTA') {
+                Aberta
+              }
+              @case ('CANCELADA') {
+                Cancelada
+              }
+            }
           </span>
         </div>
       </div>

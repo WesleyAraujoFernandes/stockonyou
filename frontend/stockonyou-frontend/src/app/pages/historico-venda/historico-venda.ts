@@ -58,7 +58,7 @@ export class HistoricoVenda implements OnInit {
 
   totalFaturado = computed(() => {
     return this.vendas()
-      .filter(v => (v as any).status === 'PAGO' || (v as any).status === 'FINALIZADA')
+      .filter(v => (v as any).status === 'PAGO')
       .reduce((acc, v) => acc + v.valorTotal, 0);
   })
 

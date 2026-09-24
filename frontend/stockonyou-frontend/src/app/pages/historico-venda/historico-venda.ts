@@ -51,6 +51,8 @@ export class HistoricoVenda implements OnInit {
   readonly paginaAtual = this.historicoStore.paginaAtual;
   readonly totalPaginas = this.historicoStore.totalPaginas;
   readonly totalElementos = this.historicoStore.totalElementos;
+  readonly loading = this.historicoStore.loading;
+  readonly error = this.historicoStore.error;
 
   vendaDetalhada = signal<VendaResponse | null>(null);
   exibirModalDetalhes = signal<boolean>(false);

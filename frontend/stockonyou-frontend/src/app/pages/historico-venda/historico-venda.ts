@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VendaService } from '../../core/services/venda.service';
@@ -28,7 +28,6 @@ import { KeycloakService } from '../../core/auth/keycloak.service';
   providers: [HistoricoVendaStore]
 })
 export class HistoricoVenda implements OnInit {
-  private readonly vendaService = inject(VendaService);
   private readonly toast = inject(ToastService);
   private readonly keycloakService = inject(KeycloakService);
   private readonly historicoStore = inject(HistoricoVendaStore);
@@ -53,81 +52,114 @@ export class HistoricoVenda implements OnInit {
   readonly totalElementos = this.historicoStore.totalElementos;
   readonly loading = this.historicoStore.loading;
   readonly error = this.historicoStore.error;
+  readonly quitando = this.historicoStore.quitando;
+  readonly erroQuitacao = this.historicoStore.erroQuitacao;
+  readonly quitacaoConcluida =
+  this.historicoStore.quitacaoConcluida;
 
-  vendaDetalhada = signal<VendaResponse | null>(null);
-  exibirModalDetalhes = signal<boolean>(false);
+private ultimaQuitacaoProcessada = 0;
 
-  filtroCliente = '';
-  filtroStatus = '';
-  filtroDataInicio = '';
-  filtroDataFim = '';
 
-  totalFaturado = computed(() => {
-    return this.vendas()
-      .filter(v => v.status === 'PAGO')
-      .reduce((acc, v) => acc + v.valorTotal, 0);
-  })
+vendaDetalhada = signal<VendaResponse | null>(null);
+exibirModalDetalhes = signal<boolean>(false);
 
-  totalPendente = computed(() => {
-    return this.vendas()
-      .filter(v => v.status === 'PENDENTE')
-      .reduce((acc, v) => acc + v.valorTotal, 0);
-  })
+filtroCliente = '';
+filtroStatus = '';
+filtroDataInicio = '';
+filtroDataFim = '';
 
-  ngOnInit(): void {
-    this.carregarHistorico();
-  }
+totalFaturado = computed(() => {
+  return this.vendas()
+    .filter(v => v.status === 'PAGO')
+    .reduce((acc, v) => acc + v.valorTotal, 0);
+})
 
-  carregarHistorico(): void {
-    this.historicoStore.carregar(
-      this.filtroCliente,
-      this.filtroStatus,
-      this.filtroDataInicio,
-      this.filtroDataFim
-    )
-  }
+totalPendente = computed(() => {
+  return this.vendas()
+    .filter(v => v.status === 'PENDENTE')
+    .reduce((acc, v) => acc + v.valorTotal, 0);
+})
 
-  aplicarFiltros(): void {
-    this.historicoStore.primeiraPagina();
-    this.carregarHistorico();
-  }
+constructor() {
+  effect(() => {
+    const quitacao = this.quitacaoConcluida();
 
-  limparFiltros(): void {
-    this.filtroCliente = '';
-    this.filtroStatus = '';
-    this.filtroDataInicio= '';
-    this.filtroDataFim = '';
-    this.historicoStore.primeiraPagina();
-    this.carregarHistorico();
-  }
-
-  mudarPagina(direcao: number): void {
-    const novaPagina = this.paginaAtual() + direcao;
-    if (novaPagina >= 0 && novaPagina < this.totalPaginas()) {
-      this.historicoStore.irParaPagina(novaPagina);
-      this.carregarHistorico();
+    if (
+      quitacao === 0 ||
+      quitacao === this.ultimaQuitacaoProcessada
+    ) {
+      return;
     }
+
+    this.ultimaQuitacaoProcessada = quitacao;
+
+    this.toast.sucesso(
+      'Conta quitada com sucesso! Fluxo de caixa atualizado!'
+    );
+
+    this.exibirModalDetalhes.set(false);
+    this.carregarHistorico();
+  });
+
+  effect(() => {
+    const erro = this.erroQuitacao();
+    if (!erro) {
+      return;
+    }
+    this.toast.erro(erro);
+  })
+}
+
+
+ngOnInit(): void {
+  this.carregarHistorico();
+}
+
+carregarHistorico(): void {
+  this.historicoStore.carregar(
+    this.filtroCliente,
+    this.filtroStatus,
+    this.filtroDataInicio,
+    this.filtroDataFim
+  )
+}
+
+aplicarFiltros(): void {
+  this.historicoStore.primeiraPagina();
+  this.carregarHistorico();
+}
+
+limparFiltros(): void {
+  this.filtroCliente = '';
+  this.filtroStatus = '';
+  this.filtroDataInicio = '';
+  this.filtroDataFim = '';
+  this.historicoStore.primeiraPagina();
+  this.carregarHistorico();
+}
+
+mudarPagina(direcao: number): void {
+  const novaPagina = this.paginaAtual() + direcao;
+  if(novaPagina >= 0 && novaPagina < this.totalPaginas()) {
+  this.historicoStore.irParaPagina(novaPagina);
+  this.carregarHistorico();
+}
   }
 
-  abrirDetalhes(venda: VendaResponse): void {
-    this.vendaDetalhada.set(venda);
-    this.exibirModalDetalhes.set(true);
+abrirDetalhes(venda: VendaResponse): void {
+  this.vendaDetalhada.set(venda);
+  this.exibirModalDetalhes.set(true);
+}
+
+quitarContaPendurada(vendaId: number): void {
+  const desejaQuitar = confirm(
+    'Confirma o recebimento total e quitação desta conta pendurada?'
+  );
+
+  if(!desejaQuitar) {
+    return;
   }
 
-  quitarContaPendurada(vendaId: number): void {
-    const desejaQuitar = confirm('Confirma o recebimento total e quitação desta conta pendurada?')
-    if (!desejaQuitar) return;
-
-    this.vendaService.registrarPagamento(vendaId).subscribe({
-      next: () => {
-        this.toast.sucesso('Conta quitada com sucesso! Fluxo de caixa atualizado!')
-        this.exibirModalDetalhes.set(false);
-        this.carregarHistorico()
-      },
-      error: (err) => {
-        console.error('Erro ao quitar conta:',err)
-        this.toast.erro('Erro ao processar a quitação no servidor.');
-      }
-    })
-  }
+    this.historicoStore.quitarConta(vendaId);
+}
 }

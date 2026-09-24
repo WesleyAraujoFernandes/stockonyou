@@ -2,6 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { VendaService } from '../../../core/services/venda.service';
 import { VendaResponse } from '../../../core/model/venda.model';
 import { PageResponse } from '../../../core/model/produto.model';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class HistoricoVendaStore {
@@ -17,6 +18,11 @@ export class HistoricoVendaStore {
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+
+  readonly quitando = signal(false);
+  readonly erroQuitacao = signal<string | null>(null);
+
+  readonly quitacaoConcluida = signal(0);
 
   carregar(
     filtroCliente: string,
@@ -65,5 +71,21 @@ export class HistoricoVendaStore {
 
   primeiraPagina(): void {
     this.paginaAtual.set(0);
+  }
+
+  quitarConta(vendaId: number): void {
+    this.quitando.set(true);
+    this.erroQuitacao.set(null);
+    this.vendaService.registrarPagamento(vendaId).subscribe({
+      next: () => {
+        this.quitando.set(false);
+        this.quitacaoConcluida.update(valor => valor + 1);
+      },
+      error: (err) => {
+        console.error('Erro ao quitar conta:',err);
+        this.erroQuitacao.set('Erro ao processar a quitação no servidor.')
+        this.quitando.set(false);
+      }
+    })
   }
 }

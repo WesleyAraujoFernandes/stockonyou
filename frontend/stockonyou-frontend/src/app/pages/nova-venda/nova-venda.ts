@@ -265,19 +265,43 @@ export class NovaVenda implements OnInit {
 
   verificarOuCadastrarCliente(): void {
     const termo = this.termoBuscaCliente.trim();
-    if (!termo || termo === this.clienteSelecionado().nome) {
+    if (!termo) {
+      return;
+    }
+
+    const clienteSelecionado = this.clienteSelecionado()
+
+    if (
+      clienteSelecionado &&
+      clienteSelecionado.nome.trim().toLowerCase() === termo.toLowerCase()
+    ) {
+      return;
+    }
+
+    const clienteExistente = this.clientesEncontrados().find(
+      cliente =>
+        cliente.nome.trim().toLowerCase() === termo.toLowerCase()
+    );
+
+    if (clienteExistente) {
+      this.abrirNovaComanda(clienteExistente);
       return;
     }
 
     const desejaCadastrar = confirm(`O cliente "${termo}" não foi encontrado. Deseja abrir uma nova comanda para ele?`);
-    if (desejaCadastrar) {
-      this.clienteService.cadastrarRapido(termo).subscribe({
-        next: (novoCliente) => {
-          this.abrirNovaComanda(novoCliente);
-        },
-        error: (err) => this.toast.erro('Falha ao cadastrar o cliente.')
-      });
+    if (!desejaCadastrar) {
+      return;
     }
+    this.clienteService.cadastrarRapido(termo).subscribe({
+      next: (novoCliente) => {
+        this.toast.sucesso('Cliente cadastrado com sucesso!')
+        this.abrirNovaComanda(novoCliente);
+      },
+      error: (err) => {
+        console.error('Erro a cadastrar cliente:', err)
+        this.toast.erro('Falha ao cadastrar o cliente.')
+      }
+    });
   }
 
   buscarProdutosPorTermo(): void {

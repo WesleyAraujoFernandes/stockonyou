@@ -61,6 +61,12 @@ public class VendaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<VendaResponseDTO> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(vendaService.buscarPorId(id));
+    }
+
     @GetMapping("/cliente/{clienteId}/aberta")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<VendaResponseDTO> buscarComandaAberta(@PathVariable Long clienteId) {

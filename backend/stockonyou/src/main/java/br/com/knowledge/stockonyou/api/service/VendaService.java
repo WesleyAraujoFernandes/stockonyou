@@ -95,6 +95,13 @@ public class VendaService {
         }
 
         @Transactional
+        public VendaResponseDTO buscarPorId(Long id) {
+                Venda venda = buscarComanda(id);
+                List<String> alertas = verificarAlertasDaComanda(venda);
+                return VendaResponseDTO.fromEntity(venda, alertas);
+        }
+
+        @Transactional
         public VendaResponseDTO cancelarComanda(Long id) {
                 Venda comanda = buscarComanda(id);
                 validarComandaPodeSerCancelada(comanda);

@@ -634,7 +634,7 @@ export class NovaVenda implements OnInit {
   confirmarFechamento(tipo: 'PAGO' | 'PENDENTE'): void {
     const idCliente = Number(this.clienteSelecionado().id);
 
-    // CASO 1: CLIENTE PADRÃO -> venda direta de balcão
+    // Cliente padrão -> venda direta de balcão
     if (
       idCliente === 1 ||
       this.clienteSelecionado().nome.toLowerCase() === 'cliente padrão'
@@ -665,7 +665,7 @@ export class NovaVenda implements OnInit {
       return;
     }
 
-    // CASO 2: CLIENTE REAL -> comanda no banco
+    // Cliente real -> comanda
     if (!this.vendaIdAtual) {
       const comandaMemoria = this.comandasAtivas()
         .find(c => c.cliente.id === idCliente);
@@ -682,29 +682,94 @@ export class NovaVenda implements OnInit {
 
     const vendaId = this.vendaIdAtual;
 
-    this.vendaService.concluirComanda(vendaId)
-      .pipe(
-        switchMap(() => {
-          if (tipo === 'PAGO') {
-            return this.vendaService.registrarPagamento(vendaId);
+    // Pendente -> pagamento direto
+    if (tipo === 'PAGO') {
+      this.vendaService.buscarPorId(vendaId).subscribe({
+        next: (venda) => {
+
+          if (venda.status === 'PENDENTE') {
+            this.vendaService.registrarPagamento(vendaId).subscribe({
+              next: () => {
+                this.toast.sucesso('Venda quitada com sucesso!');
+                this.limparEstadoPdvAposFechamento(idCliente);
+              },
+              error: (err) => {
+                console.error('Erro ao registrar pagamento:', err);
+                this.toast.erro(
+                  'Falha ao registrar o pagamento no servidor.'
+                );
+              }
+            });
+
+            return;
           }
 
-          return this.vendaService.buscarPorId(vendaId);
-        })
-      )
+          // Aberta -> concluir e depois pagar
+          if (venda.status === 'ABERTA') {
+            this.vendaService.concluirComanda(vendaId)
+              .pipe(
+                switchMap(() =>
+                  this.vendaService.registrarPagamento(vendaId)
+                )
+              )
+              .subscribe({
+                next: () => {
+                  this.toast.sucesso('Venda quitada com sucesso!');
+                  this.limparEstadoPdvAposFechamento(idCliente);
+                },
+                error: (err) => {
+                  console.error(
+                    'Erro ao finalizar comanda:',
+                    err
+                  );
+
+                  this.toast.erro(
+                    'Falha ao encerrar a comanda no servidor.'
+                  );
+                }
+              });
+
+            return;
+          }
+
+          this.toast.erro(
+            'Esta venda não pode ser paga neste estado.'
+          );
+        },
+        error: (err) => {
+          console.error(
+            'Erro ao consultar o estado da comanda:',
+            err
+          );
+
+          this.toast.erro(
+            'Não foi possível verificar o estado da comanda.'
+          );
+        }
+      });
+
+      return;
+    }
+
+    // Cliente real -> deixar conta pendente
+    this.vendaService.concluirComanda(vendaId)
       .subscribe({
         next: () => {
-          const mensagem =
-            tipo === 'PAGO'
-              ? 'Venda quitada com sucesso!'
-              : 'Conta pendurada (Fiado) registrada!';
+          this.toast.sucesso(
+            'Conta pendurada (Fiado) registrada!'
+          );
 
-          this.toast.sucesso(mensagem);
           this.limparEstadoPdvAposFechamento(idCliente);
         },
         error: (err) => {
-          console.error('Erro ao finalizar comanda do cliente:', err);
-          this.toast.erro('Falha ao encerrar comanda no servidor.');
+          console.error(
+            'Erro ao concluir comanda:',
+            err
+          );
+
+          this.toast.erro(
+            'Falha ao encerrar comanda no servidor.'
+          );
         }
       });
   }

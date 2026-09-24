@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { VendaService } from '../../core/services/venda.service';
 import { ToastService } from '../../core/services/toast.service';
 import { VendaResponse } from '../../core/model/venda.model';
+import { HistoricoVendaStore } from './store/historico-venda.store';
 import {
   LucideDynamicIcon,
   LucideSearch,
@@ -24,11 +25,13 @@ import { KeycloakService } from '../../core/auth/keycloak.service';
   imports: [CommonModule, FormsModule, LucideDynamicIcon],
   templateUrl: './historico-venda.html',
   styleUrl: './historico-venda.css',
+  providers: [HistoricoVendaStore]
 })
 export class HistoricoVenda implements OnInit {
   private readonly vendaService = inject(VendaService);
   private readonly toast = inject(ToastService);
   private readonly keycloakService = inject(KeycloakService);
+  private readonly historicoStore = inject(HistoricoVendaStore);
 
   readonly IconSearch = LucideSearch;
   readonly IconCalendar = LucideCalendar;
@@ -44,7 +47,11 @@ export class HistoricoVenda implements OnInit {
   profile = this.keycloakService.getUserProfile();
   name = this.keycloakService.getUserDisplayName();
 
-  vendas = signal<VendaResponse[]>([]);
+  readonly vendas = this.historicoStore.vendas;
+  readonly paginaAtual = this.historicoStore.paginaAtual;
+  readonly totalPaginas = this.historicoStore.totalPaginas;
+  readonly totalElementos = this.historicoStore.totalElementos;
+
   vendaDetalhada = signal<VendaResponse | null>(null);
   exibirModalDetalhes = signal<boolean>(false);
 
@@ -53,20 +60,15 @@ export class HistoricoVenda implements OnInit {
   filtroDataInicio = '';
   filtroDataFim = '';
 
-  paginaAtual = signal<number>(0);
-  totalPaginas = signal<number>(0);
-  totalElementos = signal<number>(0);
-  itensPorPagina = 10;
-
   totalFaturado = computed(() => {
     return this.vendas()
-      .filter(v => (v as any).status === 'PAGO')
+      .filter(v => v.status === 'PAGO')
       .reduce((acc, v) => acc + v.valorTotal, 0);
   })
 
   totalPendente = computed(() => {
     return this.vendas()
-      .filter(v => (v as any).status === 'PENDENTE')
+      .filter(v => v.status === 'PENDENTE')
       .reduce((acc, v) => acc + v.valorTotal, 0);
   })
 
@@ -75,28 +77,16 @@ export class HistoricoVenda implements OnInit {
   }
 
   carregarHistorico(): void {
-    this.vendaService.listarComFiltros(
+    this.historicoStore.carregar(
       this.filtroCliente,
       this.filtroStatus,
       this.filtroDataInicio,
-      this.filtroDataFim,
-      this.paginaAtual(),
-      this.itensPorPagina
-    ).subscribe({
-      next: (response: any) => {
-        this.vendas.set(response.content || []);
-        this.totalPaginas.set(response.totalPages || 0);
-        this.totalElementos.set(response.totalElements || 0);
-      },
-      error: (err) => {
-        console.error('Erro ao carregar histórico:', err);
-        this.toast.erro('Falha ao carregar o histórico de vendas.');
-      }
-    });
+      this.filtroDataFim
+    )
   }
 
   aplicarFiltros(): void {
-    this.paginaAtual.set(0);
+    this.historicoStore.primeiraPagina();
     this.carregarHistorico();
   }
 
@@ -105,14 +95,14 @@ export class HistoricoVenda implements OnInit {
     this.filtroStatus = '';
     this.filtroDataInicio= '';
     this.filtroDataFim = '';
-    this.paginaAtual.set(0);
+    this.historicoStore.primeiraPagina();
     this.carregarHistorico();
   }
 
   mudarPagina(direcao: number): void {
     const novaPagina = this.paginaAtual() + direcao;
     if (novaPagina >= 0 && novaPagina < this.totalPaginas()) {
-      this.paginaAtual.set(novaPagina);
+      this.historicoStore.irParaPagina(novaPagina);
       this.carregarHistorico();
     }
   }

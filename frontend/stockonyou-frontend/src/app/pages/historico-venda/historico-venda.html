@@ -111,11 +111,69 @@
           <tr
             class="bg-slate-950/60 border-b border-slate-800 text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
             <th class="py-3.5 px-4">ID Venda</th>
-            <th class="py-3.5 px-4">Data/Hora</th>
-            <th class="py-3.5 px-4">Cliente</th>
+
+            <th>
+              <button type="button" (click)="ordenarPor('dataVenda')"
+                class="inline-flex items-center gap-1 font-medium transition cursor-pointer"
+                [class.text-white]="historicoStore.campoOrdenacao() === 'dataVenda'"
+                [class.text-slate-300]="historicoStore.campoOrdenacao() !== 'dataVenda'">
+
+                Data
+
+                @if (historicoStore.campoOrdenacao() === 'dataVenda') {
+                <span class="text-xs">
+                  {{ historicoStore.direcaoOrdenacao() === 'asc' ? '↑' : '↓' }}
+                </span>
+                }
+              </button>
+            </th>
+
+            <th>
+              <button type="button" (click)="ordenarPor('clienteNome')"
+                class="inline-flex items-center gap-1 font-medium transition cursor-pointer"
+                [class.text-white]="historicoStore.campoOrdenacao() === 'clienteNome'"
+                [class.text-slate-300]="historicoStore.campoOrdenacao() !== 'clienteNome'">
+
+                Cliente
+
+                @if (historicoStore.campoOrdenacao() === 'clienteNome') {
+                <span class="text-xs">
+                  {{ historicoStore.direcaoOrdenacao() === 'asc' ? '↑' : '↓' }}
+                </span>
+                }
+              </button>
+            </th>
             <th class="py-3.5 px-4">Operador</th>
-            <th class="py-3.5 px-4">Status</th>
-            <th class="py-3.5 px-4">Valor Total</th>
+
+            <th>
+              <button type="button" (click)="ordenarPor('status')"
+                class="inline-flex items-center gap-1 font-medium transition cursor-pointer"
+                [class.text-white]="historicoStore.campoOrdenacao() === 'status'"
+                [class.text-slate-300]="historicoStore.campoOrdenacao() !== 'status'">
+                Status
+
+                @if (historicoStore.campoOrdenacao() === 'status') {
+                <span class="text-xs">
+                  {{ historicoStore.direcaoOrdenacao() === 'asc' ? '↑' : '↓' }}
+                </span>
+                }
+              </button>
+            </th>
+            <th>
+              <button type="button" (click)="ordenarPor('valorTotal')"
+                class="inline-flex items-center gap-1 font-medium transition cursor-pointer"
+                [class.text-white]="historicoStore.campoOrdenacao() === 'valorTotal'"
+                [class.text-slate-300]="historicoStore.campoOrdenacao() !== 'valorTotal'"
+                >
+                Valor
+
+                @if (historicoStore.campoOrdenacao() === 'valorTotal') {
+                <span class="text-xs">
+                  {{ historicoStore.direcaoOrdenacao() === 'asc' ? '↑' : '↓' }}
+                </span>
+                }
+              </button>
+            </th>
             <th class="py-3.5 px-4 text-right">Detalhes</th>
           </tr>
         </thead>

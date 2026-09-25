@@ -184,6 +184,11 @@ export class HistoricoVenda implements OnInit {
     this.carregarHistorico();
   }
 
+  ordenarPor(campo: string): void {
+    this.historicoStore.ordenarPor(campo);
+    this.carregarHistorico();
+  }
+
   abrirDetalhes(venda: VendaResponse): void {
     if (this.carregandoDetalhe()) {
       return;

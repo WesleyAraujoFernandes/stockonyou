@@ -92,16 +92,16 @@
 
   <!-- Tabela de Histórico -->
   <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-sm overflow-hidden">
-    @if (loading()) {
+    @if (carregandoLista()) {
     <div class="py-12 text-center text-slate-400">
       <p class="text-sm">
         Carregando histórico de vendas...
       </p>
     </div>
-    } @else if (error()) {
+    } @else if (errorLista()) {
     <div class="py-12 text-center">
       <p class="text-sm text-red-400">
-        {{ error() }}
+        {{ errorLista() }}
       </p>
     </div>
     } @else {
@@ -151,19 +151,13 @@
             </td>
             <td class="py-3.5 px-4 font-bold text-white">{{ venda.valorTotal | currency:'BRL' }}</td>
             <td class="py-3.5 px-4 text-right">
-              <button
-                type="button"
-                (click)="abrirDetalhes(venda)"
-                [disabled]="carregandoDetalhe()"
+              <button type="button" (click)="abrirDetalhes(venda)" [disabled]="carregandoDetalhe()"
                 class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition cursor-pointer">
                 @if (carregandoDetalhe()) {
-                  <svg
-                    [lucideIcon]="IconLoader"
-                    class="w-4 h-4 animate-spin"
-                  >
-                  </svg>
+                <svg [lucideIcon]="IconLoader" class="w-4 h-4 animate-spin">
+                </svg>
                 } @else {
-                  <svg [lucideIcon]="IconEye" class="w-4 h-4"></svg>
+                <svg [lucideIcon]="IconEye" class="w-4 h-4"></svg>
                 }
               </button>
             </td>
@@ -189,14 +183,33 @@
         Total de <span class="text-white font-semibold">{{ totalElementos() }}</span> registros encontrados.
       </div>
       <div class="flex items-center gap-3">
+
+        <button (click)="historicoStore.primeiraPagina(); carregarHistorico()" [disabled]="paginaAtual() === 0"
+          class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer">
+          <svg [lucideIcon]="IconFirst" class="w-4 h-4"></svg>
+        </button>
+
         <button (click)="mudarPagina(-1)" [disabled]="paginaAtual() === 0"
           class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer">
           <svg [lucideIcon]="IconLeft" class="w-4 h-4"></svg>
         </button>
-        <span class="font-medium text-slate-200">Página {{ paginaAtual() + 1 }} de {{ totalPaginas() }}</span>
+
+        <div class="flex items-center gap-1 text-sm text-slate-300">
+          <input #paginaInput type="number" min="1" [max]="totalPaginas()" [value]="paginaAtual() + 1"
+            (keydown.enter)="irParaPaginaInformada(paginaInput.value)"
+            class="w-12 rounded-md bg-slate-800 border border-slate-700 px-2 py-1 text-center text-slate-200 outline-none focus:border-indigo-500" />
+
+          <span>/ {{ totalPaginas() }}</span>
+        </div>
         <button (click)="mudarPagina(1)" [disabled]="paginaAtual() + 1 >= totalPaginas()"
           class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer">
           <svg [lucideIcon]="IconRight" class="w-4 h-4"></svg>
+        </button>
+
+        <button (click)="historicoStore.ultimaPagina(); carregarHistorico()"
+          [disabled]="paginaAtual() + 1 >= totalPaginas()"
+          class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer">
+          <svg [lucideIcon]="IconLast" class="w-4 h-4"></svg>
         </button>
       </div>
     </div>
@@ -209,7 +222,7 @@
     <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-5">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
         <h2 class="text-base font-bold text-white">Detalhamento do Cupom # {{ vendaSelecionada()?.id }}</h2>
-        <button (click)="exibirModalDetalhes.set(false); historicoStore.limparVendaSelecionada()"
+        <button (click)="fecharDetalhes()"
           class="text-slate-400 hover:text-slate-200 transition cursor-pointer">Fechar</button>
       </div>
 
@@ -255,14 +268,14 @@
 
       <!-- Lista de itens do cupom -->
       <div class="border border-slate-800 rounded-xl overflow-hidden text-xs">
-        @if (loading()) {
+        @if (carregandoLista()) {
         <div class="py-12 text-center text-slate-400">
           Carregando histórico de vendas...
         </div>
-        } @else if (error()) {
+        } @else if (errorLista()) {
         <div class="py-12 text-center">
           <p class="text-red-400 text-sm">
-            {{ error() }}
+            {{ errorLista() }}
           </p>
         </div>
         } @else {

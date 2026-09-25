@@ -28,12 +28,14 @@ export class VendaService {
     dataInicio?: string,
     dataFim?: string,
     page: number = 0,
-    size: number = 10
+    size: number = 10,
+    campoOrdenacao: string = 'id',
+    direcaoOrdenacao: 'asc' | 'desc' = 'desc'
   ) : Observable<PageResponse<VendaResponse>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString())
-      .set('sort', 'id,desc')
+      .set('sort', `${campoOrdenacao},${direcaoOrdenacao}`)
     if (clienteNome && clienteNome.trim()) {
       params = params.set('clienteNome', clienteNome.trim());
     }

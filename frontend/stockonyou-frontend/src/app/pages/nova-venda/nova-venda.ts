@@ -765,7 +765,7 @@ export class NovaVenda implements OnInit {
           );
 
           this.toast.erro(
-            'Não foi possível verificar o estado da comanda.'
+            'Erro ao tentar quitar a comanda. Não foi possível verificar o estado da comanda.'
           );
         }
       });

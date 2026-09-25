@@ -27,6 +27,10 @@ export class HistoricoVendaStore {
 
   readonly quitacaoConcluida = signal(0);
 
+  readonly cancelando = signal(false);
+  readonly erroCancelamento = signal<string | null>(null);
+  readonly cancelamentoConcluido = signal(0);
+
   readonly vendaSelecionada = signal<VendaResponse | null>(null);
 
   readonly campoOrdenacao = signal('id');
@@ -167,6 +171,29 @@ export class HistoricoVendaStore {
         this.quitando.set(false);
       }
     })
+  }
+
+  cancelarVenda(vendaId: number): void {
+    this.cancelando.set(true);
+    this.erroCancelamento.set(null);
+    this.vendaService
+      .cancelarComanda(vendaId)
+      .pipe(
+        finalize(() => {
+          this.cancelando.set(false);
+        })
+      )
+      .subscribe({
+        next: () => {
+          this.cancelamentoConcluido.update(valor => valor + 1)
+        },
+        error: (err) => {
+          console.error('Erro ao cancelar venda:', err);
+          this.erroCancelamento.set(
+            'Erro ao cancelar a venda no servidor.'
+          )
+        }
+      })
   }
 
   selecionarVenda(venda: VendaResponse): void {

@@ -24,6 +24,8 @@ export class HistoricoVendaStore {
 
   readonly quitacaoConcluida = signal(0);
 
+  readonly vendaSelecionada = signal<VendaResponse | null>(null);
+
   carregar(
     filtroCliente: string,
     filtroStatus: string,
@@ -69,6 +71,10 @@ export class HistoricoVendaStore {
     this.paginaAtual.set(pagina);
   }
 
+  limparVendaSelecionada(): void {
+    this.vendaSelecionada.set(null);
+  }
+
   primeiraPagina(): void {
     this.paginaAtual.set(0);
   }
@@ -88,4 +94,9 @@ export class HistoricoVendaStore {
       }
     })
   }
+
+  selecionarVenda(venda: VendaResponse): void {
+    this.vendaSelecionada.set(venda);
+  }
+
 }

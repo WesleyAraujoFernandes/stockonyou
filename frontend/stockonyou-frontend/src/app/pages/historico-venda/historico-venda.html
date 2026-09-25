@@ -197,8 +197,8 @@
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4">
     <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-5">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h2 class="text-base font-bold text-white">Detalhamento do Cupom # {{ vendaDetalhada()?.id }}</h2>
-        <button (click)="exibirModalDetalhes.set(false)"
+        <h2 class="text-base font-bold text-white">Detalhamento do Cupom # {{ vendaSelecionada()?.id }}</h2>
+        <button (click)="exibirModalDetalhes.set(false); historicoStore.limparVendaSelecionada()"
           class="text-slate-400 hover:text-slate-200 transition cursor-pointer">Fechar</button>
       </div>
 
@@ -206,25 +206,25 @@
         class="grid grid-cols-2 gap-3 text-xs bg-slate-950/40 p-3 border border-slate-800/60 rounded-xl text-slate-300">
         <div>
           <span class="text-slate-500 font-medium">Cliente:</span>
-          {{ vendaDetalhada()?.clienteNome || 'Cliente Padrão' }}
+          {{ vendaSelecionada()?.clienteNome || 'Cliente Padrão' }}
         </div>
         <div>
           <span class="text-slate-500 font-medium">Data:</span>
-          {{ vendaDetalhada()?.dataVenda | date:'dd/MM/yyyy HH:mm' }}
+          {{ vendaSelecionada()?.dataVenda | date:'dd/MM/yyyy HH:mm' }}
         </div>
         <div>
           <span class="text-slate-500 font-medium">Atendente:</span>
-          {{ vendaDetalhada()?.usuarioNome || 'Sistema' }}
+          {{ vendaSelecionada()?.usuarioNome || 'Sistema' }}
         </div>
         <div>
           <span class="text-slate-500 font-medium">Situação:</span>
           <span class="font-semibold ml-1" [ngClass]="{
-              'text-emerald-400': vendaDetalhada()?.status === 'PAGO',
-              'text-amber-400': vendaDetalhada()?.status === 'PENDENTE',
-              'text-blue-400': vendaDetalhada()?.status === 'ABERTA',
-              'text-red-400': vendaDetalhada()?.status === 'CANCELADA'
+              'text-emerald-400': vendaSelecionada()?.status === 'PAGO',
+              'text-amber-400': vendaSelecionada()?.status === 'PENDENTE',
+              'text-blue-400': vendaSelecionada()?.status === 'ABERTA',
+              'text-red-400': vendaSelecionada()?.status === 'CANCELADA'
             }">
-            @switch (vendaDetalhada()?.status) {
+            @switch (vendaSelecionada()?.status) {
             @case ('PAGO') {
             Pago
             }
@@ -265,7 +265,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-800/40 text-slate-300">
-            @for (item of vendaDetalhada()?.itens; track item.id) {
+            @for (item of vendaSelecionada()?.itens; track item.id) {
             <tr>
               <td class="p-2.5 font-medium text-slate-200">{{ item.produtoNome || 'Produto' }}</td>
               <td class="p-2.5 text-center font-mono">{{ item.quantidade }}</td>
@@ -282,11 +282,11 @@
       <div class="flex items-center justify-between border-t border-slate-800 pt-4">
         <div class="flex flex-col">
           <span class="text-[10px] text-slate-500 uppercase font-bold">Total do Cupom</span>
-          <span class="text-lg font-bold text-emerald-400">{{ vendaDetalhada()?.valorTotal | currency:'BRL' }}</span>
+          <span class="text-lg font-bold text-emerald-400">{{ vendaSelecionada()?.valorTotal | currency:'BRL' }}</span>
         </div>
         <div class="flex gap-2">
-          @if (vendaDetalhada()?.status === 'PENDENTE') {
-          <button (click)="quitarContaPendurada(vendaDetalhada()!.id)"
+          @if (vendaSelecionada()?.status === 'PENDENTE') {
+          <button (click)="quitarContaPendurada(vendaSelecionada()!.id)"
             class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl transition shadow-lg shadow-emerald-600/20 cursor-pointer">
             Dar Baixa e Quitar Conta
           </button>

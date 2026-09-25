@@ -30,7 +30,6 @@ import { KeycloakService } from '../../core/auth/keycloak.service';
 export class HistoricoVenda implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly keycloakService = inject(KeycloakService);
-  private readonly historicoStore = inject(HistoricoVendaStore);
 
   readonly IconSearch = LucideSearch;
   readonly IconCalendar = LucideCalendar;
@@ -46,6 +45,7 @@ export class HistoricoVenda implements OnInit {
   profile = this.keycloakService.getUserProfile();
   name = this.keycloakService.getUserDisplayName();
 
+  readonly historicoStore = inject(HistoricoVendaStore);
   readonly vendas = this.historicoStore.vendas;
   readonly paginaAtual = this.historicoStore.paginaAtual;
   readonly totalPaginas = this.historicoStore.totalPaginas;
@@ -56,11 +56,12 @@ export class HistoricoVenda implements OnInit {
   readonly erroQuitacao = this.historicoStore.erroQuitacao;
   readonly quitacaoConcluida =
   this.historicoStore.quitacaoConcluida;
+  readonly vendaSelecionada = this.historicoStore.vendaSelecionada;
 
 private ultimaQuitacaoProcessada = 0;
 
 
-vendaDetalhada = signal<VendaResponse | null>(null);
+//vendaDetalhada = signal<VendaResponse | null>(null);
 exibirModalDetalhes = signal<boolean>(false);
 
 filtroCliente = '';
@@ -147,7 +148,7 @@ mudarPagina(direcao: number): void {
   }
 
 abrirDetalhes(venda: VendaResponse): void {
-  this.vendaDetalhada.set(venda);
+  this.historicoStore.selecionarVenda(venda);
   this.exibirModalDetalhes.set(true);
 }
 

@@ -66,10 +66,14 @@ export class HistoricoVenda implements OnInit {
   readonly erroQuitacao = this.historicoStore.erroQuitacao;
   readonly quitacaoConcluida =
     this.historicoStore.quitacaoConcluida;
+  readonly cancelando = this.historicoStore.cancelando;
+  readonly erroCancelamento = this.historicoStore.erroCancelamento;
+  readonly cancelamentoConcluido = this.historicoStore.cancelamentoConcluido;
   readonly vendaSelecionada = this.historicoStore.vendaSelecionada;
   readonly carregandoDetalhe = this.historicoStore.carregandoDetalhe;
 
   private ultimaQuitacaoProcessada = 0;
+  private ultimoCancelamentoProcessado = 0;
 
 
   //vendaDetalhada = signal<VendaResponse | null>(null);
@@ -115,6 +119,34 @@ export class HistoricoVenda implements OnInit {
 
     effect(() => {
       const erro = this.erroQuitacao();
+      if (!erro) {
+        return;
+      }
+      this.toast.erro(erro);
+    })
+
+    effect(() => {
+      const cancelamento = this.cancelamentoConcluido();
+
+      if (
+        cancelamento === 0 ||
+        cancelamento === this.ultimoCancelamentoProcessado
+      ) {
+        return;
+      }
+
+      this.ultimoCancelamentoProcessado = cancelamento;
+
+      this.toast.sucesso(
+        'Venda cancelada com sucesso!'
+      );
+
+      this.exibirModalDetalhes.set(false);
+      this.carregarHistorico();
+    });
+
+    effect(() => {
+      const erro = this.erroCancelamento();
       if (!erro) {
         return;
       }
@@ -217,6 +249,16 @@ export class HistoricoVenda implements OnInit {
     }
 
     this.historicoStore.quitarConta(vendaId);
+  }
+
+  cancelarVenda(vendaId: number): void {
+    const desejaCancelar = confirm(
+      'Confirma o cancelamento desta venda?'
+    )
+    if (!desejaCancelar) {
+      return;
+    }
+    this.historicoStore.cancelarVenda(vendaId);
   }
 
 }

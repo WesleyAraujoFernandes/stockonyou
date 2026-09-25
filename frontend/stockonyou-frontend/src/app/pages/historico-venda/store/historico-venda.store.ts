@@ -184,7 +184,8 @@ export class HistoricoVendaStore {
         })
       )
       .subscribe({
-        next: () => {
+        next: (venda) => {
+          this.vendaSelecionada.set(venda);
           this.cancelamentoConcluido.update(valor => valor + 1)
         },
         error: (err) => {

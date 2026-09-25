@@ -16,6 +16,7 @@ import {
   LucideChevronLeft,
   LucideChevronRight,
   LucideEye,
+  LucideLoaderCircle,
   LucideAlertTriangle
 } from '@lucide/angular';
 import { KeycloakService } from '../../core/auth/keycloak.service';
@@ -41,6 +42,7 @@ export class HistoricoVenda implements OnInit {
   readonly IconLeft = LucideChevronLeft;
   readonly IconRight = LucideChevronRight;
   readonly IconEye = LucideEye;
+  readonly IconLoader = LucideLoaderCircle;
   readonly IconAlert = LucideAlertTriangle;
 
   profile = this.keycloakService.getUserProfile();

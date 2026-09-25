@@ -330,7 +330,6 @@ export class NovaVenda implements OnInit {
 
   adicionarNoCarrinho(): void {
     if (!this.produtoSelecionado) return;
-    console.log('adicionarNoCarrinho -> usuarioLogado:', this.usuarioLogado);
     // CASO 1: SE FOR CLIENTE PADRÃO (ID 1) -> Gerencia apenas em memória local
     if (this.clienteSelecionado().id === 1) {
       const itensAtuais = [...this.carrinho()];
@@ -442,7 +441,6 @@ export class NovaVenda implements OnInit {
     });
   }
   removerDoCarrinho(index: number): void {
-    console.log('🗑️ removerDoCarrinho foi chamado. Index:', index);
     const item = this.carrinho()[index];
 
     if (!item || !item.produto) return;

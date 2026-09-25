@@ -30,6 +30,7 @@ import { KeycloakService } from '../../core/auth/keycloak.service';
 export class HistoricoVenda implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly keycloakService = inject(KeycloakService);
+  //private readonly vendaService = inject(VendaService);
 
   readonly IconSearch = LucideSearch;
   readonly IconCalendar = LucideCalendar;
@@ -57,8 +58,9 @@ export class HistoricoVenda implements OnInit {
   readonly quitacaoConcluida =
   this.historicoStore.quitacaoConcluida;
   readonly vendaSelecionada = this.historicoStore.vendaSelecionada;
+  readonly carregandoDetalhe = this.historicoStore.carregandoDetalhe;
 
-private ultimaQuitacaoProcessada = 0;
+  private ultimaQuitacaoProcessada = 0;
 
 
 //vendaDetalhada = signal<VendaResponse | null>(null);
@@ -109,6 +111,15 @@ constructor() {
     }
     this.toast.erro(erro);
   })
+
+  effect(() => {
+    const carregando = this.carregandoDetalhe();
+    const venda = this.vendaSelecionada();
+    if (carregando || !venda) {
+      return;
+    }
+    this.exibirModalDetalhes.set(true);
+  })
 }
 
 
@@ -148,8 +159,10 @@ mudarPagina(direcao: number): void {
   }
 
 abrirDetalhes(venda: VendaResponse): void {
-  this.historicoStore.selecionarVenda(venda);
-  this.exibirModalDetalhes.set(true);
+  if (this.carregandoDetalhe()) {
+    return;
+  }
+  this.historicoStore.carregarDetalhes(venda.id);
 }
 
 quitarContaPendurada(vendaId: number): void {

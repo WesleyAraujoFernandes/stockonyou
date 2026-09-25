@@ -18,6 +18,7 @@ export class HistoricoVendaStore {
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+  readonly carregandoDetalhe = signal(false);
 
   readonly quitando = signal(false);
   readonly erroQuitacao = signal<string | null>(null);
@@ -61,6 +62,20 @@ export class HistoricoVendaStore {
           this.loading.set(false);
         }
       });
+  }
+
+  carregarDetalhes(vendaId: number): void {
+    this.carregandoDetalhe.set(true);
+    this.vendaService.buscarPorId(vendaId).subscribe({
+      next: (venda) => {
+        this.vendaSelecionada.set(venda);
+        this.carregandoDetalhe.set(false);
+      },
+      error: (err) => {
+        console.error('Error ao carregar detalhes da venda:', err);
+        this.carregandoDetalhe.set(false);
+      }
+    })
   }
 
   irParaPagina(pagina: number): void {

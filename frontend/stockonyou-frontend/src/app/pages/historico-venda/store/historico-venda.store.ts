@@ -105,12 +105,13 @@ export class HistoricoVendaStore {
       })
   }
 
-  irParaPagina(pagina: number): void {
+  irParaPagina(pagina: number): boolean {
     if (pagina < 0 || pagina >= this.totalPaginas() || pagina === this.paginaAtual()) {
-      return;
+      return false;
     }
 
     this.paginaAtual.set(pagina);
+    return true;
   }
 
   limparVendaSelecionada(): void {
@@ -119,6 +120,11 @@ export class HistoricoVendaStore {
 
   limparErroDetalhe(): void {
     this.erroDetalhe.set(null);
+  }
+
+  limparOrdenacao(): void {
+    this.campoOrdenacao.set('id');
+    this.direcaoOrdenacao.set('desc');
   }
 
   ordenarPor(campo: string): void {

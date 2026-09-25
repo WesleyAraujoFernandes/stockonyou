@@ -164,14 +164,17 @@ export class HistoricoVenda implements OnInit {
     this.filtroDataInicio = '';
     this.filtroDataFim = '';
     this.historicoStore.primeiraPagina();
+    this.historicoStore.limparOrdenacao();
     this.carregarHistorico();
   }
 
   mudarPagina(direcao: number): void {
     const novaPagina = this.paginaAtual() + direcao;
     if (novaPagina >= 0 && novaPagina < this.totalPaginas()) {
-      this.historicoStore.irParaPagina(novaPagina);
-      this.carregarHistorico();
+      const mudou = this.historicoStore.irParaPagina(novaPagina);
+      if (mudou) {
+        this.carregarHistorico();
+      }
     }
   }
 
@@ -180,8 +183,10 @@ export class HistoricoVenda implements OnInit {
     if (!Number.isInteger(pagina) || pagina < 1 || pagina > this.totalPaginas()) {
       return;
     }
-    this.historicoStore.irParaPagina(pagina - 1);
-    this.carregarHistorico();
+    const mudou = this.historicoStore.irParaPagina(pagina - 1);
+    if (mudou) {
+      this.carregarHistorico();
+    }
   }
 
   ordenarPor(campo: string): void {

@@ -110,11 +110,24 @@
         <thead>
           <tr
             class="bg-slate-950/60 border-b border-slate-800 text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
-            <th class="py-3.5 px-4">ID Venda</th>
+            <th>
+              <button type="button" (click)="ordenarPor('id')"
+                class="inline-flex items-center gap-1 px-5 font-medium transition cursor-pointer"
+                [class.text-white]="historicoStore.campoOrdenacao() === 'id'"
+                [class.text-slate-300]="historicoStore.campoOrdenacao() !== 'id'">
 
+                ID VENDA
+
+                @if (historicoStore.campoOrdenacao() === 'id') {
+                <span class="text-xs">
+                  {{ historicoStore.direcaoOrdenacao() === 'asc' ? '↑' : '↓' }}
+                </span>
+                }
+              </button>
+            </th>
             <th>
               <button type="button" (click)="ordenarPor('dataVenda')"
-                class="inline-flex items-center gap-1 font-medium transition cursor-pointer"
+                class="inline-flex items-center px-10 gap-1 font-medium transition cursor-pointer"
                 [class.text-white]="historicoStore.campoOrdenacao() === 'dataVenda'"
                 [class.text-slate-300]="historicoStore.campoOrdenacao() !== 'dataVenda'">
 
@@ -130,7 +143,7 @@
 
             <th>
               <button type="button" (click)="ordenarPor('clienteNome')"
-                class="inline-flex items-center gap-1 font-medium transition cursor-pointer"
+                class="inline-flex px-4 items-center gap-1 font-medium transition cursor-pointer"
                 [class.text-white]="historicoStore.campoOrdenacao() === 'clienteNome'"
                 [class.text-slate-300]="historicoStore.campoOrdenacao() !== 'clienteNome'">
 
@@ -143,11 +156,12 @@
                 }
               </button>
             </th>
+
             <th class="py-3.5 px-4">Operador</th>
 
             <th>
               <button type="button" (click)="ordenarPor('status')"
-                class="inline-flex items-center gap-1 font-medium transition cursor-pointer"
+                class="inline-flex px-4 items-center gap-1 font-medium transition cursor-pointer"
                 [class.text-white]="historicoStore.campoOrdenacao() === 'status'"
                 [class.text-slate-300]="historicoStore.campoOrdenacao() !== 'status'">
                 Status
@@ -161,10 +175,9 @@
             </th>
             <th>
               <button type="button" (click)="ordenarPor('valorTotal')"
-                class="inline-flex items-center gap-1 font-medium transition cursor-pointer"
+                class="inline-flex items-center gap-1 px-5 font-medium transition cursor-pointer"
                 [class.text-white]="historicoStore.campoOrdenacao() === 'valorTotal'"
-                [class.text-slate-300]="historicoStore.campoOrdenacao() !== 'valorTotal'"
-                >
+                [class.text-slate-300]="historicoStore.campoOrdenacao() !== 'valorTotal'">
                 Valor
 
                 @if (historicoStore.campoOrdenacao() === 'valorTotal') {

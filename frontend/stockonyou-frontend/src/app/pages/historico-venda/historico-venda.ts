@@ -176,6 +176,28 @@ export class HistoricoVenda implements OnInit {
     this.carregarHistorico();
   }
 
+  abrirDetalhes(venda: VendaResponse): void {
+    if (this.carregandoDetalhe()) {
+      return;
+    }
+    this.historicoStore.carregarDetalhes(venda.id);
+  }
+
+  aplicarFiltros(): void {
+    this.historicoStore.primeiraPagina();
+    this.carregarHistorico();
+  }
+
+  cancelarVenda(vendaId: number): void {
+    const desejaCancelar = confirm(
+      'Confirma o cancelamento desta venda?'
+    )
+    if (!desejaCancelar) {
+      return;
+    }
+    this.historicoStore.cancelarVenda(vendaId);
+  }
+
   carregarHistorico(): void {
     this.historicoStore.carregar(
       this.filtroCliente,
@@ -185,9 +207,21 @@ export class HistoricoVenda implements OnInit {
     )
   }
 
-  aplicarFiltros(): void {
-    this.historicoStore.primeiraPagina();
-    this.carregarHistorico();
+  fecharDetalhes(): void {
+    this.exibirModalDetalhes.set(false);
+    this.historicoStore.limparVendaSelecionada();
+    this.historicoStore.limparErroDetalhe();
+  }
+
+  irParaPaginaInformada(valor: string): void {
+    const pagina = Number(valor);
+    if (!Number.isInteger(pagina) || pagina < 1 || pagina > this.totalPaginas()) {
+      return;
+    }
+    const mudou = this.historicoStore.irParaPagina(pagina - 1);
+    if (mudou) {
+      this.carregarHistorico();
+    }
   }
 
   limparFiltros(): void {
@@ -210,33 +244,17 @@ export class HistoricoVenda implements OnInit {
     }
   }
 
-  irParaPaginaInformada(valor: string): void {
-    const pagina = Number(valor);
-    if (!Number.isInteger(pagina) || pagina < 1 || pagina > this.totalPaginas()) {
-      return;
-    }
-    const mudou = this.historicoStore.irParaPagina(pagina - 1);
-    if (mudou) {
-      this.carregarHistorico();
-    }
-  }
-
   ordenarPor(campo: string): void {
     this.historicoStore.ordenarPor(campo);
     this.carregarHistorico();
   }
 
-  abrirDetalhes(venda: VendaResponse): void {
-    if (this.carregandoDetalhe()) {
-      return;
-    }
-    this.historicoStore.carregarDetalhes(venda.id);
+  podeCancelar(venda: VendaResponse | null): boolean {
+    return venda?.status === 'ABERTA';
   }
 
-  fecharDetalhes(): void {
-    this.exibirModalDetalhes.set(false);
-    this.historicoStore.limparVendaSelecionada();
-    this.historicoStore.limparErroDetalhe();
+  podeQuitar(venda: VendaResponse | null): boolean {
+    return venda?.status === 'PENDENTE';
   }
 
   quitarContaPendurada(vendaId: number): void {
@@ -249,16 +267,6 @@ export class HistoricoVenda implements OnInit {
     }
 
     this.historicoStore.quitarConta(vendaId);
-  }
-
-  cancelarVenda(vendaId: number): void {
-    const desejaCancelar = confirm(
-      'Confirma o cancelamento desta venda?'
-    )
-    if (!desejaCancelar) {
-      return;
-    }
-    this.historicoStore.cancelarVenda(vendaId);
   }
 
 }

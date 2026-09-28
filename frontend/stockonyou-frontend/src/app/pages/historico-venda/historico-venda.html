@@ -313,26 +313,8 @@
         </div>
         <div>
           <span class="text-slate-500 font-medium">Situação:</span>
-          <span class="font-semibold ml-1" [ngClass]="{
-              'text-emerald-400': vendaSelecionada()?.status === 'PAGO',
-              'text-amber-400': vendaSelecionada()?.status === 'PENDENTE',
-              'text-blue-400': vendaSelecionada()?.status === 'ABERTA',
-              'text-red-400': vendaSelecionada()?.status === 'CANCELADA'
-            }">
-            @switch (vendaSelecionada()?.status) {
-            @case ('PAGO') {
-            Pago
-            }
-            @case ('PENDENTE') {
-            Pendente
-            }
-            @case ('ABERTA') {
-            Aberta
-            }
-            @case ('CANCELADA') {
-            Cancelada
-            }
-            }
+          <span class="font-semibold ml-1" [ngClass]="obterClassesStatus(vendaSelecionada()!.status)">
+            {{ obterTextoStatus(vendaSelecionada()!.status) }}
           </span>
         </div>
       </div>

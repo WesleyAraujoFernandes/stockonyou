@@ -1,9 +1,8 @@
 import { Component, inject, OnInit, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { VendaService } from '../../core/services/venda.service';
 import { ToastService } from '../../core/services/toast.service';
-import { VendaResponse } from '../../core/model/venda.model';
+import { StatusVenda, VendaResponse } from '../../core/model/venda.model';
 import { HistoricoVendaStore } from './store/historico-venda.store';
 import {
   LucideDynamicIcon,
@@ -241,6 +240,32 @@ export class HistoricoVenda implements OnInit {
       if (mudou) {
         this.carregarHistorico();
       }
+    }
+  }
+
+  obterClassesStatus(status: StatusVenda): string {
+    switch (status) {
+      case 'ABERTA':
+        return 'text-blue-400'
+      case 'PENDENTE':
+        return 'text-amber-400'
+      case 'PAGO':
+        return 'text-emerald-400'
+      case 'CANCELADA':
+        return 'text-red-400'
+    }
+  }
+
+  obterTextoStatus(status: StatusVenda): string {
+    switch (status) {
+      case 'ABERTA':
+        return 'Aberta'
+      case 'PENDENTE':
+        return 'Pendente'
+      case 'PAGO':
+        return 'Pago'
+      case 'CANCELADA':
+        return 'Cancelada'
     }
   }
 

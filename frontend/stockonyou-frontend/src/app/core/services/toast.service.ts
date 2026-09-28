@@ -11,6 +11,7 @@ export interface ToastData {
 export class ToastService {
   private readonly toastState = signal<ToastData | null>(null);
   readonly toast = this.toastState.asReadonly();
+  private timeoutId: ReturnType<typeof setTimeout> | null = null;
 
 
   sucesso(mensagem: string): void {
@@ -18,21 +19,34 @@ export class ToastService {
   }
 
   erro(mensagem: string): void {
+    console.log('TOAST.erro() CHAMADO:', mensagem)
     this.exibir(mensagem, 'error');
+    console.log('TOAST APÓS exibir():', this.toast())
   }
 
   info(mensagem: string): void {
     this.exibir(mensagem, 'info');
   }
 
-  private exibir(mensagem: string, tipo: 'success' | 'error' | 'info'): void {
+  private exibir(
+    mensagem: string,
+    tipo: 'success' | 'error' | 'info'
+  ): void {
+    if (this.timeoutId !== null) {
+      clearTimeout(this.timeoutId);
+    }
     this.toastState.set({ mensagem, tipo });
-    setTimeout(() => {
+    this.timeoutId = setTimeout(() => {
       this.toastState.set(null);
-    }, 3000)
+      this.timeoutId = null
+    }, 3000);
   }
 
   fechar(): void {
+    if (this.timeoutId !== null) {
+      clearTimeout(this.timeoutId);
+      this.timeoutId = null;
+    }
     this.toastState.set(null);
   }
 }

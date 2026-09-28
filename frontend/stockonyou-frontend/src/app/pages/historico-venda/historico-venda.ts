@@ -119,6 +119,9 @@ export class HistoricoVenda implements OnInit {
         'Conta quitada com sucesso! Fluxo de caixa atualizado!'
       );
 
+      this.exibirModalConfirmacaoQuitacao.set(false);
+      this.vendaParaQuitar.set(null);
+
       this.exibirModalDetalhes.set(false);
       this.carregarHistorico();
     });
@@ -128,6 +131,7 @@ export class HistoricoVenda implements OnInit {
       if (!erro) {
         return;
       }
+      console.log('ERRO DE QUITAÇÃO NO COMPONENTE:', erro)
       this.toast.erro(erro);
     })
 
@@ -219,9 +223,7 @@ export class HistoricoVenda implements OnInit {
   }
 
   confirmarCancelamento(): void {
-    console.log('confirmarCancelamento() foi chamado');
     const vendaId = this.vendaParaCancelar();
-    console.log('vendaId:', vendaId);
     if (vendaId === null) {
       return;
     }
@@ -235,8 +237,6 @@ export class HistoricoVenda implements OnInit {
     if (vendaId === null) {
       return;
     }
-    this.exibirModalConfirmacaoQuitacao.set(false);
-    this.vendaParaQuitar.set(null);
     this.historicoStore.quitarConta(vendaId);
   }
 

@@ -14,6 +14,7 @@ export class ConfirmacaoModal {
   readonly textoConfirmar = input('Confirmar')
   readonly textoCancelar = input ('Cancelar')
   readonly variante = input<'danger' | 'success'>('danger')
+  readonly desabilitado = input(false);
 
   readonly confirmado = output<void>();
   readonly cancelado = output<void>();

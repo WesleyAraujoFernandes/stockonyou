@@ -405,9 +405,10 @@
   <app-confirmacao-modal
     titulo = "Quitar conta"
     mensagem = "Confirma o recebimento total e a quitação desta conta pendurada?"
-    textoConfirmar = "Quitar conta"
+    [textoConfirmar]="quitando() ? 'Quitando...' : 'Quitar conta'"
     textoCancelar = "Voltar"
     variante="success"
+    [desabilitado]="quitando()"
     (confirmado)="confirmarQuitacao()"
     (cancelado)="cancelarConfirmacaoQuitacao()"
   ></app-confirmacao-modal>

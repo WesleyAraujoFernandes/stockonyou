@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../core/services/toast.service';
 import { StatusVenda, VendaResponse } from '../../core/model/venda.model';
 import { HistoricoVendaStore } from './store/historico-venda.store';
+import { ConfirmacaoModal } from './confirmacao-modal/confirmacao-modal';
 import {
   LucideDynamicIcon,
   LucideSearch,
@@ -17,8 +18,7 @@ import {
   LucideEye,
   LucideLoaderCircle,
   LucideAlertTriangle,
-  LucideChevronFirst,
-  LucideChevronLast,
+
   LucideChevronsLeft,
   LucideChevronsRight
 } from '@lucide/angular';
@@ -26,7 +26,7 @@ import { KeycloakService } from '../../core/auth/keycloak.service';
 
 @Component({
   selector: 'app-historico-venda',
-  imports: [CommonModule, FormsModule, LucideDynamicIcon],
+  imports: [CommonModule, FormsModule, LucideDynamicIcon, ConfirmacaoModal],
   templateUrl: './historico-venda.html',
   styleUrl: './historico-venda.css',
   providers: [HistoricoVendaStore]
@@ -75,8 +75,12 @@ export class HistoricoVenda implements OnInit {
   private ultimoCancelamentoProcessado = 0;
 
 
+
   //vendaDetalhada = signal<VendaResponse | null>(null);
   exibirModalDetalhes = signal<boolean>(false);
+
+  exibirModalConfirmacaoCancelamento = signal(false);
+  vendaParaCancelar = signal<number | null>(null);
 
   filtroCliente = '';
   filtroStatus = '';
@@ -187,14 +191,14 @@ export class HistoricoVenda implements OnInit {
     this.carregarHistorico();
   }
 
+  cancelarConfirmacao(): void {
+    this.exibirModalConfirmacaoCancelamento.set(false);
+    this.vendaParaCancelar.set(null);
+  }
+
   cancelarVenda(vendaId: number): void {
-    const desejaCancelar = confirm(
-      'Confirma o cancelamento desta venda?'
-    )
-    if (!desejaCancelar) {
-      return;
-    }
-    this.historicoStore.cancelarVenda(vendaId);
+    this.vendaParaCancelar.set(vendaId);
+    this.exibirModalConfirmacaoCancelamento.set(true);
   }
 
   carregarHistorico(): void {
@@ -204,6 +208,18 @@ export class HistoricoVenda implements OnInit {
       this.filtroDataInicio,
       this.filtroDataFim
     )
+  }
+
+  confirmarCancelamento(): void {
+    console.log('confirmarCancelamento() foi chamado');
+    const vendaId = this.vendaParaCancelar();
+    console.log('vendaId:', vendaId);
+    if (vendaId === null) {
+      return;
+    }
+    this.exibirModalConfirmacaoCancelamento.set(false);
+    this.vendaParaCancelar.set(null);
+    this.historicoStore.cancelarVenda(vendaId);
   }
 
   fecharDetalhes(): void {

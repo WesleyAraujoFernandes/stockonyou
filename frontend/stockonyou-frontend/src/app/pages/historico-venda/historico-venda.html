@@ -391,3 +391,13 @@
   </div>
   }
 </div>
+@if (exibirModalConfirmacaoCancelamento()) {
+  <app-confirmacao-modal
+    titulo = "Cancelar venda"
+    mensagem = "Confirma o cancelamento desta venda"
+    textoConfirmar = "Cancelar Venda"
+    textoCancelar = "Voltar"
+    (confirmado)="confirmarCancelamento()"
+    (cancelado)="cancelarConfirmacao()"
+  ></app-confirmacao-modal>
+}

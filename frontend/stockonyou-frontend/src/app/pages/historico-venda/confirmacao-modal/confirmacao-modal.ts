@@ -9,7 +9,7 @@ import { Component, input, output } from '@angular/core';
 export class ConfirmacaoModal {
   readonly titulo = input('Confirmar ação')
   readonly mensagem = input('')
-  readonly textConfirmar = input('Confirmar')
+  readonly textoConfirmar = input('Confirmar')
   readonly textoCancelar = input ('Cancelar')
 
   readonly confirmado = output<void>();

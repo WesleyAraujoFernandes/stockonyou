@@ -82,6 +82,9 @@ export class HistoricoVenda implements OnInit {
   exibirModalConfirmacaoCancelamento = signal(false);
   vendaParaCancelar = signal<number | null>(null);
 
+  exibirModalConfirmacaoQuitacao = signal(false);
+  vendaParaQuitar = signal<number | null>(null);
+
   filtroCliente = '';
   filtroStatus = '';
   filtroDataInicio = '';
@@ -196,6 +199,11 @@ export class HistoricoVenda implements OnInit {
     this.vendaParaCancelar.set(null);
   }
 
+  cancelarConfirmacaoQuitacao(): void {
+    this.exibirModalConfirmacaoQuitacao.set(false);
+    this.vendaParaQuitar.set(null);
+  }
+
   cancelarVenda(vendaId: number): void {
     this.vendaParaCancelar.set(vendaId);
     this.exibirModalConfirmacaoCancelamento.set(true);
@@ -220,6 +228,16 @@ export class HistoricoVenda implements OnInit {
     this.exibirModalConfirmacaoCancelamento.set(false);
     this.vendaParaCancelar.set(null);
     this.historicoStore.cancelarVenda(vendaId);
+  }
+
+  confirmarQuitacao(): void {
+    const vendaId = this.vendaParaQuitar();
+    if (vendaId === null) {
+      return;
+    }
+    this.exibirModalConfirmacaoQuitacao.set(false);
+    this.vendaParaQuitar.set(null);
+    this.historicoStore.quitarConta(vendaId);
   }
 
   fecharDetalhes(): void {
@@ -299,15 +317,8 @@ export class HistoricoVenda implements OnInit {
   }
 
   quitarContaPendurada(vendaId: number): void {
-    const desejaQuitar = confirm(
-      'Confirma o recebimento total e quitação desta conta pendurada?'
-    );
-
-    if (!desejaQuitar) {
-      return;
-    }
-
-    this.historicoStore.quitarConta(vendaId);
+    this.vendaParaQuitar.set(vendaId);
+    this.exibirModalConfirmacaoQuitacao.set(true);
   }
 
 }

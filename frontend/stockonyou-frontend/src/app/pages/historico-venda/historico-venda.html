@@ -40,7 +40,7 @@
         <div class="absolute left-3 flex items-center pointer-events-none text-slate-500">
           <svg [lucideIcon]="IconUser" class="w-4 h-4"></svg>
         </div>
-        <input type="text" [(ngModel)]="filtroCliente" (input)="aplicarFiltros()" placeholder="Nome do cliente..."
+        <input type="text" [(ngModel)]="filtros.cliente" (input)="aplicarFiltros()" placeholder="Nome do cliente..."
           class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs foucus:outline-none focus:border-indigo-500 transition-colors">
       </div>
     </div>
@@ -53,7 +53,7 @@
         <div class="absolute left-3 flex items-center pointer-events-none text-slate-500">
           <svg [lucideIcon]="IconCalendar" class="w-4 h-4"></svg>
         </div>
-        <input type="date" [(ngModel)]="filtroDataInicio" (change)="aplicarFiltros()"
+        <input type="date" [(ngModel)]="filtros.dataInicio" (change)="aplicarFiltros()"
           class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500 transition-colors">
       </div>
     </div>
@@ -64,7 +64,7 @@
         <div class="absolute left-3 flex items-center pointer-events-none text-slate-500">
           <svg [lucideIcon]="IconCalendar" class="w-4 h-4"></svg>
         </div>
-        <input type="date" [(ngModel)]="filtroDataFim" (change)="aplicarFiltros()"
+        <input type="date" [(ngModel)]="filtros.dataFim" (change)="aplicarFiltros()"
           class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500 transition-colord">
       </div>
     </div>
@@ -72,7 +72,7 @@
     <div>
       <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Status do
         Recebimento</label>
-      <select [(ngModel)]="filtroStatus" (change)="aplicarFiltros()"
+      <select [(ngModel)]="filtros.status" (change)="aplicarFiltros()"
         class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-indigo-500"
         transition-colors cursor-pointer>
         <option value="">Todos os status</option>

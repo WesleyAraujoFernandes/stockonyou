@@ -71,10 +71,12 @@ export class HistoricoVenda implements OnInit {
   exibirModalConfirmacaoQuitacao = signal(false);
   vendaParaQuitar = signal<number | null>(null);
 
-  filtroCliente = '';
-  filtroStatus = '';
-  filtroDataInicio = '';
-  filtroDataFim = '';
+  filtros: FiltroHistoricoVenda = {
+    cliente: '',
+    status: '',
+    dataInicio: '',
+    dataFim: ''
+  }
 
   totalFaturado = computed(() => {
     return this.vendas()
@@ -190,13 +192,7 @@ export class HistoricoVenda implements OnInit {
   }
 
   carregarHistorico(): void {
-    const filtros: FiltroHistoricoVenda = {
-      cliente: this.filtroCliente,
-      status: this.filtroStatus,
-      dataInicio: this.filtroDataInicio,
-      dataFim: this.filtroDataFim
-    }
-    this.historicoStore.carregar(filtros);
+    this.historicoStore.carregar(this.filtros);
   }
 
   confirmarCancelamento(): void {
@@ -234,10 +230,12 @@ export class HistoricoVenda implements OnInit {
   }
 
   limparFiltros(): void {
-    this.filtroCliente = '';
-    this.filtroStatus = '';
-    this.filtroDataInicio = '';
-    this.filtroDataFim = '';
+    this.filtros = {
+      cliente: '',
+      status: '',
+      dataInicio: '',
+      dataFim: ''
+    }
     this.historicoStore.primeiraPagina();
     this.historicoStore.limparOrdenacao();
     this.carregarHistorico();

@@ -41,6 +41,9 @@ export class HistoricoVenda implements OnInit {
   readonly IconFirst = LucideChevronsLeft;
   readonly IconLast = LucideChevronsRight;
 
+  readonly exibirModalDetalhes = computed(
+      () => this.vendaSelecionada() !== null
+  )
   readonly historicoStore = inject(HistoricoVendaStore);
   readonly vendas = this.historicoStore.vendas;
   readonly paginaAtual = this.historicoStore.paginaAtual;
@@ -61,8 +64,6 @@ export class HistoricoVenda implements OnInit {
 
   private ultimaQuitacaoProcessada = 0;
   private ultimoCancelamentoProcessado = 0;
-
-  exibirModalDetalhes = signal<boolean>(false);
 
   exibirModalConfirmacaoCancelamento = signal(false);
   vendaParaCancelar = signal<number | null>(null);
@@ -107,7 +108,7 @@ export class HistoricoVenda implements OnInit {
       this.exibirModalConfirmacaoQuitacao.set(false);
       this.vendaParaQuitar.set(null);
 
-      this.exibirModalDetalhes.set(false);
+      this.historicoStore.limparVendaSelecionada();
       this.carregarHistorico();
     });
 
@@ -135,7 +136,7 @@ export class HistoricoVenda implements OnInit {
         'Venda cancelada com sucesso!'
       );
 
-      this.exibirModalDetalhes.set(false);
+      this.historicoStore.limparVendaSelecionada();
       this.carregarHistorico();
     });
 
@@ -148,15 +149,6 @@ export class HistoricoVenda implements OnInit {
     })
 
     effect(() => {
-      const carregando = this.carregandoDetalhe();
-      const venda = this.vendaSelecionada();
-      if (carregando || !venda) {
-        return;
-      }
-      this.exibirModalDetalhes.set(true);
-    })
-
-    effect(() => {
       const erro = this.erroDetalhe();
       if (!erro) {
         return;
@@ -164,7 +156,6 @@ export class HistoricoVenda implements OnInit {
       this.toast.erro(erro);
     })
   }
-
 
   ngOnInit(): void {
     this.carregarHistorico();
@@ -225,7 +216,6 @@ export class HistoricoVenda implements OnInit {
   }
 
   fecharDetalhes(): void {
-    this.exibirModalDetalhes.set(false);
     this.historicoStore.limparVendaSelecionada();
     this.historicoStore.limparErroDetalhe();
   }

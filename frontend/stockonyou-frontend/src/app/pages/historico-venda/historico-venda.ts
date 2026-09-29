@@ -62,9 +62,6 @@ export class HistoricoVenda implements OnInit {
   readonly vendaSelecionada = this.historicoStore.vendaSelecionada;
   readonly carregandoDetalhe = this.historicoStore.carregandoDetalhe;
 
-  private ultimaQuitacaoProcessada = 0;
-  private ultimoCancelamentoProcessado = 0;
-
   exibirModalConfirmacaoCancelamento = signal(false);
   vendaParaCancelar = signal<number | null>(null);
 
@@ -94,14 +91,9 @@ export class HistoricoVenda implements OnInit {
     effect(() => {
       const quitacao = this.quitacaoConcluida();
 
-      if (
-        quitacao === 0 ||
-        quitacao === this.ultimaQuitacaoProcessada
-      ) {
+      if (!quitacao) {
         return;
       }
-
-      this.ultimaQuitacaoProcessada = quitacao;
 
       this.toast.sucesso(
         'Conta quitada com sucesso! Fluxo de caixa atualizado!'
@@ -112,6 +104,8 @@ export class HistoricoVenda implements OnInit {
 
       this.historicoStore.limparVendaSelecionada();
       this.carregarHistorico();
+
+      this.historicoStore.limparQuitacaoConcluida();
     });
 
     effect(() => {
@@ -125,14 +119,9 @@ export class HistoricoVenda implements OnInit {
     effect(() => {
       const cancelamento = this.cancelamentoConcluido();
 
-      if (
-        cancelamento === 0 ||
-        cancelamento === this.ultimoCancelamentoProcessado
-      ) {
+      if (!cancelamento) {
         return;
       }
-
-      this.ultimoCancelamentoProcessado = cancelamento;
 
       this.toast.sucesso(
         'Venda cancelada com sucesso!'
@@ -140,6 +129,8 @@ export class HistoricoVenda implements OnInit {
 
       this.historicoStore.limparVendaSelecionada();
       this.carregarHistorico();
+
+      this.historicoStore.limparCancelamentoConcluido();
     });
 
     effect(() => {

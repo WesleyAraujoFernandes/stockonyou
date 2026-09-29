@@ -25,11 +25,11 @@ export class HistoricoVendaStore {
 
   readonly erroDetalhe = signal<string | null>(null);
 
-  readonly quitacaoConcluida = signal(0);
+  readonly quitacaoConcluida = signal<VendaResponse | null>(null);
 
   readonly cancelando = signal(false);
   readonly erroCancelamento = signal<string | null>(null);
-  readonly cancelamentoConcluido = signal(0);
+  readonly cancelamentoConcluido = signal<VendaResponse | null>(null);
 
   readonly vendaSelecionada = signal<VendaResponse | null>(null);
 
@@ -128,6 +128,14 @@ export class HistoricoVendaStore {
     this.direcaoOrdenacao.set('desc');
   }
 
+  limparQuitacaoConcluida(): void {
+    this.quitacaoConcluida.set(null);
+  }
+
+  limparCancelamentoConcluido(): void {
+    this.cancelamentoConcluido.set(null);
+  }
+
   ordenarPor(campo: string): void {
     if (this.campoOrdenacao() === campo) {
       this.direcaoOrdenacao.update(
@@ -158,8 +166,8 @@ export class HistoricoVendaStore {
       })
     )
     .subscribe({
-      next: () => {
-        this.quitacaoConcluida.update(valor => valor + 1);
+      next: (venda) => {
+        this.quitacaoConcluida.set(venda);
       },
       error: (err) => {
         console.error('Erro ao quitar conta:', err);
@@ -181,7 +189,7 @@ export class HistoricoVendaStore {
       .subscribe({
         next: (venda) => {
           this.vendaSelecionada.set(venda);
-          this.cancelamentoConcluido.update(valor => valor + 1)
+          this.cancelamentoConcluido.set(venda);
         },
         error: (err) => {
           console.error('Erro ao cancelar venda:', err);

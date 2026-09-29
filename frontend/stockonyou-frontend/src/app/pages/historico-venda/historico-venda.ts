@@ -131,7 +131,6 @@ export class HistoricoVenda implements OnInit {
       if (!erro) {
         return;
       }
-      console.log('ERRO DE QUITAÇÃO NO COMPONENTE:', erro)
       this.toast.erro(erro);
     })
 

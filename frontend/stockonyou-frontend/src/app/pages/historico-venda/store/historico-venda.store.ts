@@ -162,13 +162,11 @@ export class HistoricoVendaStore {
     )
     .subscribe({
       next: () => {
-        this.quitando.set(false);
         this.quitacaoConcluida.update(valor => valor + 1);
       },
       error: (err) => {
         console.error('Erro ao quitar conta:', err);
         this.erroQuitacao.set('Erro ao processar a quitação no servidor.')
-        this.quitando.set(false);
       }
     })
   }

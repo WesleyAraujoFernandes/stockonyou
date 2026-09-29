@@ -7,11 +7,8 @@ import { HistoricoVendaStore } from './store/historico-venda.store';
 import { ConfirmacaoModal } from './confirmacao-modal/confirmacao-modal';
 import {
   LucideDynamicIcon,
-  LucideSearch,
   LucideCalendar,
-  LucideDollarSign,
   LucideCheckCircle,
-  LucideClock,
   LucideUser,
   LucideChevronLeft,
   LucideChevronRight,
@@ -22,7 +19,6 @@ import {
   LucideChevronsLeft,
   LucideChevronsRight
 } from '@lucide/angular';
-import { KeycloakService } from '../../core/auth/keycloak.service';
 
 @Component({
   selector: 'app-historico-venda',
@@ -33,14 +29,9 @@ import { KeycloakService } from '../../core/auth/keycloak.service';
 })
 export class HistoricoVenda implements OnInit {
   private readonly toast = inject(ToastService);
-  private readonly keycloakService = inject(KeycloakService);
-  //private readonly vendaService = inject(VendaService);
 
-  readonly IconSearch = LucideSearch;
   readonly IconCalendar = LucideCalendar;
-  readonly IconMoney = LucideDollarSign;
   readonly IconCheck = LucideCheckCircle;
-  readonly IconClock = LucideClock;
   readonly IconUser = LucideUser;
   readonly IconLeft = LucideChevronLeft;
   readonly IconRight = LucideChevronRight;
@@ -49,9 +40,6 @@ export class HistoricoVenda implements OnInit {
   readonly IconAlert = LucideAlertTriangle;
   readonly IconFirst = LucideChevronsLeft;
   readonly IconLast = LucideChevronsRight;
-
-  profile = this.keycloakService.getUserProfile();
-  name = this.keycloakService.getUserDisplayName();
 
   readonly historicoStore = inject(HistoricoVendaStore);
   readonly vendas = this.historicoStore.vendas;
@@ -74,9 +62,6 @@ export class HistoricoVenda implements OnInit {
   private ultimaQuitacaoProcessada = 0;
   private ultimoCancelamentoProcessado = 0;
 
-
-
-  //vendaDetalhada = signal<VendaResponse | null>(null);
   exibirModalDetalhes = signal<boolean>(false);
 
   exibirModalConfirmacaoCancelamento = signal(false);

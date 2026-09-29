@@ -1,6 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { VendaService } from '../../../core/services/venda.service';
-import { VendaResponse } from '../../../core/model/venda.model';
+import { FiltroHistoricoVenda, VendaResponse } from '../../../core/model/venda.model';
 import { PageResponse } from '../../../core/model/produto.model';
 import { finalize, Observable } from 'rxjs';
 
@@ -37,20 +37,17 @@ export class HistoricoVendaStore {
   readonly direcaoOrdenacao = signal<'asc' | 'desc'>('desc');
 
   carregar(
-    filtroCliente: string,
-    filtroStatus: string,
-    filtroDataInicio: string,
-    filtroDataFim: string
+    filtros: FiltroHistoricoVenda
   ): void {
     this.carregandoLista.set(true);
     this.errorLista.set(null);
     this.vendaSelecionada.set(null);
     this.vendaService
       .listarComFiltros(
-        filtroCliente,
-        filtroStatus,
-        filtroDataInicio,
-        filtroDataFim,
+        filtros.cliente,
+        filtros.status,
+        filtros.dataInicio,
+        filtros.dataFim,
         this.paginaAtual(),
         this.itensPorPagina,
         this.campoOrdenacao(),

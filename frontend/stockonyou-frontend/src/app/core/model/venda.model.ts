@@ -31,3 +31,10 @@ export interface VendaResponse {
   alertas: string[];
   itens: ItemVendaResponse[];
 }
+
+export interface FiltroHistoricoVenda {
+  cliente: string;
+  status: string;
+  dataInicio: string;
+  dataFim: string;
+}

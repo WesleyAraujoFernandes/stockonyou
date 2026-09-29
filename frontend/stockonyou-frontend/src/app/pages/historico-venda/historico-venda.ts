@@ -2,7 +2,7 @@ import { Component, inject, OnInit, signal, computed, effect } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../core/services/toast.service';
-import { StatusVenda, VendaResponse } from '../../core/model/venda.model';
+import { FiltroHistoricoVenda, StatusVenda, VendaResponse } from '../../core/model/venda.model';
 import { HistoricoVendaStore } from './store/historico-venda.store';
 import { ConfirmacaoModal } from './confirmacao-modal/confirmacao-modal';
 import {
@@ -190,12 +190,13 @@ export class HistoricoVenda implements OnInit {
   }
 
   carregarHistorico(): void {
-    this.historicoStore.carregar(
-      this.filtroCliente,
-      this.filtroStatus,
-      this.filtroDataInicio,
-      this.filtroDataFim
-    )
+    const filtros: FiltroHistoricoVenda = {
+      cliente: this.filtroCliente,
+      status: this.filtroStatus,
+      dataInicio: this.filtroDataInicio,
+      dataFim: this.filtroDataFim
+    }
+    this.historicoStore.carregar(filtros);
   }
 
   confirmarCancelamento(): void {

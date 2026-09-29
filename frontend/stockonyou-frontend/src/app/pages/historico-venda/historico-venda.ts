@@ -114,6 +114,7 @@ export class HistoricoVenda implements OnInit {
         return;
       }
       this.toast.erro(erro);
+      this.historicoStore.limparErroQuitacao();
     })
 
     effect(() => {

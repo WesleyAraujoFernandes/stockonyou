@@ -28,7 +28,8 @@
 
         <!-- Botão para fechar manualmente -->
         <button
-          (click)="toastService.fechar()"
+          type="button"
+          (click)="toastService.fechar();"
           class="ml-auto p-1 rounded-lg transition-colors duration-200"
           [ngClass]="{
             'hover:bg-emerald-800/40 text-emerald-400': data.tipo === 'success',

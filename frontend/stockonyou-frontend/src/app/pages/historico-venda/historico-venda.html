@@ -321,14 +321,14 @@
 
       <!-- Lista de itens do cupom -->
       <div class="border border-slate-800 rounded-xl overflow-hidden text-xs">
-        @if (carregandoLista()) {
+        @if (carregandoDetalhe()) {
         <div class="py-12 text-center text-slate-400">
-          Carregando histórico de vendas...
+          Carregando detalhes da venda...
         </div>
-        } @else if (errorLista()) {
+        } @else if (erroDetalhe()) {
         <div class="py-12 text-center">
           <p class="text-red-400 text-sm">
-            {{ errorLista() }}
+            {{ erroDetalhe() }}
           </p>
         </div>
         } @else {

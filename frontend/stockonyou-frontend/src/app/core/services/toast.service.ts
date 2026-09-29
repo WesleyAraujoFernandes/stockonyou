@@ -19,9 +19,7 @@ export class ToastService {
   }
 
   erro(mensagem: string): void {
-    console.log('TOAST.erro() CHAMADO:', mensagem)
     this.exibir(mensagem, 'error');
-    console.log('TOAST APÓS exibir():', this.toast())
   }
 
   info(mensagem: string): void {

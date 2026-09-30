@@ -365,10 +365,10 @@
           @if (podeCancelar(vendaSelecionada())) {
             <button
               (click)="cancelarVenda(vendaSelecionada()!.id)"
-              [disabled]="cancelando()"
+              [disabled]="historicoStore.cancelando()"
               class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-semibold text-xs rounded-xl transition shadow-lg shadow-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              @if (cancelando()) {
+              @if (historicoStore.cancelando()) {
                 Cancelando...
               } @else {
                 Cancelar Venda

@@ -45,10 +45,6 @@ export class HistoricoVenda implements OnInit {
       () => this.vendaSelecionada() !== null
   )
   readonly historicoStore = inject(HistoricoVendaStore);
-  readonly quitacaoConcluida =
-    this.historicoStore.quitacaoConcluida;
-  readonly cancelando = this.historicoStore.cancelando;
-  readonly erroCancelamento = this.historicoStore.erroCancelamento;
   readonly cancelamentoConcluido = this.historicoStore.cancelamentoConcluido;
   readonly vendaSelecionada = this.historicoStore.vendaSelecionada;
   readonly carregandoDetalhe = this.historicoStore.carregandoDetalhe;
@@ -68,7 +64,7 @@ export class HistoricoVenda implements OnInit {
 
   constructor() {
     effect(() => {
-      const quitacao = this.quitacaoConcluida();
+      const quitacao = this.historicoStore.quitacaoConcluida();
 
       if (!quitacao) {
         return;
@@ -114,7 +110,7 @@ export class HistoricoVenda implements OnInit {
     });
 
     effect(() => {
-      const erro = this.erroCancelamento();
+      const erro = this.historicoStore.erroCancelamento();
       if (!erro) {
         return;
       }

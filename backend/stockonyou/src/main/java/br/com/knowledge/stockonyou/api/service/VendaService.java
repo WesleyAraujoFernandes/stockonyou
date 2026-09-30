@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.com.knowledge.stockonyou.api.dto.HistoricoVendaResponseDTO;
 import br.com.knowledge.stockonyou.api.dto.ItemVendaRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.VendaRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.VendaResponseDTO;
@@ -28,6 +29,7 @@ import br.com.knowledge.stockonyou.api.repository.ClienteRepository;
 import br.com.knowledge.stockonyou.api.repository.ProdutoRepository;
 import br.com.knowledge.stockonyou.api.repository.VendaRepository;
 import br.com.knowledge.stockonyou.api.specification.VendaSpecification;
+import br.com.knowledge.stockonyou.api.dto.VendaTotaisProjection;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -149,16 +151,21 @@ public class VendaService {
                                 .toList();
         }
 
-        @Transactional
-        public Page<VendaResponseDTO> listarComFiltros(
+        @Transactional(readOnly = true)
+        public HistoricoVendaResponseDTO listarComFiltros(
                         String clienteNome,
                         StatusVenda status,
                         String dataInicio,
                         String dataFim,
                         Pageable pageable) {
                 Specification<Venda> spec = VendaSpecification.comFiltros(clienteNome, status, dataInicio, dataFim);
-                return vendaRepository.findAll(spec, pageable)
-                                .map(VendaResponseDTO::fromEntity);
+                Page<VendaResponseDTO> pagina = vendaRepository.findAll(spec, pageable).map(VendaResponseDTO::fromEntity);
+                VendaTotaisProjection totais = vendaRepository.calcularTotais(spec);
+                return new HistoricoVendaResponseDTO(
+                        pagina,
+                        totais.totalFaturado(),
+                        totais.totalPendente()
+                );
         }
 
         @Transactional

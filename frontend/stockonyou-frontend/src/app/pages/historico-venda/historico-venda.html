@@ -10,7 +10,7 @@
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm">
       <div class="space-y-1">
         <span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Total Recebido (Caixa)</span>
-        <h2 class="text-2xl font-bold text-emerald-400">{{ totalFaturado() | currency:'BRL'}}</h2>
+        <h2 class="text-2xl font-bold text-emerald-400">{{ historicoStore.totalFaturado() | currency:'BRL'}}</h2>
       </div>
       <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
         <svg [lucideIcon]="IconCheck" class="w-5 h-5"></svg>
@@ -21,7 +21,7 @@
       <div class="space-y-1">
         <span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Total Pendente (A
           Receber)</span>
-        <h2 class="text-2xl font-bold text-amber-500">{{ totalPendente() | currency:'BRL' }}</h2>
+        <h2 class="text-2xl font-bold text-amber-500">{{ historicoStore.totalPendente() | currency:'BRL' }}</h2>
       </div>
       <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
         <svg [lucideIcon]="IconAlert" class="w-5 h-5"></svg>
@@ -98,10 +98,10 @@
         Carregando histórico de vendas...
       </p>
     </div>
-    } @else if (errorLista()) {
+    } @else if (historicoStore.errorLista()) {
     <div class="py-12 text-center">
       <p class="text-sm text-red-400">
-        {{ errorLista() }}
+        {{ historicoStore.errorLista() }}
       </p>
     </div>
     } @else {

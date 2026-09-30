@@ -45,8 +45,7 @@ export class HistoricoVenda implements OnInit {
       () => this.vendaSelecionada() !== null
   )
   readonly historicoStore = inject(HistoricoVendaStore);
-  //readonly carregandoLista = this.historicoStore.carregandoLista;
-  readonly errorLista = this.historicoStore.errorLista;
+  //readonly errorLista = this.historicoStore.errorLista;
   readonly quitando = this.historicoStore.quitando;
   readonly erroDetalhe = this.historicoStore.erroDetalhe;
   readonly erroQuitacao = this.historicoStore.erroQuitacao;
@@ -70,18 +69,6 @@ export class HistoricoVenda implements OnInit {
     dataInicio: '',
     dataFim: ''
   }
-
-  totalFaturado = computed(() => {
-    return this.historicoStore.vendas()
-      .filter(v => v.status === 'PAGO')
-      .reduce((acc, v) => acc + v.valorTotal, 0);
-  })
-
-  totalPendente = computed(() => {
-    return this.historicoStore.vendas()
-      .filter(v => v.status === 'PENDENTE')
-      .reduce((acc, v) => acc + v.valorTotal, 0);
-  })
 
   constructor() {
     effect(() => {

@@ -36,6 +36,9 @@ export class HistoricoVendaStore {
   readonly campoOrdenacao = signal('id');
   readonly direcaoOrdenacao = signal<'asc' | 'desc'>('desc');
 
+  readonly totalFaturado = signal(0);
+  readonly totalPendente = signal(0);
+
   carregar(
     filtros: FiltroHistoricoVenda
   ): void {
@@ -63,6 +66,9 @@ export class HistoricoVendaStore {
           this.vendas.set(response.pagina.content ?? []);
           this.totalPaginas.set(response.pagina.totalPages ?? 0);
           this.totalElementos.set(response.pagina.totalElements ?? 0);
+
+          this.totalFaturado.set(response.totalFaturado ?? 0);
+          this.totalPendente.set(response.totalPendente ?? 0);
         },
         error: (err) => {
           console.error('Erro ao carregar histórico de vendas:', err);

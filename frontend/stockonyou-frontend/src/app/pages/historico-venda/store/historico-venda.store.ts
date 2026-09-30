@@ -63,7 +63,6 @@ export class HistoricoVendaStore {
           this.vendas.set(response.content ?? []);
           this.totalPaginas.set(response.totalPages ?? 0);
           this.totalElementos.set(response.totalElements ?? 0);
-          this.carregandoLista.set(false);
         },
         error: (err) => {
           console.error('Erro ao carregar histórico de vendas:', err);
@@ -73,7 +72,6 @@ export class HistoricoVendaStore {
           this.errorLista.set(
             'Falha ao carregar o histórico de vendas.'
           );
-          this.carregandoLista.set(false);
         }
       });
   }

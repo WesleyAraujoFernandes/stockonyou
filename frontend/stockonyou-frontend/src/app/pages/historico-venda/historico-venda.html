@@ -92,7 +92,7 @@
 
   <!-- Tabela de Histórico -->
   <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-sm overflow-hidden">
-    @if (carregandoLista()) {
+    @if (historicoStore.carregandoLista()) {
     <div class="py-12 text-center text-slate-400">
       <p class="text-sm">
         Carregando histórico de vendas...
@@ -191,7 +191,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-800/60 text-xs text-slate-300">
-          @for (venda of vendas(); track venda.id) {
+          @for (venda of historicoStore.vendas(); track venda.id) {
           <tr class="hover:bg-slate-800/40 transition-colors">
             <td class="py-3.5 px-4 font-mono text-indigo-400 font-semibold"># {{ venda.id }}</td>
             <td class="py-3.5 px-4">{{ venda.dataVenda | date:'dd/MM/yyyy HH:mm' }}</td>
@@ -247,38 +247,38 @@
 
 
     <!-- CORREÇÃO 1: Barra de Paginação Reativa Separada do Modal -->
-    @if (totalPaginas() > 1) {
+    @if (historicoStore.totalPaginas() > 1) {
     <div
       class="bg-slate-950/40 px-4 py-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
       <div>
-        Total de <span class="text-white font-semibold">{{ totalElementos() }}</span> registros encontrados.
+        Total de <span class="text-white font-semibold">{{ historicoStore.totalElementos() }}</span> registros encontrados.
       </div>
       <div class="flex items-center gap-3">
 
-        <button (click)="historicoStore.primeiraPagina(); carregarHistorico()" [disabled]="paginaAtual() === 0"
+        <button (click)="historicoStore.primeiraPagina(); carregarHistorico()" [disabled]="historicoStore.paginaAtual() === 0"
           class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer">
           <svg [lucideIcon]="IconFirst" class="w-4 h-4"></svg>
         </button>
 
-        <button (click)="mudarPagina(-1)" [disabled]="paginaAtual() === 0"
+        <button (click)="mudarPagina(-1)" [disabled]="historicoStore.paginaAtual() === 0"
           class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer">
           <svg [lucideIcon]="IconLeft" class="w-4 h-4"></svg>
         </button>
 
         <div class="flex items-center gap-1 text-sm text-slate-300">
-          <input #paginaInput type="number" min="1" [max]="totalPaginas()" [value]="paginaAtual() + 1"
+          <input #paginaInput type="number" min="1" [max]="historicoStore.totalPaginas()" [value]="historicoStore.paginaAtual() + 1"
             (keydown.enter)="irParaPaginaInformada(paginaInput.value)"
             class="w-12 rounded-md bg-slate-800 border border-slate-700 px-2 py-1 text-center text-slate-200 outline-none focus:border-indigo-500" />
 
-          <span>/ {{ totalPaginas() }}</span>
+          <span>/ {{ historicoStore.totalPaginas() }}</span>
         </div>
-        <button (click)="mudarPagina(1)" [disabled]="paginaAtual() + 1 >= totalPaginas()"
+        <button (click)="mudarPagina(1)" [disabled]="historicoStore.paginaAtual() + 1 >= historicoStore.totalPaginas()"
           class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer">
           <svg [lucideIcon]="IconRight" class="w-4 h-4"></svg>
         </button>
 
         <button (click)="historicoStore.ultimaPagina(); carregarHistorico()"
-          [disabled]="paginaAtual() + 1 >= totalPaginas()"
+          [disabled]="historicoStore.paginaAtual() + 1 >= historicoStore.totalPaginas()"
           class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer">
           <svg [lucideIcon]="IconLast" class="w-4 h-4"></svg>
         </button>

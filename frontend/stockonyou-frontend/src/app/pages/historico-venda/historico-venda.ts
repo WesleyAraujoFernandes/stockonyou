@@ -45,11 +45,7 @@ export class HistoricoVenda implements OnInit {
       () => this.vendaSelecionada() !== null
   )
   readonly historicoStore = inject(HistoricoVendaStore);
-  readonly vendas = this.historicoStore.vendas;
-  readonly paginaAtual = this.historicoStore.paginaAtual;
-  readonly totalPaginas = this.historicoStore.totalPaginas;
-  readonly totalElementos = this.historicoStore.totalElementos;
-  readonly carregandoLista = this.historicoStore.carregandoLista;
+  //readonly carregandoLista = this.historicoStore.carregandoLista;
   readonly errorLista = this.historicoStore.errorLista;
   readonly quitando = this.historicoStore.quitando;
   readonly erroDetalhe = this.historicoStore.erroDetalhe;
@@ -76,13 +72,13 @@ export class HistoricoVenda implements OnInit {
   }
 
   totalFaturado = computed(() => {
-    return this.vendas()
+    return this.historicoStore.vendas()
       .filter(v => v.status === 'PAGO')
       .reduce((acc, v) => acc + v.valorTotal, 0);
   })
 
   totalPendente = computed(() => {
-    return this.vendas()
+    return this.historicoStore.vendas()
       .filter(v => v.status === 'PENDENTE')
       .reduce((acc, v) => acc + v.valorTotal, 0);
   })
@@ -215,7 +211,7 @@ export class HistoricoVenda implements OnInit {
     const pagina = Number(valor);
     if (!Number.isInteger(pagina) ||
         pagina < 1 ||
-        pagina > this.totalPaginas()
+        pagina > this.historicoStore.totalPaginas()
 
     ) {
       return;
@@ -237,10 +233,10 @@ export class HistoricoVenda implements OnInit {
   }
 
   mudarPagina(direcao: number): void {
-    const novaPagina = this.paginaAtual() + direcao;
+    const novaPagina = this.historicoStore.paginaAtual() + direcao;
     if (
       novaPagina < 0 ||
-      novaPagina >= this.totalPaginas()
+      novaPagina >= this.historicoStore.totalPaginas()
     ) {
       return;
     }

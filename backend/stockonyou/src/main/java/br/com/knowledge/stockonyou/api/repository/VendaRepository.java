@@ -9,9 +9,12 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import br.com.knowledge.stockonyou.api.model.StatusVenda;
 import br.com.knowledge.stockonyou.api.model.Venda;
 
-public interface VendaRepository extends JpaRepository<Venda, Long>, JpaSpecificationExecutor<Venda> {
+public interface VendaRepository extends JpaRepository<Venda, Long>, JpaSpecificationExecutor<Venda>,
+        VendaRepositoryCustom {
     Optional<Venda> findByClienteIdAndStatus(Long clienteId, StatusVenda status);
+
     List<Venda> findByStatus(StatusVenda status);
+
     boolean existsByClienteIdAndStatus(Long clienteId, StatusVenda status);
 
 }

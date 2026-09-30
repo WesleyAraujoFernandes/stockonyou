@@ -1,7 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { VendaService } from '../../../core/services/venda.service';
 import { FiltroHistoricoVenda, VendaResponse } from '../../../core/model/venda.model';
-import { PageResponse } from '../../../core/model/produto.model';
+import { HistoricoVendaResponse } from '../../../core/model/venda.model'; 
 import { finalize, Observable } from 'rxjs';
 
 @Injectable()
@@ -59,10 +59,10 @@ export class HistoricoVendaStore {
         })
       )
       .subscribe({
-        next: (response: PageResponse<VendaResponse>) => {
-          this.vendas.set(response.content ?? []);
-          this.totalPaginas.set(response.totalPages ?? 0);
-          this.totalElementos.set(response.totalElements ?? 0);
+        next: (response: HistoricoVendaResponse) => {
+          this.vendas.set(response.pagina.content ?? []);
+          this.totalPaginas.set(response.pagina.totalPages ?? 0);
+          this.totalElementos.set(response.pagina.totalElements ?? 0);
         },
         error: (err) => {
           console.error('Erro ao carregar histórico de vendas:', err);

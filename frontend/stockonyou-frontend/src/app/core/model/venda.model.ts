@@ -1,4 +1,4 @@
-import { Produto } from "./produto.model";
+import { PageResponse, Produto } from "./produto.model";
 
 export type StatusVenda = 'ABERTA' | 'PENDENTE' | 'PAGO' | 'CANCELADA'
 export interface ItemVendaRequest {
@@ -37,4 +37,10 @@ export interface FiltroHistoricoVenda {
   status: string;
   dataInicio: string;
   dataFim: string;
+}
+
+export interface HistoricoVendaResponse {
+  pagina: PageResponse<VendaResponse>;
+  totalFaturado: number;
+  totalPendente: number;
 }

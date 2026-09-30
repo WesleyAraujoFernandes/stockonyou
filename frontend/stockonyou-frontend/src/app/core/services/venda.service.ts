@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { PageResponse } from '../model/produto.model';
-import { ItemVendaRequest, VendaRequest, VendaResponse } from '../model/venda.model';
+import { HistoricoVendaResponse, ItemVendaRequest, VendaRequest, VendaResponse } from '../model/venda.model';
 
 @Injectable({
   providedIn: 'root',
@@ -31,7 +31,7 @@ export class VendaService {
     size: number = 10,
     campoOrdenacao: string = 'id',
     direcaoOrdenacao: 'asc' | 'desc' = 'desc'
-  ) : Observable<PageResponse<VendaResponse>> {
+  ) : Observable<HistoricoVendaResponse> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString())
@@ -48,7 +48,7 @@ export class VendaService {
     if (dataFim && dataFim.trim()) {
       params = params.set('dataFim', dataFim.trim())
     }
-    return this.http.get<PageResponse<VendaResponse>>(this.apiUrl, { params });
+    return this.http.get<HistoricoVendaResponse>(this.apiUrl, { params });
   }
 
   buscarPorId(id: number): Observable<VendaResponse> {

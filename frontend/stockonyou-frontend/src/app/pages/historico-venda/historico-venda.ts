@@ -140,6 +140,7 @@ export class HistoricoVenda implements OnInit {
         return;
       }
       this.toast.erro(erro);
+      this.historicoStore.limparErroCancelamento();
     })
 
     effect(() => {
@@ -212,13 +213,15 @@ export class HistoricoVenda implements OnInit {
 
   irParaPaginaInformada(valor: string): void {
     const pagina = Number(valor);
-    if (!Number.isInteger(pagina) || pagina < 1 || pagina > this.totalPaginas()) {
+    if (!Number.isInteger(pagina) ||
+        pagina < 1 ||
+        pagina > this.totalPaginas()
+
+    ) {
       return;
     }
-    const mudou = this.historicoStore.irParaPagina(pagina - 1);
-    if (mudou) {
-      this.carregarHistorico();
-    }
+    this.navegarParaPagina(pagina - 1);
+
   }
 
   limparFiltros(): void {
@@ -235,12 +238,13 @@ export class HistoricoVenda implements OnInit {
 
   mudarPagina(direcao: number): void {
     const novaPagina = this.paginaAtual() + direcao;
-    if (novaPagina >= 0 && novaPagina < this.totalPaginas()) {
-      const mudou = this.historicoStore.irParaPagina(novaPagina);
-      if (mudou) {
-        this.carregarHistorico();
-      }
+    if (
+      novaPagina < 0 ||
+      novaPagina >= this.totalPaginas()
+    ) {
+      return;
     }
+    this.navegarParaPagina(novaPagina);
   }
 
   obterClassesStatus(status: StatusVenda): string {
@@ -285,6 +289,14 @@ export class HistoricoVenda implements OnInit {
   quitarContaPendurada(vendaId: number): void {
     this.vendaParaQuitar.set(vendaId);
     this.exibirModalConfirmacaoQuitacao.set(true);
+  }
+
+  private navegarParaPagina(pagina: number): void {
+    const mudou = this.historicoStore.irParaPagina(pagina);
+
+    if (mudou) {
+      this.carregarHistorico();
+    }
   }
 
 }

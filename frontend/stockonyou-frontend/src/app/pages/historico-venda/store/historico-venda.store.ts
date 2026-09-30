@@ -127,6 +127,10 @@ export class HistoricoVendaStore {
     this.erroQuitacao.set(null);
   }
 
+  limparErroCancelamento(): void {
+    this.erroCancelamento.set(null);
+  }
+
   limparOrdenacao(): void {
     this.campoOrdenacao.set('id');
     this.direcaoOrdenacao.set('desc');

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.knowledge.stockonyou.api.dto.HistoricoVendaResponseDTO;
 import br.com.knowledge.stockonyou.api.dto.ItemVendaRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.VendaRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.VendaResponseDTO;
@@ -45,7 +46,7 @@ public class VendaController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
-    public ResponseEntity<Page<VendaResponseDTO>> listarComFiltros(
+    public ResponseEntity<HistoricoVendaResponseDTO> listarComFiltros(
             @RequestParam(required = false) String clienteNome,
             @RequestParam(required = false) StatusVenda status,
             @RequestParam(required = false) String dataInicio,

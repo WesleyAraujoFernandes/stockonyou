@@ -325,10 +325,10 @@
         <div class="py-12 text-center text-slate-400">
           Carregando detalhes da venda...
         </div>
-        } @else if (erroDetalhe()) {
+        } @else if (historicoStore.erroDetalhe()) {
         <div class="py-12 text-center">
           <p class="text-red-400 text-sm">
-            {{ erroDetalhe() }}
+            {{ historicoStore.erroDetalhe() }}
           </p>
         </div>
         } @else {
@@ -405,10 +405,10 @@
   <app-confirmacao-modal
     titulo = "Quitar conta"
     mensagem = "Confirma o recebimento total e a quitação desta conta pendurada?"
-    [textoConfirmar]="quitando() ? 'Quitando...' : 'Quitar conta'"
+    [textoConfirmar]="historicoStore.quitando() ? 'Quitando...' : 'Quitar conta'"
     textoCancelar = "Voltar"
     variante="success"
-    [desabilitado]="quitando()"
+    [desabilitado]="historicoStore.quitando()"
     (confirmado)="confirmarQuitacao()"
     (cancelado)="cancelarConfirmacaoQuitacao()"
   ></app-confirmacao-modal>

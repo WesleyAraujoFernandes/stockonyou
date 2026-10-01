@@ -271,6 +271,15 @@ export class HistoricoVenda implements OnInit {
     this.exibirModalConfirmacaoQuitacao.set(true);
   }
 
+  temFiltrosAplicados(): boolean {
+    return !!(
+      this.filtros.cliente ||
+      this.filtros.status ||
+      this.filtros.dataInicio ||
+      this.filtros.dataFim
+    );
+  }
+
   private navegarParaPagina(pagina: number): void {
     const mudou = this.historicoStore.irParaPagina(pagina);
 

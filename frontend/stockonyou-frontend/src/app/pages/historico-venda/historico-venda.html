@@ -105,6 +105,54 @@
       </p>
     </div>
     } @else {
+
+    @if (historicoStore.totalPaginas() > 1) {
+    <div
+      class="bg-slate-950/40 px-4 py-3 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+
+      <div>
+        Total de
+        <span class="text-white font-semibold">
+          {{ historicoStore.totalElementos() }}
+        </span>
+        registros encontrados.
+      </div>
+
+      <div class="flex items-center gap-3">
+
+        <button type="button" (click)="irParaPrimeiraPagina()" [disabled]="historicoStore.paginaAtual() === 0"
+          class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer">
+          <svg [lucideIcon]="IconFirst" class="w-4 h-4"></svg>
+        </button>
+
+        <button type="button" (click)="mudarPagina(-1)" [disabled]="historicoStore.paginaAtual() === 0"
+          class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer">
+          <svg [lucideIcon]="IconLeft" class="w-4 h-4"></svg>
+        </button>
+
+        <div class="flex items-center gap-1 text-sm text-slate-300">
+          <input #paginaInputTopo type="number" min="1" [max]="historicoStore.totalPaginas()"
+            [value]="historicoStore.paginaAtual() + 1" (keydown.enter)="irParaPaginaInformada(paginaInputTopo.value)"
+            class="w-12 rounded-md bg-slate-800 border border-slate-700 px-2 py-1 text-center text-slate-200 outline-none focus:border-indigo-500" />
+
+          <span>/ {{ historicoStore.totalPaginas() }}</span>
+        </div>
+
+        <button type="button" (click)="mudarPagina(1)"
+          [disabled]="historicoStore.paginaAtual() + 1 >= historicoStore.totalPaginas()"
+          class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer">
+          <svg [lucideIcon]="IconRight" class="w-4 h-4"></svg>
+        </button>
+
+        <button type="button" (click)="irParaUltimaPagina()"
+          [disabled]="historicoStore.paginaAtual() + 1 >= historicoStore.totalPaginas()"
+          class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer">
+          <svg [lucideIcon]="IconLast" class="w-4 h-4"></svg>
+        </button>
+
+      </div>
+    </div>
+    }
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse">
         <thead>
@@ -234,41 +282,51 @@
 
 
     <!-- CORREÇÃO 1: Barra de Paginação Reativa Separada do Modal -->
+
     @if (historicoStore.totalPaginas() > 1) {
     <div
-      class="bg-slate-950/40 px-4 py-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+      class="bg-slate-950/40 px-4 py-3 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+
       <div>
-        Total de <span class="text-white font-semibold">{{ historicoStore.totalElementos() }}</span> registros encontrados.
+        Total de
+        <span class="text-white font-semibold">
+          {{ historicoStore.totalElementos() }}
+        </span>
+        registros encontrados.
       </div>
+
       <div class="flex items-center gap-3">
 
-        <button (click)="historicoStore.primeiraPagina(); carregarHistorico()" [disabled]="historicoStore.paginaAtual() === 0"
+        <button type="button" (click)="irParaPrimeiraPagina()" [disabled]="historicoStore.paginaAtual() === 0"
           class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer">
           <svg [lucideIcon]="IconFirst" class="w-4 h-4"></svg>
         </button>
 
-        <button (click)="mudarPagina(-1)" [disabled]="historicoStore.paginaAtual() === 0"
+        <button type="button" (click)="mudarPagina(-1)" [disabled]="historicoStore.paginaAtual() === 0"
           class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer">
           <svg [lucideIcon]="IconLeft" class="w-4 h-4"></svg>
         </button>
 
         <div class="flex items-center gap-1 text-sm text-slate-300">
-          <input #paginaInput type="number" min="1" [max]="historicoStore.totalPaginas()" [value]="historicoStore.paginaAtual() + 1"
-            (keydown.enter)="irParaPaginaInformada(paginaInput.value)"
+          <input #paginaInputTopo type="number" min="1" [max]="historicoStore.totalPaginas()"
+            [value]="historicoStore.paginaAtual() + 1" (keydown.enter)="irParaPaginaInformada(paginaInputTopo.value)"
             class="w-12 rounded-md bg-slate-800 border border-slate-700 px-2 py-1 text-center text-slate-200 outline-none focus:border-indigo-500" />
 
           <span>/ {{ historicoStore.totalPaginas() }}</span>
         </div>
-        <button (click)="mudarPagina(1)" [disabled]="historicoStore.paginaAtual() + 1 >= historicoStore.totalPaginas()"
+
+        <button type="button" (click)="mudarPagina(1)"
+          [disabled]="historicoStore.paginaAtual() + 1 >= historicoStore.totalPaginas()"
           class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer">
           <svg [lucideIcon]="IconRight" class="w-4 h-4"></svg>
         </button>
 
-        <button (click)="historicoStore.ultimaPagina(); carregarHistorico()"
+        <button type="button" (click)="irParaUltimaPagina()"
           [disabled]="historicoStore.paginaAtual() + 1 >= historicoStore.totalPaginas()"
           class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer">
           <svg [lucideIcon]="IconLast" class="w-4 h-4"></svg>
         </button>
+
       </div>
     </div>
     }
@@ -279,7 +337,8 @@
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4">
     <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-5">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h2 class="text-base font-bold text-white">Detalhamento do Cupom # {{ historicoStore.vendaSelecionada()?.id }}</h2>
+        <h2 class="text-base font-bold text-white">Detalhamento do Cupom # {{ historicoStore.vendaSelecionada()?.id }}
+        </h2>
         <button (click)="fecharDetalhes()"
           class="text-slate-400 hover:text-slate-200 transition cursor-pointer">Fechar</button>
       </div>
@@ -346,21 +405,20 @@
       <div class="flex items-center justify-between border-t border-slate-800 pt-4">
         <div class="flex flex-col">
           <span class="text-[10px] text-slate-500 uppercase font-bold">Total do Cupom</span>
-          <span class="text-lg font-bold text-emerald-400">{{ historicoStore.vendaSelecionada()?.valorTotal | currency:'BRL' }}</span>
+          <span class="text-lg font-bold text-emerald-400">{{ historicoStore.vendaSelecionada()?.valorTotal |
+            currency:'BRL' }}</span>
         </div>
         <div class="flex gap-2">
           @if (podeCancelar(historicoStore.vendaSelecionada())) {
-            <button
-              (click)="cancelarVenda(historicoStore.vendaSelecionada()!.id)"
-              [disabled]="historicoStore.cancelando()"
-              class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-semibold text-xs rounded-xl transition shadow-lg shadow-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-            >
-              @if (historicoStore.cancelando()) {
-                Cancelando...
-              } @else {
-                Cancelar Venda
-              }
-            </button>
+          <button (click)="cancelarVenda(historicoStore.vendaSelecionada()!.id)"
+            [disabled]="historicoStore.cancelando()"
+            class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-semibold text-xs rounded-xl transition shadow-lg shadow-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+            @if (historicoStore.cancelando()) {
+            Cancelando...
+            } @else {
+            Cancelar Venda
+            }
+          </button>
           }
           @if (podeQuitar(historicoStore.vendaSelecionada())) {
           <button (click)="quitarContaPendurada(historicoStore.vendaSelecionada()!.id)"
@@ -379,24 +437,13 @@
   }
 </div>
 @if (exibirModalConfirmacaoCancelamento()) {
-  <app-confirmacao-modal
-    titulo = "Cancelar venda"
-    mensagem = "Confirma o cancelamento desta venda"
-    textoConfirmar = "Cancelar Venda"
-    textoCancelar = "Voltar"
-    (confirmado)="confirmarCancelamento()"
-    (cancelado)="cancelarConfirmacao()"
-  ></app-confirmacao-modal>
+<app-confirmacao-modal titulo="Cancelar venda" mensagem="Confirma o cancelamento desta venda"
+  textoConfirmar="Cancelar Venda" textoCancelar="Voltar" (confirmado)="confirmarCancelamento()"
+  (cancelado)="cancelarConfirmacao()"></app-confirmacao-modal>
 }
 @if (exibirModalConfirmacaoQuitacao()) {
-  <app-confirmacao-modal
-    titulo = "Quitar conta"
-    mensagem = "Confirma o recebimento total e a quitação desta conta pendurada?"
-    [textoConfirmar]="historicoStore.quitando() ? 'Quitando...' : 'Quitar conta'"
-    textoCancelar = "Voltar"
-    variante="success"
-    [desabilitado]="historicoStore.quitando()"
-    (confirmado)="confirmarQuitacao()"
-    (cancelado)="cancelarConfirmacaoQuitacao()"
-  ></app-confirmacao-modal>
+<app-confirmacao-modal titulo="Quitar conta" mensagem="Confirma o recebimento total e a quitação desta conta pendurada?"
+  [textoConfirmar]="historicoStore.quitando() ? 'Quitando...' : 'Quitar conta'" textoCancelar="Voltar"
+  variante="success" [desabilitado]="historicoStore.quitando()" (confirmado)="confirmarQuitacao()"
+  (cancelado)="cancelarConfirmacaoQuitacao()"></app-confirmacao-modal>
 }

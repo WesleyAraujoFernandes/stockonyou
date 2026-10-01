@@ -219,6 +219,14 @@ export class HistoricoVenda implements OnInit {
     this.navegarParaPagina(novaPagina);
   }
 
+  irParaPrimeiraPagina(): void {
+    this.navegarParaPagina(0);
+  }
+
+  irParaUltimaPagina(): void {
+    this.navegarParaPagina(this.historicoStore.totalPaginas() - 1); 
+  }
+
   obterClassesStatus(status: StatusVenda): string {
     switch (status) {
       case 'ABERTA':

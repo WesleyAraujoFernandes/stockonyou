@@ -2,7 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { VendaService } from '../../../core/services/venda.service';
 import { FiltroHistoricoVenda, VendaResponse } from '../../../core/model/venda.model';
 import { HistoricoVendaResponse } from '../../../core/model/venda.model'; 
-import { finalize, Observable } from 'rxjs';
+import { finalize } from 'rxjs';
 
 @Injectable()
 export class HistoricoVendaStore {

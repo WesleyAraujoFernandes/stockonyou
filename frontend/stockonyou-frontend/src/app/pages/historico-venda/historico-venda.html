@@ -292,7 +292,7 @@
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4">
     <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-5">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h2 class="text-base font-bold text-white">Detalhamento do Cupom # {{ vendaSelecionada()?.id }}</h2>
+        <h2 class="text-base font-bold text-white">Detalhamento do Cupom # {{ historicoStore.vendaSelecionada()?.id }}</h2>
         <button (click)="fecharDetalhes()"
           class="text-slate-400 hover:text-slate-200 transition cursor-pointer">Fechar</button>
       </div>
@@ -301,20 +301,20 @@
         class="grid grid-cols-2 gap-3 text-xs bg-slate-950/40 p-3 border border-slate-800/60 rounded-xl text-slate-300">
         <div>
           <span class="text-slate-500 font-medium">Cliente:</span>
-          {{ vendaSelecionada()?.clienteNome || 'Cliente Padrão' }}
+          {{ historicoStore.vendaSelecionada()?.clienteNome || 'Cliente Padrão' }}
         </div>
         <div>
           <span class="text-slate-500 font-medium">Data:</span>
-          {{ vendaSelecionada()?.dataVenda | date:'dd/MM/yyyy HH:mm' }}
+          {{ historicoStore.vendaSelecionada()?.dataVenda | date:'dd/MM/yyyy HH:mm' }}
         </div>
         <div>
           <span class="text-slate-500 font-medium">Atendente:</span>
-          {{ vendaSelecionada()?.usuarioNome || 'Sistema' }}
+          {{ historicoStore.vendaSelecionada()?.usuarioNome || 'Sistema' }}
         </div>
         <div>
           <span class="text-slate-500 font-medium">Situação:</span>
-          <span class="font-semibold ml-1" [ngClass]="obterClassesStatus(vendaSelecionada()!.status)">
-            {{ obterTextoStatus(vendaSelecionada()!.status) }}
+          <span class="font-semibold ml-1" [ngClass]="obterClassesStatus(historicoStore.vendaSelecionada()!.status)">
+            {{ obterTextoStatus(historicoStore.vendaSelecionada()!.status) }}
           </span>
         </div>
       </div>
@@ -342,7 +342,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-800/40 text-slate-300">
-            @for (item of vendaSelecionada()?.itens; track item.id) {
+            @for (item of historicoStore.vendaSelecionada()?.itens; track item.id) {
             <tr>
               <td class="p-2.5 font-medium text-slate-200">{{ item.produtoNome || 'Produto' }}</td>
               <td class="p-2.5 text-center font-mono">{{ item.quantidade }}</td>
@@ -359,12 +359,12 @@
       <div class="flex items-center justify-between border-t border-slate-800 pt-4">
         <div class="flex flex-col">
           <span class="text-[10px] text-slate-500 uppercase font-bold">Total do Cupom</span>
-          <span class="text-lg font-bold text-emerald-400">{{ vendaSelecionada()?.valorTotal | currency:'BRL' }}</span>
+          <span class="text-lg font-bold text-emerald-400">{{ historicoStore.vendaSelecionada()?.valorTotal | currency:'BRL' }}</span>
         </div>
         <div class="flex gap-2">
-          @if (podeCancelar(vendaSelecionada())) {
+          @if (podeCancelar(historicoStore.vendaSelecionada())) {
             <button
-              (click)="cancelarVenda(vendaSelecionada()!.id)"
+              (click)="cancelarVenda(historicoStore.vendaSelecionada()!.id)"
               [disabled]="historicoStore.cancelando()"
               class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-semibold text-xs rounded-xl transition shadow-lg shadow-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
@@ -375,8 +375,8 @@
               }
             </button>
           }
-          @if (podeQuitar(vendaSelecionada())) {
-          <button (click)="quitarContaPendurada(vendaSelecionada()!.id)"
+          @if (podeQuitar(historicoStore.vendaSelecionada())) {
+          <button (click)="quitarContaPendurada(historicoStore.vendaSelecionada()!.id)"
             class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl transition shadow-lg shadow-emerald-600/20 cursor-pointer">
             Dar Baixa e Quitar Conta
           </button>

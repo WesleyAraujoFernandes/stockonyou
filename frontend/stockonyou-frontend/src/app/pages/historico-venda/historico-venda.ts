@@ -42,10 +42,9 @@ export class HistoricoVenda implements OnInit {
   readonly IconLast = LucideChevronsRight;
 
   readonly exibirModalDetalhes = computed(
-      () => this.vendaSelecionada() !== null
+      () => this.historicoStore.vendaSelecionada() !== null
   )
   readonly historicoStore = inject(HistoricoVendaStore);
-  readonly vendaSelecionada = this.historicoStore.vendaSelecionada;
   readonly carregandoDetalhe = this.historicoStore.carregandoDetalhe;
 
   exibirModalConfirmacaoCancelamento = signal(false);

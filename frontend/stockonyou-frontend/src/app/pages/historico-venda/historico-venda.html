@@ -204,27 +204,14 @@
                     'bg-blue-500/10 text-blue-400 border-blue-500/20': venda.status === 'ABERTA',
                     'bg-red-500/10 text-red-400 border-red-500/20' : venda.status === 'CANCELADA'
                   }" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold border">
-                @switch (venda.status) {
-                @case('PAGO') {
-                Pago
-                }
-                @case('PENDENTE') {
-                Pendente
-                }
-                @case('ABERTA') {
-                Aberta
-                }
-                @case('CANCELADA') {
-                Cancelada
-                }
-                }
+                {{ obterTextoStatus(venda.status) }}
               </span>
             </td>
             <td class="py-3.5 px-4 font-bold text-white">{{ venda.valorTotal | currency:'BRL' }}</td>
             <td class="py-3.5 px-4 text-right">
-              <button type="button" (click)="abrirDetalhes(venda)" [disabled]="carregandoDetalhe()"
+              <button type="button" (click)="abrirDetalhes(venda)" [disabled]="historicoStore.carregandoDetalhe()"
                 class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition cursor-pointer">
-                @if (carregandoDetalhe()) {
+                @if (historicoStore.carregandoDetalhe()) {
                 <svg [lucideIcon]="IconLoader" class="w-4 h-4 animate-spin">
                 </svg>
                 } @else {
@@ -321,7 +308,7 @@
 
       <!-- Lista de itens do cupom -->
       <div class="border border-slate-800 rounded-xl overflow-hidden text-xs">
-        @if (carregandoDetalhe()) {
+        @if (historicoStore.carregandoDetalhe()) {
         <div class="py-12 text-center text-slate-400">
           Carregando detalhes da venda...
         </div>

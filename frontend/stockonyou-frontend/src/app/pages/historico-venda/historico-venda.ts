@@ -45,7 +45,6 @@ export class HistoricoVenda implements OnInit {
       () => this.historicoStore.vendaSelecionada() !== null
   )
   readonly historicoStore = inject(HistoricoVendaStore);
-  readonly carregandoDetalhe = this.historicoStore.carregandoDetalhe;
 
   exibirModalConfirmacaoCancelamento = signal(false);
   vendaParaCancelar = signal<number | null>(null);
@@ -131,7 +130,7 @@ export class HistoricoVenda implements OnInit {
   }
 
   abrirDetalhes(venda: VendaResponse): void {
-    if (this.carregandoDetalhe()) {
+    if (this.historicoStore.carregandoDetalhe()) {
       return;
     }
     this.historicoStore.carregarDetalhes(venda.id);

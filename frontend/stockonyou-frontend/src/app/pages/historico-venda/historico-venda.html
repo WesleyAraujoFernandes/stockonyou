@@ -262,7 +262,7 @@
             <td class="py-3.5 px-4 text-right">
               <button type="button" (click)="abrirDetalhes(venda)" [disabled]="historicoStore.carregandoDetalhe()"
                 class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition cursor-pointer">
-                @if (historicoStore.carregandoDetalhe()) {
+                @if (historicoStore.vendaDetalheCarregandoId() === venda.id) {
                 <svg [lucideIcon]="IconLoader" class="w-4 h-4 animate-spin">
                 </svg>
                 } @else {

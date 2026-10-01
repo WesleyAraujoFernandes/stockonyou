@@ -19,6 +19,7 @@ export class HistoricoVendaStore {
   readonly errorLista = signal<string | null>(null);
   readonly carregandoLista = signal(false);
   readonly carregandoDetalhe = signal(false);
+  readonly vendaDetalheCarregandoId = signal<number | null>(null);
 
   readonly quitando = signal(false);
   readonly erroQuitacao = signal<string | null>(null);
@@ -87,22 +88,22 @@ export class HistoricoVendaStore {
       return;
     }
     this.carregandoDetalhe.set(true);
+    this.vendaDetalheCarregandoId.set(vendaId);
     this.erroDetalhe.set(null);
     this.vendaSelecionada.set(null);
     this.vendaService
       .buscarPorId(vendaId)
       .pipe(finalize(() => {
         this.carregandoDetalhe.set(false);
+        this.vendaDetalheCarregandoId.set(null);
       })
       )
       .subscribe({
         next: (venda) => {
           this.vendaSelecionada.set(venda);
-          this.carregandoDetalhe.set(false);
         },
         error: (err) => {
           console.error('Error ao carregar detalhes da venda:', err);
-          this.carregandoDetalhe.set(false);
           this.erroDetalhe.set(
             'Nao foi possível carregar os detalhes da venda.'
           )

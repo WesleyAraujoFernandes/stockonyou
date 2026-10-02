@@ -28,43 +28,46 @@ public class VendaRepositoryCustomImpl implements VendaRepositoryCustom {
         CriteriaQuery<Object[]> query = cb.createQuery(Object[].class);
         Root<Venda> root = query.from(Venda.class);
         Predicate predicate = specification.toPredicate(
-            root,
-            query,
-            cb
-        );
+                root,
+                query,
+                cb);
 
         Expression<BigDecimal> totalFaturado = cb.sum(
-            cb.<BigDecimal>selectCase()
-                .when(
-                    cb.equal(root.get("status"), StatusVenda.PAGO),
-                    root.get("valorTotal")
-                )
-                .otherwise(BigDecimal.ZERO)
-        );
+                cb.<BigDecimal>selectCase()
+                        .when(
+                                cb.equal(root.get("status"), StatusVenda.PAGO),
+                                root.get("valorTotal"))
+                        .otherwise(BigDecimal.ZERO));
 
         Expression<BigDecimal> totalPendente = cb.sum(
-            cb.<BigDecimal>selectCase()
-                .when(
-                    cb.equal(root.get("status"), StatusVenda.PENDENTE),
-                    root.get("valorTotal")
-                )
-                .otherwise(BigDecimal.ZERO)
-        );
+                cb.<BigDecimal>selectCase()
+                        .when(
+                                cb.equal(root.get("status"), StatusVenda.PENDENTE),
+                                root.get("valorTotal"))
+                        .otherwise(BigDecimal.ZERO));
 
-        query.multiselect(
-            totalFaturado,
-            totalPendente
-        );
+        Expression<BigDecimal> totalAberto = cb.sum(
+                cb.<BigDecimal>selectCase()
+                        .when(
+                                cb.equal(root.get("status"), StatusVenda.ABERTA),
+                                root.get("valorTotal"))
+                        .otherwise(BigDecimal.ZERO));
+
+        query.select(
+                cb.array(
+                        totalFaturado,
+                        totalPendente,
+                        totalAberto));
 
         query.where(predicate);
 
         Object[] resultado = entityManager
-            .createQuery(query)
-            .getSingleResult();
-        
+                .createQuery(query)
+                .getSingleResult();
+
         return new VendaTotaisProjection(
-            resultado[0] != null ? (BigDecimal) resultado[0] : BigDecimal.ZERO,
-            resultado[1] != null ? (BigDecimal) resultado[1] : BigDecimal.ZERO
-        );
+                resultado[0] != null ? (BigDecimal) resultado[0] : BigDecimal.ZERO,
+                resultado[1] != null ? (BigDecimal) resultado[1] : BigDecimal.ZERO,
+                resultado[2] != null ? (BigDecimal) resultado[2] : BigDecimal.ZERO);
     }
 }

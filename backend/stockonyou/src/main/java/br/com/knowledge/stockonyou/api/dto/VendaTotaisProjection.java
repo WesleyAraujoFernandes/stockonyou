@@ -4,7 +4,8 @@ import java.math.BigDecimal;
 
 public record VendaTotaisProjection(
     BigDecimal totalFaturado,
-    BigDecimal totalPendente
+    BigDecimal totalPendente,
+    BigDecimal totalAberto
 ) {
 
 }

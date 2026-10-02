@@ -43,4 +43,5 @@ export interface HistoricoVendaResponse {
   pagina: PageResponse<VendaResponse>;
   totalFaturado: number;
   totalPendente: number;
+  totalAberto: number;
 }

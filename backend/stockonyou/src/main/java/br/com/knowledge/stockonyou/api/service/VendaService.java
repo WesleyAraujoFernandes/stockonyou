@@ -165,7 +165,7 @@ public class VendaService {
                         pagina,
                         totais.totalFaturado(),
                         totais.totalPendente(),
-                        BigDecimal.ZERO
+                        totais.totalAberto()
                 );
         }
 

@@ -1,7 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { VendaService } from '../../../core/services/venda.service';
 import { FiltroHistoricoVenda, VendaResponse } from '../../../core/model/venda.model';
-import { HistoricoVendaResponse } from '../../../core/model/venda.model'; 
+import { HistoricoVendaResponse } from '../../../core/model/venda.model';
 import { finalize } from 'rxjs';
 
 @Injectable()
@@ -39,6 +39,7 @@ export class HistoricoVendaStore {
 
   readonly totalFaturado = signal(0);
   readonly totalPendente = signal(0);
+  readonly totalAberto = signal(0);
 
   carregar(
     filtros: FiltroHistoricoVenda
@@ -70,6 +71,7 @@ export class HistoricoVendaStore {
 
           this.totalFaturado.set(response.totalFaturado ?? 0);
           this.totalPendente.set(response.totalPendente ?? 0);
+          this.totalAberto.set(response.totalAberto ?? 0);
         },
         error: (err) => {
           console.error('Erro ao carregar histórico de vendas:', err);
@@ -166,27 +168,27 @@ export class HistoricoVendaStore {
   }
 
   ultimaPagina(): void {
-    this.paginaAtual.set(this.totalPaginas() -1);
+    this.paginaAtual.set(this.totalPaginas() - 1);
   }
 
   quitarConta(vendaId: number): void {
     this.quitando.set(true);
     this.erroQuitacao.set(null);
     this.vendaService.registrarPagamento(vendaId)
-    .pipe(
-      finalize(() => {
-        this.quitando.set(false);
+      .pipe(
+        finalize(() => {
+          this.quitando.set(false);
+        })
+      )
+      .subscribe({
+        next: (venda) => {
+          this.quitacaoConcluida.set(venda);
+        },
+        error: (err) => {
+          console.error('Erro ao quitar conta:', err);
+          this.erroQuitacao.set('Erro ao processar a quitação no servidor.')
+        }
       })
-    )
-    .subscribe({
-      next: (venda) => {
-        this.quitacaoConcluida.set(venda);
-      },
-      error: (err) => {
-        console.error('Erro ao quitar conta:', err);
-        this.erroQuitacao.set('Erro ao processar a quitação no servidor.')
-      }
-    })
   }
 
   cancelarVenda(vendaId: number): void {

@@ -15,9 +15,9 @@ import {
   LucideEye,
   LucideLoaderCircle,
   LucideAlertTriangle,
-
   LucideChevronsLeft,
-  LucideChevronsRight
+  LucideChevronsRight,
+  LucideFilter
 } from '@lucide/angular';
 
 @Component({
@@ -36,6 +36,7 @@ export class HistoricoVenda implements OnInit {
   readonly IconLeft = LucideChevronLeft;
   readonly IconRight = LucideChevronRight;
   readonly IconEye = LucideEye;
+  readonly IconFilter = LucideFilter;
   readonly IconLoader = LucideLoaderCircle;
   readonly IconAlert = LucideAlertTriangle;
   readonly IconFirst = LucideChevronsLeft;
@@ -54,7 +55,7 @@ export class HistoricoVenda implements OnInit {
 
   filtros: FiltroHistoricoVenda = {
     cliente: '',
-    status: '',
+    status: [],
     dataInicio: '',
     dataFim: ''
   }
@@ -136,6 +137,20 @@ export class HistoricoVenda implements OnInit {
     this.historicoStore.carregarDetalhes(venda.id);
   }
 
+  alternarStatus(status: StatusVenda): void {
+    if (this.filtros.status.includes(status)) {
+      this.filtros.status = this.filtros.status.filter(
+        item => item !== status
+      );
+    } else {
+      this.filtros.status = [
+        ...this.filtros.status,
+        status
+      ]
+    }
+    this.aplicarFiltros();
+  }
+
   aplicarFiltros(): void {
     this.historicoStore.primeiraPagina();
     this.carregarHistorico();
@@ -199,7 +214,7 @@ export class HistoricoVenda implements OnInit {
   limparFiltros(): void {
     this.filtros = {
       cliente: '',
-      status: '',
+      status: [],
       dataInicio: '',
       dataFim: ''
     }

@@ -15,7 +15,8 @@ import jakarta.persistence.criteria.Predicate;
 
 public class VendaSpecification {
 
-    public static Specification<Venda> comFiltros(String clienteNome, StatusVenda status, String dataInicio, String dataFim) {
+    public static Specification<Venda> comFiltros(String clienteNome, List<StatusVenda> status, String dataInicio,
+            String dataFim) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -28,8 +29,9 @@ public class VendaSpecification {
             }
 
             // 2. Filtro por Status da Venda
-            if (status != null) {
-                predicates.add(criteriaBuilder.equal(root.get("status"), status));
+            if (status != null && !status.isEmpty()) {
+                predicates.add(
+                        root.get("status").in(status));
             }
 
             // 3. Filtro por Data de Início (A partir das 00:00:00 daquele dia)

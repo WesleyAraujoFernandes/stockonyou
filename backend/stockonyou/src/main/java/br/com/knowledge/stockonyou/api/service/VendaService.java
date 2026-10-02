@@ -154,7 +154,7 @@ public class VendaService {
         @Transactional(readOnly = true)
         public HistoricoVendaResponseDTO listarComFiltros(
                         String clienteNome,
-                        StatusVenda status,
+                        List<StatusVenda> status,
                         String dataInicio,
                         String dataFim,
                         Pageable pageable) {
@@ -164,7 +164,8 @@ public class VendaService {
                 return new HistoricoVendaResponseDTO(
                         pagina,
                         totais.totalFaturado(),
-                        totais.totalPendente()
+                        totais.totalPendente(),
+                        BigDecimal.ZERO
                 );
         }
 

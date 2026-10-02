@@ -48,7 +48,7 @@ public class VendaController {
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<HistoricoVendaResponseDTO> listarComFiltros(
             @RequestParam(required = false) String clienteNome,
-            @RequestParam(required = false) StatusVenda status,
+            @RequestParam(required = false) List<StatusVenda> status,
             @RequestParam(required = false) String dataInicio,
             @RequestParam(required = false) String dataFim,
             @PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {

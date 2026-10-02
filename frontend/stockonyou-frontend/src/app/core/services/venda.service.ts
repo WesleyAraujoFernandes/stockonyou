@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { PageResponse } from '../model/produto.model';
-import { HistoricoVendaResponse, ItemVendaRequest, VendaRequest, VendaResponse } from '../model/venda.model';
+import { HistoricoVendaResponse, ItemVendaRequest, StatusVenda, VendaRequest, VendaResponse } from '../model/venda.model';
 
 @Injectable({
   providedIn: 'root',
@@ -24,7 +24,7 @@ export class VendaService {
 
   listarComFiltros(
     clienteNome?: string,
-    status?: string,
+    status?: StatusVenda[],
     dataInicio?: string,
     dataFim?: string,
     page: number = 0,
@@ -39,8 +39,8 @@ export class VendaService {
     if (clienteNome && clienteNome.trim()) {
       params = params.set('clienteNome', clienteNome.trim());
     }
-    if (status && status.trim()) {
-      params = params.set('status', status.trim());
+    if (status && status.length > 0) {
+      params = params.set('status', status.join(','));
     }
     if (dataInicio && dataInicio.trim()) {
       params = params.set('dataInicio', dataInicio.trim())

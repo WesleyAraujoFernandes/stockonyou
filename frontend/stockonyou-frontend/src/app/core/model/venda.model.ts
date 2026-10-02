@@ -34,7 +34,7 @@ export interface VendaResponse {
 
 export interface FiltroHistoricoVenda {
   cliente: string;
-  status: string;
+  status: StatusVenda[];
   dataInicio: string;
   dataFim: string;
 }

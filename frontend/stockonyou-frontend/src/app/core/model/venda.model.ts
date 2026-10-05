@@ -44,4 +44,5 @@ export interface HistoricoVendaResponse {
   totalFaturado: number;
   totalPendente: number;
   totalAberto: number;
+  totalCancelado: number;
 }

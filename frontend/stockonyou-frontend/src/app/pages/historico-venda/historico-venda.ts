@@ -289,7 +289,7 @@ export class HistoricoVenda implements OnInit {
   temFiltrosAplicados(): boolean {
     return !!(
       this.filtros.cliente ||
-      this.filtros.status ||
+      this.filtros.status.length > 0 ||
       this.filtros.dataInicio ||
       this.filtros.dataFim
     );

@@ -40,6 +40,7 @@ export class HistoricoVendaStore {
   readonly totalFaturado = signal(0);
   readonly totalPendente = signal(0);
   readonly totalAberto = signal(0);
+  readonly totalCancelado = signal(0);
 
   carregar(
     filtros: FiltroHistoricoVenda
@@ -72,6 +73,7 @@ export class HistoricoVendaStore {
           this.totalFaturado.set(response.totalFaturado ?? 0);
           this.totalPendente.set(response.totalPendente ?? 0);
           this.totalAberto.set(response.totalAberto ?? 0);
+          this.totalCancelado.set(response.totalCancelado ?? 0);
         },
         error: (err) => {
           console.error('Erro ao carregar histórico de vendas:', err);

@@ -165,7 +165,8 @@ public class VendaService {
                         pagina,
                         totais.totalFaturado(),
                         totais.totalPendente(),
-                        totais.totalAberto()
+                        totais.totalAberto(),
+                        totais.totalCancelado()
                 );
         }
 

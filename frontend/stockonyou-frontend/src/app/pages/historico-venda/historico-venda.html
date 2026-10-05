@@ -5,7 +5,7 @@
   </div>
 
   <!-- Painéis de Indicadores Financeiros -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
     <!-- Card Pago -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm">
       <div class="space-y-1">
@@ -38,6 +38,20 @@
         </h2>
       </div>
       <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+        <svg [lucideIcon]="IconAlert" class="w-5 h-5"></svg>
+      </div>
+    </div>
+    <!-- Card Cancelado -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex item-center justify-between shadow-sm">
+      <div class="space-y-1">
+        <span class="text-slate-500 font-semibold uppercase tracking-wider">
+          Total Cancelado
+        </span>
+        <h2 class="text-2xl font-bold text-red-400">
+          {{ historicoStore.totalCancelado() | currency:'BRL' }}
+        </h2>
+      </div>
+      <div class="w-10 h-10 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center">
         <svg [lucideIcon]="IconAlert" class="w-5 h-5"></svg>
       </div>
     </div>

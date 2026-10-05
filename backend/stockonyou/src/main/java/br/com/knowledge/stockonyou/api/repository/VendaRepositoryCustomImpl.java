@@ -52,12 +52,21 @@ public class VendaRepositoryCustomImpl implements VendaRepositoryCustom {
                                 cb.equal(root.get("status"), StatusVenda.ABERTA),
                                 root.get("valorTotal"))
                         .otherwise(BigDecimal.ZERO));
+        
+        Expression<BigDecimal> totalCancelado = cb.sum(
+                cb.<BigDecimal>selectCase()
+                        .when(
+                                cb.equal(root.get("status"), StatusVenda.CANCELADA),
+                                root.get("valorTotal"))
+                        .otherwise(BigDecimal.ZERO));
 
         query.select(
                 cb.array(
                         totalFaturado,
                         totalPendente,
-                        totalAberto));
+                        totalAberto,
+                        totalCancelado
+                ));
 
         query.where(predicate);
 
@@ -68,6 +77,8 @@ public class VendaRepositoryCustomImpl implements VendaRepositoryCustom {
         return new VendaTotaisProjection(
                 resultado[0] != null ? (BigDecimal) resultado[0] : BigDecimal.ZERO,
                 resultado[1] != null ? (BigDecimal) resultado[1] : BigDecimal.ZERO,
-                resultado[2] != null ? (BigDecimal) resultado[2] : BigDecimal.ZERO);
+                resultado[2] != null ? (BigDecimal) resultado[2] : BigDecimal.ZERO,
+                resultado[3] != null ? (BigDecimal) resultado[3] : BigDecimal.ZERO
+        );
     }
 }

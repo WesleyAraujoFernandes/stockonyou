@@ -8,7 +8,8 @@ public record HistoricoVendaResponseDTO(
     Page<VendaResponseDTO> pagina,
     BigDecimal totalFaturado,
     BigDecimal totalPendente,
-    BigDecimal totalAberto
+    BigDecimal totalAberto,
+    BigDecimal totalCancelado
 ) {
 
 }

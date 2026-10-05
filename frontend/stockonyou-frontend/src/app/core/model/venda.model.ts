@@ -1,4 +1,4 @@
-import { PageResponse, Produto } from "./produto.model";
+import { PageResponse } from "./page-response.model";
 
 export type StatusVenda = 'ABERTA' | 'PENDENTE' | 'PAGO' | 'CANCELADA'
 export interface ItemVendaRequest {

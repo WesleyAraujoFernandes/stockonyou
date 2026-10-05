@@ -1,7 +1,8 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { PageResponse, Produto } from '../model/produto.model';
+import { Produto } from '../model/produto.model';
+import { PageResponse } from '../model/page-response.model';
 import { API_CONFIG } from '../config/api.config';
 
 @Injectable({

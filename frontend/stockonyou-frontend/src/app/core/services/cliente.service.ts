@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { PageResponse } from '../model/produto.model';
+import { API_CONFIG } from '../config/api.config';
 
 
 export interface Cliente {
@@ -16,7 +17,7 @@ export interface Cliente {
 })
 export class ClienteService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8080/api/clientes';
+  private readonly apiUrl = `${API_CONFIG.baseUrl}/clientes`
 
   buscarPorTermo(termo: string): Observable<Cliente[]> {
     const params = new HttpParams().set('nome', termo);

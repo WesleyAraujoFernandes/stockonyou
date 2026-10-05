@@ -2,13 +2,14 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { Categoria, PageResponse } from '../model/produto.model';
+import { API_CONFIG } from '../config/api.config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CategoriaService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8080/api/categorias';
+  private readonly apiUrl = `${API_CONFIG.baseUrl}/categorias`;
 
 listarTodas(): Observable<Categoria[]> {
     return this.http.get<any>(this.apiUrl).pipe(
@@ -35,4 +36,5 @@ listarTodas(): Observable<Categoria[]> {
   excluir(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
 }

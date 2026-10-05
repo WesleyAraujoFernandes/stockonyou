@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { PageResponse } from '../model/produto.model';
+import { API_CONFIG } from '../config/api.config';
 import { HistoricoVendaResponse, ItemVendaRequest, StatusVenda, VendaRequest, VendaResponse } from '../model/venda.model';
 
 @Injectable({
@@ -9,7 +9,7 @@ import { HistoricoVendaResponse, ItemVendaRequest, StatusVenda, VendaRequest, Ve
 })
 export class VendaService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8080/api/vendas';
+  private readonly apiUrl = `${API_CONFIG.baseUrl}/vendas` ;
 
   atualizarQuantidadeItemComanda(
     comandaId: number,

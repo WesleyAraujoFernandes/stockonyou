@@ -2,13 +2,14 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { PageResponse, Produto } from '../model/produto.model';
+import { API_CONFIG } from '../config/api.config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProdutoService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8080/api/produtos';
+  private readonly apiUrl = `${API_CONFIG.baseUrl}/produtos`
 
   listarComFiltros(
     nome?: string,

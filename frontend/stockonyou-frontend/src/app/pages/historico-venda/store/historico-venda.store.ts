@@ -165,6 +165,7 @@ export class HistoricoVendaStore {
     this.paginaAtual.set(0);
   }
 
+  /*
   primeiraPagina(): void {
     this.paginaAtual.set(0);
   }
@@ -172,7 +173,7 @@ export class HistoricoVendaStore {
   ultimaPagina(): void {
     this.paginaAtual.set(this.totalPaginas() - 1);
   }
-
+  */
   quitarConta(vendaId: number): void {
     this.quitando.set(true);
     this.erroQuitacao.set(null);

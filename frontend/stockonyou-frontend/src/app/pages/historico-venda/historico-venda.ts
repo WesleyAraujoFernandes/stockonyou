@@ -152,7 +152,7 @@ export class HistoricoVenda implements OnInit {
   }
 
   aplicarFiltros(): void {
-    this.historicoStore.primeiraPagina();
+    this.historicoStore.irParaPagina(0);
     this.carregarHistorico();
   }
 
@@ -218,7 +218,7 @@ export class HistoricoVenda implements OnInit {
       dataInicio: '',
       dataFim: ''
     }
-    this.historicoStore.primeiraPagina();
+    this.historicoStore.irParaPagina(0);
     this.historicoStore.limparOrdenacao();
     this.carregarHistorico();
   }

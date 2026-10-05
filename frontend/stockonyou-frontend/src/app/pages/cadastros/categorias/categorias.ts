@@ -1,7 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CategoriaService } from '../../../core/services/categoria.service';
 import { ToastService } from '../../../core/services/toast.service'; // 1. INJETAR O NOVO SERVIÇO GLOBAL
-import { Categoria } from '../../../core/model/produto.model';
+import { Categoria } from '../../../core/model/categoria.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -21,7 +21,6 @@ import {
     FormsModule,
     LucideDynamicIcon,
     LucideSearch,
-    //LucidePlus,
     LucideEdit,
     LucideTrash2,
     LucideX,

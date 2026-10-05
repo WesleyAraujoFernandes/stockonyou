@@ -3,6 +3,13 @@ import { inject, Injectable } from '@angular/core';
 import Keycloak, { KeycloakProfile } from 'keycloak-js';
 import { firstValueFrom } from 'rxjs';
 
+
+interface KeycloakTokenResponse {
+  access_token: string;
+  refresh_token: string;
+  id_token: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -63,8 +70,8 @@ export class KeycloakService {
       .set('password', password);
 
     try {
-      const response: any = await firstValueFrom(
-        this.http.post(tokenUrl, body.toString(), {
+      const response = await firstValueFrom(
+        this.http.post<KeycloakTokenResponse>(tokenUrl, body.toString(), {
           headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })
         })
       );

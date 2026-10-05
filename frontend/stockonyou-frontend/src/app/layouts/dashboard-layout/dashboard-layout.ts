@@ -3,13 +3,13 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { Header } from '../../components/header/header';
 // IMPORTAÇÃO CORRETA: LucideDynamicIcon gerencia os binds [lucideIcon] dinâmicos
-import { LucideDynamicIcon, LucideMenu, LucideTags, LucideBox, LucideShoppingCart, LucideGalleryHorizontalEnd } from '@lucide/angular';
+import { LucideDynamicIcon, LucideIcon,LucideMenu, LucideTags, LucideBox, LucideShoppingCart, LucideGalleryHorizontalEnd } from '@lucide/angular';
 import { Toast } from "../../components/toast/toast";
 
 interface MenuItem {
   label: string;
   route: string;
-  icon: any;
+  icon: LucideIcon;
   badge?: string;
 }
 

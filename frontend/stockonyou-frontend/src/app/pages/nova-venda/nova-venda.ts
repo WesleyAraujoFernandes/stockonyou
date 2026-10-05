@@ -6,7 +6,7 @@ import { VendaService } from '../../core/services/venda.service';
 import { ProdutoService } from '../../core/services/produto.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Produto } from '../../core/model/produto.model';
-import { ItemVendaRequest, VendaRequest } from '../../core/model/venda.model';
+import { ItemVendaRequest, VendaRequest, VendaResponse } from '../../core/model/venda.model';
 import { Cliente, ClienteService } from '../../core/services/cliente.service';
 
 import {
@@ -22,8 +22,14 @@ import {
 } from '@lucide/angular';
 import { KeycloakService } from '../../core/auth/keycloak.service';
 
+interface ProdutoCarrinho {
+  id: number;
+  nome: string;
+  preco: number;
+}
+
 interface ItemCarrinho {
-  produto?: Produto;
+  produto?: ProdutoCarrinho;
   quantidade: number;
   precoUnitario: number;
   subTotal: number;
@@ -98,28 +104,33 @@ export class NovaVenda implements OnInit {
 
   recuperarTodasComandasDoBanco(): void {
     this.vendaService.listarComandasAbertas().subscribe({
-      next: (comandasBanco: any[]) => {
+      next: (comandasBanco: VendaResponse[]) => {
         if (comandasBanco && comandasBanco.length > 0) {
           const mapeadas: ComandaAtiva[] = comandasBanco.map(venda => {
-            const idDoClienteReal = venda.cliente?.id || venda.clienteId || 999;
             const clienteValido: Cliente = {
-              id: Number(idDoClienteReal),
-              nome: venda.clienteNome || (venda as any).cliente?.nome || 'Cliente sem Nome'
+              id: 999,
+              nome: venda.clienteNome || 'Cliente sem Nome'
             };
 
             return {
               vendaId: venda.id,
               cliente: clienteValido, // Sempre garante um objeto Cliente preenchido
               usuario: this.usuarioLogado,
-              carrinho: (venda.itens || []).map((item: any) => ({
-                produto: item.produto || { id: item.produtoId, nome: item.produtoNome, preco: item.precoUnitario },
+              carrinho: (venda.itens || []).map(item => ({
+                produto: {
+                  id: item.produtoId,
+                  nome: item.produtoNome,
+                  preco: item.precoUnitario
+                },
                 quantidade: item.quantidade,
                 precoUnitario: item.precoUnitario,
                 subTotal: item.subtotal
               }))
             };
           });
-
+          console.log('Comandas recebidas do backend:', comandasBanco);
+          console.log('IDs das comandas:', comandasBanco.map(venda => venda.id));
+          console.log('Comandas mapeadas:', mapeadas);
           this.comandasAtivas.set(mapeadas);
 
           const primeira = mapeadas[0];
@@ -213,7 +224,11 @@ export class NovaVenda implements OnInit {
     if (jaExiste && cliente.id !== 1) {
       const desejaCarregar = confirm(`A comanda para ${cliente.nome} já está aberta. Deseja carregar o atendimento existente dela?`);
       if (desejaCarregar) {
-        this.alternarParaComanda(cliente);
+        const comandaExistente = this.comandasAtivas()
+          .find(comanda => comanda.cliente.id === cliente.id);
+        if (comandaExistente) {
+          this.alternarParaComanda(comandaExistente);
+        }
         this.termoBuscaCliente = '';
       } else {
         alert(`Para abrir um novo atendimento separado, adicione um sobrenome ou identificador ao nome do cliente (Ex: ${cliente.nome} Silva, ou ${cliente.nome} Mesa 2).`)
@@ -234,22 +249,17 @@ export class NovaVenda implements OnInit {
     this.clientesEncontrados.set([]);
   }
 
-  alternarParaComanda(cliente: Cliente): void {
-    // 1. Salva o estado atual do carrinho na comanda do cliente que estava ativo
-    this.comandasAtivas.update(lista => lista.map(c => {
-      if (c.cliente.id === this.clienteSelecionado().id) {
-        return { ...c, carrinho: this.carrinho(), vendaId: this.vendaIdAtual };
+  alternarParaComanda(comandaAlvo: ComandaAtiva): void {
+    this.comandasAtivas.update(lista => lista.map(comanda => {
+      if (comanda.cliente.id === this.clienteSelecionado().id) {
+        return { ...comanda, carrinho: this.carrinho(), vendaId: this.vendaIdAtual };
       }
-      return c;
+      return comanda;
     }));
 
-    // 2. Carrega a comanda destino
-    const comandaAlvo = this.comandasAtivas().find(c => c.cliente.id === cliente.id);
-    if (comandaAlvo) {
-      this.clienteSelecionado.set(comandaAlvo.cliente);
-      this.carrinho.set(comandaAlvo.carrinho);
-      this.vendaIdAtual = comandaAlvo.vendaId;
-    }
+    this.clienteSelecionado.set(comandaAlvo.cliente);
+    this.carrinho.set(comandaAlvo.carrinho);
+    this.vendaIdAtual = comandaAlvo.vendaId;
   }
 
   buscarClientesPorTermo(): void {

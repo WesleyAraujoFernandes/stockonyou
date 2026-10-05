@@ -11,13 +11,13 @@
 
     <!-- Lista de Abas de Clientes Ativos -->
     <div class="space-y-2 max-h-96 overflow-y-auto pr-1">
-      @for (comanda of comandasAtivas(); track comanda.cliente.id) {
-      <button (click)="alternarParaComanda(comanda.cliente)"
-        [class.bg-indigo-600\/10]="clienteSelecionado().id === comanda.cliente.id"
-        [class.border-indigo-500\/40]="clienteSelecionado().id === comanda.cliente.id"
-        [class.text-indigo-400]="clienteSelecionado().id === comanda.cliente.id"
-        [class.bg-slate-950\/40]="clienteSelecionado().id !== comanda.cliente.id"
-        [class.border-slate-800\/60]="clienteSelecionado().id !== comanda.cliente.id"
+      @for (comanda of comandasAtivas(); track comanda.vendaId) {
+      <button (click)="alternarParaComanda(comanda)"
+        [class.bg-indigo-600\/10]="vendaIdAtual === comanda.vendaId"
+        [class.border-indigo-500\/40]="vendaIdAtual === comanda.vendaId"
+        [class.text-indigo-400]="vendaIdAtual === comanda.vendaId"
+        [class.bg-slate-950\/40]="vendaIdAtual !== comanda.vendaId"
+        [class.border-slate-800\/60]="vendaIdAtual !== comanda.vendaId"
         class="w-full text-left flex items-center justify-between px-3 py-3 rounded-xl border font-medium text-xs text-slate-400 hover:bg-slate-800\/50 hover:text-slate-200 transition-all cursor-pointer group">
         <div class="flex items-center gap-2.5 truncate">
           <svg [lucideIcon]="IconUser" class="w-3.5 h-3.5 shrink-0"></svg>

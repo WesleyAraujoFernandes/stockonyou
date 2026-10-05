@@ -2,7 +2,8 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { ProdutoService } from '../../core/services/produto.service';
 import { ToastService } from '../../core/services/toast.service';
 import { CategoriaService } from '../../core/services/categoria.service'; // Adicionado para carregar o select
-import { Produto, Categoria } from '../../core/model/produto.model';
+import { Produto } from '../../core/model/produto.model';
+import { Categoria } from '../../core/model/categoria.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {

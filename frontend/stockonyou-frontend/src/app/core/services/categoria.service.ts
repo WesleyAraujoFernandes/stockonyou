@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { Categoria} from '../model/produto.model';
+import { Categoria } from '../model/categoria.model';
 import { PageResponse } from '../model/page-response.model'; 
 import { API_CONFIG } from '../config/api.config';
 
@@ -13,8 +13,8 @@ export class CategoriaService {
   private readonly apiUrl = `${API_CONFIG.baseUrl}/categorias`;
 
 listarTodas(): Observable<Categoria[]> {
-    return this.http.get<any>(this.apiUrl).pipe(
-      map((response) => (Array.isArray(response) ? response : response.content ?? []))
+    return this.http.get<PageResponse<Categoria>>(this.apiUrl).pipe(
+      map((response) => (response.content))
     );
   }
 

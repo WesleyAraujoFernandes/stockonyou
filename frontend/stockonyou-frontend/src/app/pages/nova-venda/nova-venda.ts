@@ -51,13 +51,14 @@ interface ComandaAtiva {
 })
 export class NovaVenda implements OnInit {
   private comandaParaCarregar: ComandaAtiva | null = null
-  private clienteParaNovaComanda: Cliente | null = null;
+  private clienteParaNovaComanda: Cliente | null = null
+  private comandaParaRemover: ComandaAtiva | null = null
 
-  private readonly clienteService = inject(ClienteService);
-  private readonly vendaService = inject(VendaService);
-  private readonly produtoService = inject(ProdutoService);
-  private readonly toast = inject(ToastService);
-  private readonly keycloakService = inject(KeycloakService);
+  private readonly clienteService = inject(ClienteService)
+  private readonly vendaService = inject(VendaService)
+  private readonly produtoService = inject(ProdutoService)
+  private readonly toast = inject(ToastService)
+  private readonly keycloakService = inject(KeycloakService)
   private readonly usuarioLogado = this.keycloakService.getUserDisplayName()
 
   readonly IconCart = LucideShoppingCart;
@@ -339,6 +340,12 @@ export class NovaVenda implements OnInit {
   }
 
   confirmDialogConfirmar(): void {
+    if (this.comandaParaRemover) {
+      const comanda = this.comandaParaRemover;
+      this.removerComandaDaLista(comanda)
+      this.fecharConfirmDialog()
+      return;
+    }
     if (this.comandaParaCarregar) {
       this.alternarParaComanda(this.comandaParaCarregar)
     }
@@ -833,8 +840,6 @@ export class NovaVenda implements OnInit {
       });
   }
 
-
-  // Método auxiliar para isolar a limpeza das listas após salvar
   limparEstadoPdvAposFechamento(idCliente: number): void {
     this.carrinho.set([]);
     this.exibirModalFechamento.set(true);
@@ -884,24 +889,33 @@ export class NovaVenda implements OnInit {
       return;
     }
 
-    if (comanda.carrinho.length > 0) {
+    if (comanda.carrinho.length === 0) {
+      this.removerComandaDaLista(comanda);
       return;
     }
 
-    this.comandasAtivas.update(lista => lista.filter(item => item !== comanda))
+    this.comandaParaRemover = comanda
 
-    const comandaAtual = this.comandasAtivas()[0];
-
-    if (comandaAtual) {
-      this.clienteSelecionado.set(comandaAtual.cliente)
-      this.carrinho.set(comandaAtual.carrinho)
-      this.vendaIdAtual = comandaAtual.vendaId;
-    }
+    this.confirmDialogTitle.set('Remover comanda');
+    this.confirmDialogMessage.set(`A comanda de ${comanda.cliente.nome} possui ${comanda.carrinho.length} item(ns). Deseja realmente removê-la?`)
+    this.confirmDialogOpen.set(true);
   }
 
   private fecharConfirmDialog(): void {
-    this.confirmDialogOpen.set(false);
-    this.comandaParaCarregar = null;
-    this.clientesEncontrados.set([]);
+    this.confirmDialogOpen.set(false)
+    this.comandaParaCarregar = null
+    this.clienteParaNovaComanda = null
+    this.comandaParaRemover = null
+    this.clientesEncontrados.set([])
+  }
+
+  private removerComandaDaLista(comanda: ComandaAtiva): void {
+    this.comandasAtivas.update(lista => lista.filter(item => item !== comanda));
+    const comandaAtual = this.comandasAtivas()[0];
+    if (comandaAtual) {
+      this.clienteSelecionado.set(comandaAtual.cliente)
+      this.carrinho.set(comandaAtual.carrinho)
+      this.vendaIdAtual = comanda.vendaId
+    }
   }
 }

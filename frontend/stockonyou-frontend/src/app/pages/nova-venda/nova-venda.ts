@@ -700,7 +700,6 @@ export class NovaVenda implements OnInit {
   confirmarFechamento(tipo: 'PAGO' | 'PENDENTE'): void {
     const idCliente = Number(this.clienteSelecionado().id);
 
-    // Cliente padrão -> venda direta de balcão
     if (
       idCliente === 1 ||
       this.clienteSelecionado().nome.toLowerCase() === 'cliente padrão'
@@ -731,7 +730,6 @@ export class NovaVenda implements OnInit {
       return;
     }
 
-    // Cliente real -> comanda
     if (!this.vendaIdAtual) {
       const comandaMemoria = this.comandasAtivas()
         .find(c => c.cliente.id === idCliente);
@@ -748,7 +746,6 @@ export class NovaVenda implements OnInit {
 
     const vendaId = this.vendaIdAtual;
 
-    // Pendente -> pagamento direto
     if (tipo === 'PAGO') {
       this.vendaService.buscarPorId(vendaId).subscribe({
         next: (venda) => {
@@ -770,7 +767,6 @@ export class NovaVenda implements OnInit {
             return;
           }
 
-          // Aberta -> concluir e depois pagar
           if (venda.status === 'ABERTA') {
             this.vendaService.concluirComanda(vendaId)
               .pipe(
@@ -817,7 +813,6 @@ export class NovaVenda implements OnInit {
       return;
     }
 
-    // Cliente real -> deixar conta pendente
     this.vendaService.concluirComanda(vendaId)
       .subscribe({
         next: () => {

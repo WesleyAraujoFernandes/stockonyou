@@ -1,0 +1,39 @@
+@if (open()) {
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 px-4" role="presentation">
+  <div class="w-full max-w-md rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-2xl" role="dialog"
+    aria-modal=true [attr.aria-labelledby]="'confirm-dialog-title'">
+    <h2 id="confirm-dialog-title" class="text-lg font-semibold text-slate-100">
+      {{ title() }}
+    </h2>
+    <p class="mt-3 text-sm leading-6 text-slate-300">
+      {{ message() }}
+    </p>
+    <div class="mt-6 flex justify-end gap-3">
+      <button 
+        type="button" 
+        (click)="cancel()"
+        class="
+          rounded-lg 
+          border 
+          border-slate-700 
+          px-4 
+          py-2 
+          text-sm 
+          font-medium 
+          text-slate-300 
+          transition.colors 
+          duration-200 
+          hover:bg-slate-800 
+          hover:text-slate-100">
+        {{ cancelText() }}
+      </button>
+      <button 
+        type="button"
+        (click)="confirm()"
+        class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-indigo-500">
+        {{ confirmText() }}
+      </button>
+    </div>
+  </div>
+</div>
+}

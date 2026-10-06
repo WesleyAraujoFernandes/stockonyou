@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal, computed, effect } from '@angular/core';
 import { switchMap } from 'rxjs';
 import { CommonModule } from '@angular/common';
+import { ConfirmDialog } from '../../shared/ui/confirm-dialog/confirm-dialog';
 import { FormsModule } from '@angular/forms';
 import { VendaService } from '../../core/services/venda.service';
 import { ProdutoService } from '../../core/services/produto.service';
@@ -44,18 +45,20 @@ interface ComandaAtiva {
 
 @Component({
   selector: 'app-nova-venda',
-  imports: [CommonModule, FormsModule, LucideDynamicIcon],
+  imports: [CommonModule, FormsModule, LucideDynamicIcon, ConfirmDialog],
   templateUrl: './nova-venda.html',
   styleUrl: './nova-venda.css',
 })
 export class NovaVenda implements OnInit {
+  private comandaParaCarregar: ComandaAtiva | null = null
+  private clienteParaNovaComanda: Cliente | null = null;
+
   private readonly clienteService = inject(ClienteService);
   private readonly vendaService = inject(VendaService);
   private readonly produtoService = inject(ProdutoService);
   private readonly toast = inject(ToastService);
   private readonly keycloakService = inject(KeycloakService);
   private readonly usuarioLogado = this.keycloakService.getUserDisplayName()
-
 
   readonly IconCart = LucideShoppingCart;
   readonly IconPlus = LucidePlus;
@@ -65,6 +68,10 @@ export class NovaVenda implements OnInit {
   readonly IconBarcode = LucideBarcode;
   readonly IconMoney = LucideDollarSign;
   readonly IconUserPlus = LucideUserPlus;
+
+  confirmDialogOpen = signal(false)
+  confirmDialogTitle = signal('')
+  confirmDialogMessage = signal('')
 
   // Lista de comandas abertas na memória do sistema
   comandasAtivas = signal<ComandaAtiva[]>([]);
@@ -105,50 +112,52 @@ export class NovaVenda implements OnInit {
   recuperarTodasComandasDoBanco(): void {
     this.vendaService.listarComandasAbertas().subscribe({
       next: (comandasBanco: VendaResponse[]) => {
-        if (comandasBanco && comandasBanco.length > 0) {
-          const mapeadas: ComandaAtiva[] = comandasBanco.map(venda => {
-            const clienteValido: Cliente = {
-              id: 999,
-              nome: venda.clienteNome || 'Cliente sem Nome'
-            };
+        const mapeadas: ComandaAtiva[] = comandasBanco.map(venda => {
+          const clienteValido: Cliente = {
+            id: venda.clienteId ?? 1,
+            nome: venda.clienteNome || 'Cliente sem Nome'
+          };
 
-            return {
-              vendaId: venda.id,
-              cliente: clienteValido, // Sempre garante um objeto Cliente preenchido
-              usuario: this.usuarioLogado,
-              carrinho: (venda.itens || []).map(item => ({
-                produto: {
-                  id: item.produtoId,
-                  nome: item.produtoNome,
-                  preco: item.precoUnitario
-                },
-                quantidade: item.quantidade,
-                precoUnitario: item.precoUnitario,
-                subTotal: item.subtotal
-              }))
-            };
-          });
-          console.log('Comandas recebidas do backend:', comandasBanco);
-          console.log('IDs das comandas:', comandasBanco.map(venda => venda.id));
-          console.log('Comandas mapeadas:', mapeadas);
-          this.comandasAtivas.set(mapeadas);
-
-          const primeira = mapeadas[0];
-          this.clienteSelecionado.set(primeira.cliente);
-          this.carrinho.set(primeira.carrinho)
-          this.vendaIdAtual = primeira.vendaId;
-
-        } else {
-          this.comandasAtivas.set([{
-            cliente: { id: 1, nome: 'Cliente Padrão' },
+          return {
+            vendaId: venda.id,
+            cliente: clienteValido,
             usuario: this.usuarioLogado,
-            carrinho: []
-          }]);
-          this.clienteSelecionado.set({ id: 1, nome: 'Cliente Padrão' });
-          this.carrinho.set([]);
-          this.vendaIdAtual = undefined;
-        }
+            carrinho: (venda.itens || []).map(item => ({
+              produto: {
+                id: item.produtoId,
+                nome: item.produtoNome,
+                preco: item.precoUnitario
+              },
+              quantidade: item.quantidade,
+              precoUnitario: item.precoUnitario,
+              subTotal: item.subtotal
+            }))
+          };
+        });
+
+        const comandaPadrao: ComandaAtiva = {
+          cliente: {
+            id: 1,
+            nome: 'Cliente Padrão'
+          },
+          usuario: this.usuarioLogado,
+          carrinho: []
+        };
+
+        const listaFinal = [
+          comandaPadrao,
+          ...mapeadas.filter(comanda => comanda.cliente.id !== 1)
+        ];
+
+        this.comandasAtivas.set(listaFinal);
+
+        const primeira = listaFinal[0];
+
+        this.clienteSelecionado.set(primeira.cliente);
+        this.carrinho.set(primeira.carrinho);
+        this.vendaIdAtual = primeira.vendaId;
       },
+
       error: (err) => {
         console.error('Erro ao listar comandas do banco:', err);
         this.toast.erro('Falha ao carregar as comandas do servidor.');
@@ -220,31 +229,34 @@ export class NovaVenda implements OnInit {
   }
 
   abrirNovaComanda(cliente: Cliente): void {
-    const jaExiste = this.comandasAtivas().some(c => c.cliente.id === cliente.id);
-    if (jaExiste && cliente.id !== 1) {
-      const desejaCarregar = confirm(`A comanda para ${cliente.nome} já está aberta. Deseja carregar o atendimento existente dela?`);
-      if (desejaCarregar) {
-        const comandaExistente = this.comandasAtivas()
-          .find(comanda => comanda.cliente.id === cliente.id);
-        if (comandaExistente) {
-          this.alternarParaComanda(comandaExistente);
-        }
-        this.termoBuscaCliente = '';
-      } else {
-        alert(`Para abrir um novo atendimento separado, adicione um sobrenome ou identificador ao nome do cliente (Ex: ${cliente.nome} Silva, ou ${cliente.nome} Mesa 2).`)
-        this.termoBuscaCliente = `${cliente.nome} `;
-      }
-      this.clientesEncontrados.set([]);
+    const comandaExistente = this.comandasAtivas()
+      .find(comanda => comanda.cliente.id === cliente.id);
+
+    if (comandaExistente && cliente.id !== 1) {
+      this.comandaParaCarregar = comandaExistente;
+      this.clienteParaNovaComanda = cliente;
+
+      this.confirmDialogTitle.set('Comanda já aberta');
+      this.confirmDialogMessage.set(
+        `A comanda para ${cliente.nome} já está aberta. Deseja carregar o atendimento existente dela?`
+      );
+      this.confirmDialogOpen.set(true);
+
       return;
     }
 
-    const nova: ComandaAtiva = { cliente, usuario: this.usuarioLogado, carrinho: [] };
+    const nova: ComandaAtiva = {
+      cliente,
+      usuario: this.usuarioLogado,
+      carrinho: []
+    };
+
     this.comandasAtivas.update(lista => [...lista, nova]);
     this.clienteSelecionado.set(cliente);
     this.carrinho.set([]);
     this.vendaIdAtual = undefined;
 
-    this.toast.sucesso(`Comanda de ${cliente.nome} aberta.`)
+    this.toast.sucesso(`Comanda de ${cliente.nome} aberta.`);
     this.termoBuscaCliente = '';
     this.clientesEncontrados.set([]);
   }
@@ -324,6 +336,21 @@ export class NovaVenda implements OnInit {
         next: (response) => this.produtosEncontrados.set(response.content || []),
         error: (err) => console.error('Erro ao buscar produtos para o PDV:', err)
       });
+  }
+
+  confirmDialogConfirmar(): void {
+    if (this.comandaParaCarregar) {
+      this.alternarParaComanda(this.comandaParaCarregar)
+    }
+    this.termoBuscaCliente = '';
+    this.fecharConfirmDialog();
+  }
+
+  confirmDialogCancelar(): void {
+    if (this.clienteParaNovaComanda) {
+      this.termoBuscaCliente = `${this.clienteSelecionado().nome}`
+    }
+    this.fecharConfirmDialog();
   }
 
   selecionarProduto(produto: Produto): void {
@@ -810,20 +837,71 @@ export class NovaVenda implements OnInit {
   // Método auxiliar para isolar a limpeza das listas após salvar
   limparEstadoPdvAposFechamento(idCliente: number): void {
     this.carrinho.set([]);
-    this.exibirModalFechamento.set(true); // Oculta o modal
+    this.exibirModalFechamento.set(true);
     this.exibirModalFechamento.set(false);
+
     const usuario = this.usuarioLogado;
 
-    this.comandasAtivas.update(lista => lista.filter(c => c.cliente.id !== idCliente));
+    if (idCliente === 1) {
+      this.comandasAtivas.update(lista =>
+        lista.map(comanda => {
+          if (comanda.cliente.id === 1) {
+            return {
+              ...comanda,
+              vendaId: undefined,
+              carrinho: []
+            };
+          }
+
+          return comanda;
+        })
+      );
+    } else {
+      this.comandasAtivas.update(lista =>
+        lista.filter(comanda => comanda.cliente.id !== idCliente)
+      );
+    }
 
     if (this.comandasAtivas().length === 0) {
-      this.comandasAtivas.set([{ cliente: { id: 1, nome: 'Cliente Padrão' }, usuario, carrinho: [] }]);
+      this.comandasAtivas.set([
+        {
+          cliente: { id: 1, nome: 'Cliente Padrão' },
+          usuario,
+          carrinho: []
+        }
+      ]);
     }
 
     this.clienteSelecionado.set(this.comandasAtivas()[0].cliente);
     this.carrinho.set(this.comandasAtivas()[0].carrinho);
-    this.vendaIdAtual = (this.comandasAtivas()[0] as any).vendaId;
+    this.vendaIdAtual = this.comandasAtivas()[0].vendaId;
     this.termoBuscaCliente = '';
+    this.clientesEncontrados.set([]);
+  }
+
+  removerComanda(comanda: ComandaAtiva): void {
+    if (comanda.cliente.id === 1) {
+      return;
+    }
+
+    if (comanda.carrinho.length > 0) {
+      return;
+    }
+
+    this.comandasAtivas.update(lista => lista.filter(item => item !== comanda))
+
+    const comandaAtual = this.comandasAtivas()[0];
+
+    if (comandaAtual) {
+      this.clienteSelecionado.set(comandaAtual.cliente)
+      this.carrinho.set(comandaAtual.carrinho)
+      this.vendaIdAtual = comandaAtual.vendaId;
+    }
+  }
+
+  private fecharConfirmDialog(): void {
+    this.confirmDialogOpen.set(false);
+    this.comandaParaCarregar = null;
     this.clientesEncontrados.set([]);
   }
 }

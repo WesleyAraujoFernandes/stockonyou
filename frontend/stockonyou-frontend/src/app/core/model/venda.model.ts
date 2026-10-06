@@ -25,6 +25,7 @@ export interface VendaResponse {
   id: number;
   dataVenda: string;
   clienteNome?: string;
+  clienteId: number | null;
   valorTotal: number;
   usuarioNome: string;
   status: StatusVenda;

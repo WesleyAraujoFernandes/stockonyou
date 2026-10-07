@@ -2,7 +2,6 @@ package br.com.knowledge.stockonyou.api.controller;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -21,9 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.knowledge.stockonyou.api.dto.HistoricoVendaResponseDTO;
 import br.com.knowledge.stockonyou.api.dto.ItemVendaRequestDTO;
+import br.com.knowledge.stockonyou.api.dto.PagamentoRequestDTO;
+import br.com.knowledge.stockonyou.api.dto.PagamentoResponseDTO;
 import br.com.knowledge.stockonyou.api.dto.VendaRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.VendaResponseDTO;
 import br.com.knowledge.stockonyou.api.model.StatusVenda;
+import br.com.knowledge.stockonyou.api.service.PagamentoService;
 import br.com.knowledge.stockonyou.api.service.VendaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class VendaController {
     private final VendaService vendaService;
+    private final PagamentoService pagamentoService;
 
     @PutMapping("/{id}/itens/{produtoId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
@@ -91,6 +94,15 @@ public class VendaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PostMapping("/{vendaId}/pagamentos")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<PagamentoResponseDTO> resgistrarPagamento(
+        @PathVariable Long vendaId,
+        @Valid @RequestBody PagamentoRequestDTO request) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(pagamentoService.registrarPagamento(vendaId, request));
+
+    }
+
     @PutMapping("/{id}/concluir")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<VendaResponseDTO> concluirComanda(@PathVariable Long id) {
@@ -120,5 +132,11 @@ public class VendaController {
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<VendaResponseDTO> removerItemComanda(@PathVariable Long id, @PathVariable Long produtoId) {
         return ResponseEntity.ok(vendaService.removerItemComanda(id, produtoId));
+    }
+
+    @GetMapping("/{vendaId}/pagamentos")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<List<PagamentoResponseDTO>> listarPagamentos(@PathVariable Long vendaId) {
+        return ResponseEntity.ok(pagamentoService.listarPagamentos(vendaId));
     }
 }

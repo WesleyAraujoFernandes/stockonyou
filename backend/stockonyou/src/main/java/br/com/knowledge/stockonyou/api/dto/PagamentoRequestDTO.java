@@ -8,5 +8,5 @@ public record PagamentoRequestDTO(
     BigDecimal valor,
     FormaPagamento formaPagamento
 ) {
-
+    
 }

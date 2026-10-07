@@ -47,6 +47,8 @@ public class Venda {
     private String usuarioNome;
     @OneToMany(mappedBy = "venda", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemVenda> itens;
+    @OneToMany(mappedBy = "venda", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Pagamento> pagamentos;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatusVenda status;

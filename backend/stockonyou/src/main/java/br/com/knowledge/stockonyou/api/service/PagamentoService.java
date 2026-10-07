@@ -36,7 +36,7 @@ public class PagamentoService {
         if (request.formaPagamento() == null) {
             throw new IllegalArgumentException("A forma de pagamento deve ser informada.");
         }
-        
+
         BigDecimal saldoRestante = calcularSaldoRestante(venda);
 
         if (saldoRestante.compareTo(BigDecimal.ZERO) == 0) {
@@ -53,6 +53,8 @@ public class PagamentoService {
             .venda(venda)
             .build();
         Pagamento pagamentoSalvo = pagamentoRepository.save(pagamento);
+        BigDecimal novoSaldoRestante = calcularSaldoRestante(venda);
+        atualizarStatusAposPagamento(venda, novoSaldoRestante);
         return PagamentoResponseDTO.fromEntity(pagamentoSalvo);
     } 
 
@@ -62,6 +64,14 @@ public class PagamentoService {
         BigDecimal totalPago = pagamentoRepository.calcularTotalPago(venda.getId());
         BigDecimal saldoRestante = venda.getValorTotal().subtract(totalPago);
         return new PagamentoResumoResponseDTO(venda.getValorTotal(), totalPago, saldoRestante);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PagamentoResponseDTO> listarPagamentos(Long vendaId) {
+        buscarVenda(vendaId);
+        return pagamentoRepository.findByVendaId(vendaId).stream()
+            .map(PagamentoResponseDTO::fromEntity)
+            .toList();
     }
 
     private Venda buscarVenda(Long vendaId) {
@@ -87,11 +97,10 @@ public class PagamentoService {
         }
     }
 
-    @Transactional(readOnly = true)
-    public List<PagamentoResponseDTO> listarPagamentos(Long vendaId) {
-        buscarVenda(vendaId);
-        return pagamentoRepository.findByVendaId(vendaId).stream()
-            .map(PagamentoResponseDTO::fromEntity)
-            .toList();
+    private void atualizarStatusAposPagamento(Venda venda, BigDecimal saldoRestante) {
+        if (saldoRestante.compareTo(BigDecimal.ZERO) == 0) {
+            venda.setStatus(StatusVenda.PAGO);
+            vendaRepository.save(venda);
+        }
     }
 }

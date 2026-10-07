@@ -9,8 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.com.knowledge.stockonyou.api.dto.PagamentoRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.PagamentoResponseDTO;
+import br.com.knowledge.stockonyou.api.dto.PagamentoResumoResponseDTO;
 import br.com.knowledge.stockonyou.api.exception.ResourceNotFoundException;
 import br.com.knowledge.stockonyou.api.model.Pagamento;
+import br.com.knowledge.stockonyou.api.model.StatusVenda;
 import br.com.knowledge.stockonyou.api.model.Venda;
 import br.com.knowledge.stockonyou.api.repository.PagamentoRepository;
 import br.com.knowledge.stockonyou.api.repository.VendaRepository;
@@ -25,9 +27,24 @@ public class PagamentoService {
     @Transactional 
     public PagamentoResponseDTO registrarPagamento(Long vendaId, PagamentoRequestDTO request) {
         Venda venda = buscarVenda(vendaId);
-        BigDecimal saldoRestante = calcularSaldoRestante(venda);
-        validarValorPagamento(request.valor(), saldoRestante);
+        if (venda.getStatus() == StatusVenda.CANCELADA) {
+            throw new IllegalStateException(
+                "Não é permitido registrar pagamento em uma venda cancelada."
+            );
+        }
+
+        if (request.formaPagamento() == null) {
+            throw new IllegalArgumentException("A forma de pagamento deve ser informada.");
+        }
         
+        BigDecimal saldoRestante = calcularSaldoRestante(venda);
+
+        if (saldoRestante.compareTo(BigDecimal.ZERO) == 0) {
+            throw new IllegalStateException("A venda já está totalmente paga.");
+        }
+        
+        validarValorPagamento(request.valor(), saldoRestante);
+
         Pagamento pagamento = Pagamento.builder()
             .valor(request.valor())
             .formaPagamento(request.formaPagamento())
@@ -38,6 +55,14 @@ public class PagamentoService {
         Pagamento pagamentoSalvo = pagamentoRepository.save(pagamento);
         return PagamentoResponseDTO.fromEntity(pagamentoSalvo);
     } 
+
+    @Transactional 
+    public PagamentoResumoResponseDTO consultarResumo(Long vendaId) {
+        Venda venda = buscarVenda(vendaId);
+        BigDecimal totalPago = pagamentoRepository.calcularTotalPago(venda.getId());
+        BigDecimal saldoRestante = venda.getValorTotal().subtract(totalPago);
+        return new PagamentoResumoResponseDTO(venda.getValorTotal(), totalPago, saldoRestante);
+    }
 
     private Venda buscarVenda(Long vendaId) {
         return vendaRepository.findById(vendaId)

@@ -22,6 +22,7 @@ import br.com.knowledge.stockonyou.api.dto.HistoricoVendaResponseDTO;
 import br.com.knowledge.stockonyou.api.dto.ItemVendaRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.PagamentoRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.PagamentoResponseDTO;
+import br.com.knowledge.stockonyou.api.dto.PagamentoResumoResponseDTO;
 import br.com.knowledge.stockonyou.api.dto.VendaRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.VendaResponseDTO;
 import br.com.knowledge.stockonyou.api.model.StatusVenda;
@@ -138,5 +139,11 @@ public class VendaController {
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<List<PagamentoResponseDTO>> listarPagamentos(@PathVariable Long vendaId) {
         return ResponseEntity.ok(pagamentoService.listarPagamentos(vendaId));
+    }
+
+    @GetMapping("/{vendaId}/pagamentos/resumo")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<PagamentoResumoResponseDTO> consultarResumo(@PathVariable Long vendaId) {
+        return ResponseEntity.ok(pagamentoService.consultarResumo(vendaId));
     }
 }

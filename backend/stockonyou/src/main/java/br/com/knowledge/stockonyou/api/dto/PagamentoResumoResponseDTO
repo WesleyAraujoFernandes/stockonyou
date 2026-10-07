@@ -1,5 +1,0 @@
-public record PagamentoResumoResponseDTO(
-    BigDecimal valorTotal,
-    BigDecimal valorPago,
-    BigDecimal saldoRestante
-) {}

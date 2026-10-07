@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { KeycloakService } from '../auth/keycloak.service'; // Ajuste o caminho se necessário
+import { KeycloakService } from '../auth/keycloak.service';
 
 export const authGuard: CanActivateFn = async (route, state) => {
   const keycloakService = inject(KeycloakService);

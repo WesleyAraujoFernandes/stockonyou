@@ -10,7 +10,7 @@ import { KeycloakService } from '../../core/auth/keycloak.service';
 export class Header implements OnInit {
   private keycloakService = inject(KeycloakService);
 
-  // Signals para gerenciamento reativo do perfil
+
   displayName = signal<string>('Carregando...');
   email = signal<string>('');
   userInitials = signal<string>('U');
@@ -22,7 +22,6 @@ export class Header implements OnInit {
     this.displayName.set(name);
     this.email.set(profile?.email ?? '');
 
-    // Extrai a inicial do nome para o avatar
     if (name) {
       this.userInitials.set(name.charAt(0).toUpperCase());
     }

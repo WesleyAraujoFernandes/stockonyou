@@ -74,7 +74,6 @@ export class NovaVenda implements OnInit {
   confirmDialogTitle = signal('')
   confirmDialogMessage = signal('')
 
-  // Lista de comandas abertas na memória do sistema
   comandasAtivas = signal<ComandaAtiva[]>([]);
   clienteSelecionado = signal<Cliente>({ id: 1, nome: 'Cliente Padrão' });
   carrinho = signal<ItemCarrinho[]>([]);
@@ -374,7 +373,7 @@ export class NovaVenda implements OnInit {
 
   adicionarNoCarrinho(): void {
     if (!this.produtoSelecionado) return;
-    // CASO 1: SE FOR CLIENTE PADRÃO (ID 1) -> Gerencia apenas em memória local
+
     if (this.clienteSelecionado().id === 1) {
       const itensAtuais = [...this.carrinho()];
       const itemExistente = itensAtuais
@@ -397,10 +396,10 @@ export class NovaVenda implements OnInit {
       this.produtoSelecionado = null;
       this.termoBuscaProduto = '';
       this.quantidadeInserir = 1;
-      return; // Finaliza o método aqui, sem chamar o HTTP PUT
+      return;
     }
 
-    // CASO 2: CLIENTES REAIS (Etevaldo, Eliana...) -> Envia para a comanda aberta no banco
+
     const itemRequest: ItemVendaRequest = {
       produtoId: this.produtoSelecionado.id,
       quantidade: this.quantidadeInserir
@@ -456,10 +455,10 @@ export class NovaVenda implements OnInit {
     }
 
     this.vendaService.adicionarItemComanda(this.vendaIdAtual, itemRequest).subscribe({
-      next: (vendaAtualizada: any) => {
+      next: (vendaAtualizada: VendaResponse) => {
         this.vendaIdAtual = vendaAtualizada.id;
 
-        const novoCarrinho = vendaAtualizada.itens.map((item: any) => ({
+        const novoCarrinho = vendaAtualizada.itens.map(item => ({
           produto: {
             id: item.produtoId,
             nome: item.produtoNome || 'Produto',
@@ -563,7 +562,6 @@ export class NovaVenda implements OnInit {
     const item = this.carrinho()[index];
     if (!item || !item.produto) return;
 
-    // CASO 1: SE FOR CLIENTE PADRÃO (ID 1) -> Gerencia apenas em memória local
     if (this.clienteSelecionado().id === 1) {
       const novaQtd = item.quantidade - 1;
       if (novaQtd <= 0) {
@@ -578,8 +576,6 @@ export class NovaVenda implements OnInit {
       this.toast.sucesso('Quantidade ajustada no balcão.');
       return;
     }
-
-    // Comanda real: ainda não existe endpoint para reduzir a quantidade de um item.
 
     const novaQtd = item.quantidade - 1;
 

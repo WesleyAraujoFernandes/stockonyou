@@ -6,7 +6,6 @@ import { KeycloakService } from '../auth/keycloak.service';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const keycloakService = inject(KeycloakService);
 
-  // Ignora chamadas para arquivos estáticos locais
   if (
     req.url.startsWith('./assets') ||
     req.url.startsWith('/assets') ||

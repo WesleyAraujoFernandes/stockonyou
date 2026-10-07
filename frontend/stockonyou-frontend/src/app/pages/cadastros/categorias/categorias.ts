@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CategoriaService } from '../../../core/services/categoria.service';
-import { ToastService } from '../../../core/services/toast.service'; // 1. INJETAR O NOVO SERVIÇO GLOBAL
+import { ToastService } from '../../../core/services/toast.service';
 import { Categoria } from '../../../core/model/categoria.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -31,7 +31,7 @@ import {
 })
 export class Categorias implements OnInit {
   private readonly categoriaService = inject(CategoriaService);
-  private readonly toast = inject(ToastService); // 2. INJEÇÃO DO TOAST GLOBAL
+  private readonly toast = inject(ToastService);
   private readonly listaCategoriaRaw = signal<Categoria[]>([]);
 
   readonly IconPlus = LucidePlus;
@@ -68,7 +68,7 @@ export class Categorias implements OnInit {
       error: (err) => {
         console.error('Erro ao carregar categorias:', err);
         this.listaCategoriaRaw.set([]);
-        this.toast.erro('Erro ao carregar a lista de categorias.'); // 3. TOAST DE ERRO GLOBAL
+        this.toast.erro('Erro ao carregar a lista de categorias.');
       }
     });
   }
@@ -98,7 +98,7 @@ export class Categorias implements OnInit {
         next: () => {
           this.carregarCategorias();
           this.fecharModal();
-          this.toast.sucesso('Categoria atualizada com sucesso!'); // 4. TOAST DE SUCESSO GLOBAL
+          this.toast.sucesso('Categoria atualizada com sucesso!');
         },
         error: (err) => {
           console.error('Erro ao atualizar categoria:', err);
@@ -110,7 +110,7 @@ export class Categorias implements OnInit {
         next: () => {
           this.carregarCategorias();
           this.fecharModal();
-          this.toast.sucesso('Categoria cadastrada com sucesso!'); // 5. TOAST DE SUCESSO GLOBAL
+          this.toast.sucesso('Categoria cadastrada com sucesso!');
         },
         error: (err) => {
           console.error('Erro ao criar categoria:', err);
@@ -133,7 +133,7 @@ export class Categorias implements OnInit {
       next: () => {
         this.carregarCategorias();
         this.fecharModalExclusao();
-        this.toast.sucesso('Categoria excluída com sucesso!'); // 6. TOAST DE SUCESSO GLOBAL
+        this.toast.sucesso('Categoria excluída com sucesso!');
       },
       error: (err) => {
         console.error('Erro ao excluir categoria:', err);

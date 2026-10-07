@@ -36,21 +36,12 @@ export class KeycloakService {
     return authenticated;
   }
 
-  // --- MÉTODOS ADICIONADOS PARA RESOLVER OS ERROS ---
-
-  /**
-   * Verifica se o usuário está autenticado
-   */
   isLoggedIn(): boolean {
     return !!this.keycloak.authenticated;
   }
 
-  /**
-   * Retorna o token JWT atual ou atualiza caso esteja prestes a expirar
-   */
   async getToken(): Promise<string | undefined> {
     if (this.keycloak.authenticated) {
-      // Atualiza o token se ele for expirar nos próximos 30 segundos
       try {
         await this.keycloak.updateToken(30);
       } catch (error) {
@@ -76,13 +67,11 @@ export class KeycloakService {
         })
       );
 
-      // Atribui os tokens diretamente à instância do keycloak-js
       this.keycloak.token = response.access_token;
       this.keycloak.refreshToken = response.refresh_token;
       this.keycloak.idToken = response.id_token;
       this.keycloak.authenticated = true;
 
-      // Carrega o perfil do usuário recém-logado
       this.userProfile = await this.keycloak.loadUserProfile();
 
       return true;
@@ -92,14 +81,9 @@ export class KeycloakService {
     }
   }
 
-  /**
-   * Redireciona o usuário para a tela de login do Keycloak
-   */
   async login(): Promise<void> {
     await this.keycloak.login();
   }
-
-  // --- MÉTODOS DE PERFIL E LOGOUT ---
 
   getUserProfile(): KeycloakProfile | null {
     return this.userProfile;

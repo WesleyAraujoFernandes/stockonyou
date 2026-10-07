@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ProdutoService } from '../../core/services/produto.service';
 import { ToastService } from '../../core/services/toast.service';
-import { CategoriaService } from '../../core/services/categoria.service'; // Adicionado para carregar o select
+import { CategoriaService } from '../../core/services/categoria.service';
 import { Produto } from '../../core/model/produto.model';
 import { Categoria } from '../../core/model/categoria.model';
 import { CommonModule } from '@angular/common';
@@ -29,15 +29,10 @@ import {
     LucideDynamicIcon,
     LucideChevronLeft,
     LucideChevronRight,
-    //LucideSearch,
-    //LucideEraser,
-    //LucidePlus,
     LucideEdit,
     LucideTrash2,
     LucideX,
     LucideAlertTriangle,
-    //LucideBox,
-    //LucideDollarSign
   ],
   templateUrl: './produtos.html',
   styleUrl: './produtos.css',
@@ -45,42 +40,30 @@ import {
 export class Produtos implements OnInit {
   private readonly produtoService = inject(ProdutoService);
   private readonly categoriaService = inject(CategoriaService);
-  private readonly toast = inject(ToastService); // 2. INJEÇÃO DO TOAST GLOBAL
+  private readonly toast = inject(ToastService);
 
 
-  // Referências dos Ícones p/ Templates Estáticos ou Dinâmicos
   readonly IconPlus = LucidePlus;
   readonly IconEreaser = LucideEraser;
   readonly IconSearch = LucideSearch;
   readonly IconMoney = LucideDollarSign;
 
-  // Signals de Navegação
   paginaAtual = signal<number>(0);
   totalPaginas = signal<number>(0);
   tamanhoPagina = 10;
 
-  // Atualize o método para injetar a página atual na chamada do Service
-
-
-  // Signals de Dados
   produtos = signal<Produto[]>([]);
-  categorias = signal<Categoria[]>([]); // Lista utilizada no combo do formulário
+  categorias = signal<Categoria[]>([]);
 
-  // Estado dos Filtros
   filtroNome = '';
   filtroPrecoFaixa = signal<string>('');
   categoriasSelecionadas = signal<number[]>([]);
-  //filtroPrecoMin?: number;
-  //filtroPrecoMax?: number;
 
-  // Signals de Controle dos Modais
   exibirModal = signal<boolean>(false);
   exibirModalExclusao = signal<boolean>(false);
   produtoEmEdicao = signal<Produto | null>(null);
   produtoParaExcluir = signal<Produto | null>(null);
 
-  // Estrutura auxiliar para manipulação do formulário (POST/PUT)
-  // Mapeamos categoriaId de forma simples para ligar ao <select>
   novoProduto = {
     nome: '',
     codigoBarras: '',
@@ -118,8 +101,6 @@ export class Produtos implements OnInit {
       ? this.categoriasSelecionadas()
       : undefined;
 
-    //this.paginaAtual.set(0); //  pesquisa por texto também comece do início da lista.
-
     this.produtoService
       .listarComFiltros(this.filtroNome, precoMin, precoMax, categoriaIds, this.paginaAtual(), this.tamanhoPagina)
       .subscribe({
@@ -140,7 +121,7 @@ export class Produtos implements OnInit {
     } else {
       this.categoriasSelecionadas.update(lista => lista.filter(catId => catId !== id));
     }
-    this.paginaAtual.set(0); // Força voltar para a primeira página
+    this.paginaAtual.set(0);
     this.carregarProdutos();
   }
 
@@ -155,7 +136,7 @@ export class Produtos implements OnInit {
     this.filtroNome = '';
     this.filtroPrecoFaixa.set('');
     this.categoriasSelecionadas.set([]);
-    this.paginaAtual.set(0); // Reseta a paginação
+    this.paginaAtual.set(0);
     this.carregarProdutos();
   }
 
@@ -190,7 +171,7 @@ export class Produtos implements OnInit {
   }
 
   salvar(): void {
-    // Monta o payload conforme a interface Produto esperada pelo Backend
+
     const payload = {
       nome: this.novoProduto.nome,
       codigoBarras: this.novoProduto.codigoBarras,
@@ -203,7 +184,6 @@ export class Produtos implements OnInit {
     const prodEditando = this.produtoEmEdicao();
 
     if (prodEditando) {
-      // Fluxo de Atualização (PUT)
       this.produtoService.atualizar(prodEditando.id, payload as any).subscribe({
         next: () => {
           this.carregarProdutos();
@@ -216,7 +196,6 @@ export class Produtos implements OnInit {
         }
       });
     } else {
-      // Fluxo de Criação (POST)
       this.produtoService.criar(payload as any).subscribe({
         next: () => {
           this.carregarProdutos();
@@ -227,7 +206,6 @@ export class Produtos implements OnInit {
           console.error('Erro ao cadastrar produto:', err);
           this.toast.erro('Falha ao cadastrar o produto');
         }
-
       });
     }
   }

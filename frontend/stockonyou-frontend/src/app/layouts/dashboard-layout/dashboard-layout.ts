@@ -2,7 +2,6 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { Header } from '../../components/header/header';
-// IMPORTAÇÃO CORRETA: LucideDynamicIcon gerencia os binds [lucideIcon] dinâmicos
 import { LucideDynamicIcon, LucideIcon,LucideMenu, LucideTags, LucideBox, LucideShoppingCart, LucideGalleryHorizontalEnd } from '@lucide/angular';
 import { Toast } from "../../components/toast/toast";
 
@@ -21,8 +20,8 @@ interface MenuItem {
     RouterLink,
     RouterLinkActive,
     Header,
-    LucideDynamicIcon, // Dá superpoderes dinâmicos para a tag <svg [lucideIcon]="...">
-    LucideMenu // Habilita o uso direto de <svg lucideMenu>
+    LucideDynamicIcon,
+    LucideMenu
     ,
     Toast
   ],
@@ -32,7 +31,6 @@ interface MenuItem {
 export class DashboardLayout {
   isSidebarOpen = signal<boolean>(true);
 
-  // Atribuindo os ícones oficiais
   menuItems: MenuItem[] = [
     {
       label: 'Categorias',
@@ -44,11 +42,11 @@ export class DashboardLayout {
       route: '/cadastros/produtos',
       icon: LucideBox,
     },
-    // No seu dashboard-layout.ts, adicione o item do PDV se ainda não colocou:
+
     {
       label: 'Nova Venda',
-      route: '/vendas/pdv', // Deve bater exatamente com o path do app.routes.ts
-      icon: LucideShoppingCart // ou o seu ícone correspondente
+      route: '/vendas/pdv',
+      icon: LucideShoppingCart
     },
     {
       label: 'Histórico de Vendas',

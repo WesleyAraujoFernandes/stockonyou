@@ -16,7 +16,7 @@ export class ProdutoService {
     nome?: string,
     precoMin?: number,
     precoMax?: number,
-    categoriaIds?: number[], // Mantém o array de números
+    categoriaIds?: number[],
     page: number = 0,
     size: number = 10
   ): Observable<PageResponse<Produto>> {
@@ -31,8 +31,6 @@ export class ProdutoService {
     if (precoMax !== undefined && precoMax !== null)
       params = params.set('precoMax', precoMax.toString());
     
-    // CORREÇÃO DEFINITIVA: Transforma o array [1, 2, 3] na string única "1,2,3"
-    // Enviando como 'categoriaId', o Spring Boot converte automaticamente para List<Long>
     if (categoriaIds && categoriaIds.length > 0) {
       params = params.set('categoriaId', categoriaIds.join(','));
     }

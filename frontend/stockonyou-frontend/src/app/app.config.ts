@@ -14,7 +14,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(
-      withInterceptors([authInterceptor]) // Registra o interceptor de Bearer Token
+      withInterceptors([authInterceptor])
     ),
     {
       provide: APP_INITIALIZER,

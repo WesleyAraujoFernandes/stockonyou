@@ -39,7 +39,6 @@ export class Login {
     }
   }
 
-  // Mantido caso queira dar opção de usar o login redirecionado
   entrarRedirecionar(): void {
     this.keycloakService.login();
   }

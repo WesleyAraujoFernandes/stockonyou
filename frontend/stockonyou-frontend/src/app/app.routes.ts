@@ -2,27 +2,27 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth-guard';
 
 export const routes: Routes = [
-  // 1. Redirecionamento inicial para a raiz protegida
+
   {
     path: '',
     redirectTo: 'cadastros/produtos',
     pathMatch: 'full',
   },
 
-  // 2. Rota pública de Login (Sem o layout de Dashboard/Sidebar)
+ 
   {
     path: 'login',
     loadComponent: () => import('./pages/login/login').then((m) => m.Login),
   },
 
-  // 3. Grupo de rotas protegidas que usam o Layout com Header + Sidebar Vertical
+
   {
     path: '',
     loadComponent: () =>
       import('./layouts/dashboard-layout/dashboard-layout').then((m) => m.DashboardLayout),
-    canActivate: [authGuard], // Protege o layout e todas as rotas filhas
+    canActivate: [authGuard],
     children: [
-      // Subgrupo: Cadastros
+
       {
         path: 'cadastros/categorias',
         loadComponent: () =>
@@ -33,7 +33,7 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/produtos/produtos').then((m) => m.Produtos),
       },
 
-      // Subgrupo: Vendas
+
       {
         path: 'vendas/pdv',
         loadComponent: () => import('./pages/nova-venda/nova-venda').then((m) => m.NovaVenda),
@@ -45,7 +45,7 @@ export const routes: Routes = [
     ],
   },
 
-  // 4. Manutenção de compatibilidade para acessos diretos a rotas legadas
+
   {
     path: 'produtos',
     redirectTo: 'cadastros/produtos',
@@ -57,7 +57,6 @@ export const routes: Routes = [
     pathMatch: 'full',
   },
 
-  // 5. Wildcard (Rota coringa) redirecionando para a raiz protegida
   {
     path: '**',
     redirectTo: 'cadastros/produtos',

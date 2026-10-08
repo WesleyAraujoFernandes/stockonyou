@@ -122,6 +122,12 @@ public class VendaController {
         return ResponseEntity.ok(vendaService.registrarPagamento(id));
     }
 
+    @PutMapping("/{id}/finalizar")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<VendaResponseDTO> finalizarVenda(@PathVariable Long id) {
+        return ResponseEntity.ok(vendaService.finalizarVenda(id));
+    }
+
     @PutMapping("/{id}/itens")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<VendaResponseDTO> atualizarItens(@PathVariable Long id,

@@ -486,6 +486,14 @@
             }
           </button>
           }
+          @if (podeFinalizar(historicoStore.vendaSelecionada())) {
+            <button
+              (click)="finalizarVenda(historicoStore.vendaSelecionada()!.id)"
+              class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-hite font-semibold text-xs rounded-xl transition shadow-lg shadow-indigo-600/20 cursor-pointer"
+            >
+            Finalizar Conta
+            </button>
+          }
           @if (podeQuitar(historicoStore.vendaSelecionada())) {
           <button (click)="quitarContaPendurada(historicoStore.vendaSelecionada()!.id)"
             class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl transition shadow-lg shadow-emerald-600/20 cursor-pointer">
@@ -507,6 +515,7 @@
   textoConfirmar="Cancelar Venda" textoCancelar="Voltar" (confirmado)="confirmarCancelamento()"
   (cancelado)="cancelarConfirmacao()"></app-confirmacao-modal>
 }
+
 @if (exibirModalConfirmacaoQuitacao()) {
 <app-confirmacao-modal titulo="Quitar conta" mensagem="Confirma o recebimento total e a quitação desta conta pendurada?"
   [textoConfirmar]="historicoStore.quitando() ? 'Quitando...' : 'Quitar conta'" textoCancelar="Voltar"

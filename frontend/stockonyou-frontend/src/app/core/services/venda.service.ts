@@ -79,6 +79,12 @@ export class VendaService {
     return this.http.put<VendaResponse>(`${this.apiUrl}/${vendaId}/cancelar`, {})
   }
 
+  finalizarVenda(vendaId: number): Observable<VendaResponse> {
+    return this.http.put<VendaResponse>(
+      `${this.apiUrl}/${vendaId}/finalizar`, {}
+    )
+  }
+
   registrarPagamento(vendaId: number): Observable<VendaResponse> {
     return this.http.put<VendaResponse>(`${this.apiUrl}/${vendaId}/pagamento`, {})
   }

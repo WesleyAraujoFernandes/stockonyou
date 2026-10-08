@@ -43,7 +43,7 @@ export class HistoricoVenda implements OnInit {
   readonly IconLast = LucideChevronsRight;
 
   readonly exibirModalDetalhes = computed(
-      () => this.historicoStore.vendaSelecionada() !== null
+    () => this.historicoStore.vendaSelecionada() !== null
   )
   readonly historicoStore = inject(HistoricoVendaStore);
 
@@ -63,22 +63,31 @@ export class HistoricoVenda implements OnInit {
   constructor() {
     effect(() => {
       const quitacao = this.historicoStore.quitacaoConcluida();
+      const finalizacao = this.historicoStore.finalizacaoConcluida();
 
-      if (!quitacao) {
+      if (quitacao) {
+        this.toast.sucesso(
+          'Conta quitada com sucesso! Fluxo de caixa atualizado!'
+        )
+        this.exibirModalConfirmacaoQuitacao.set(false);
+        this.vendaParaQuitar.set(null);
+
+        this.historicoStore.limparVendaSelecionada();
+        this.carregarHistorico();
+
+        this.historicoStore.limparQuitacaoConcluida();
         return;
       }
 
-      this.toast.sucesso(
-        'Conta quitada com sucesso! Fluxo de caixa atualizado!'
-      );
+      if (finalizacao) {
+        this.toast.sucesso(
+          'Conta finalizada com sucesso!'
+        )
+        this.fecharDetalhes();
+        this.carregarHistorico();
+        this.historicoStore.limparFinalizacaoConcluida();
+      }
 
-      this.exibirModalConfirmacaoQuitacao.set(false);
-      this.vendaParaQuitar.set(null);
-
-      this.historicoStore.limparVendaSelecionada();
-      this.carregarHistorico();
-
-      this.historicoStore.limparQuitacaoConcluida();
     });
 
     effect(() => {
@@ -198,11 +207,15 @@ export class HistoricoVenda implements OnInit {
     this.historicoStore.limparErroDetalhe();
   }
 
+  finalizarVenda(vendaId: number): void {
+    this.historicoStore.finalizarVenda(vendaId);
+  }
+
   irParaPaginaInformada(valor: string): void {
     const pagina = Number(valor);
     if (!Number.isInteger(pagina) ||
-        pagina < 1 ||
-        pagina > this.historicoStore.totalPaginas()
+      pagina < 1 ||
+      pagina > this.historicoStore.totalPaginas()
 
     ) {
       return;
@@ -239,7 +252,7 @@ export class HistoricoVenda implements OnInit {
   }
 
   irParaUltimaPagina(): void {
-    this.navegarParaPagina(this.historicoStore.totalPaginas() - 1); 
+    this.navegarParaPagina(this.historicoStore.totalPaginas() - 1);
   }
 
   obterClassesStatus(status: StatusVenda): string {
@@ -274,6 +287,10 @@ export class HistoricoVenda implements OnInit {
   }
 
   podeCancelar(venda: VendaResponse | null): boolean {
+    return venda?.status === 'ABERTA';
+  }
+
+  podeFinalizar(venda: VendaResponse | null | undefined): boolean {
     return venda?.status === 'ABERTA';
   }
 

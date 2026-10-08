@@ -27,6 +27,7 @@ export class HistoricoVendaStore {
   readonly erroDetalhe = signal<string | null>(null);
 
   readonly quitacaoConcluida = signal<VendaResponse | null>(null);
+  readonly finalizacaoConcluida = signal<VendaResponse | null>(null);
 
   readonly cancelando = signal(false);
   readonly erroCancelamento = signal<string | null>(null);
@@ -128,6 +129,10 @@ export class HistoricoVendaStore {
     this.vendaSelecionada.set(null);
   }
 
+  limparFinalizacaoConcluida(): void {
+    this.finalizacaoConcluida.set(null);
+  }
+
   limparErroDetalhe(): void {
     this.erroDetalhe.set(null);
   }
@@ -165,15 +170,6 @@ export class HistoricoVendaStore {
     this.paginaAtual.set(0);
   }
 
-  /*
-  primeiraPagina(): void {
-    this.paginaAtual.set(0);
-  }
-
-  ultimaPagina(): void {
-    this.paginaAtual.set(this.totalPaginas() - 1);
-  }
-  */
   quitarConta(vendaId: number): void {
     this.quitando.set(true);
     this.erroQuitacao.set(null);
@@ -190,6 +186,19 @@ export class HistoricoVendaStore {
         error: (err) => {
           console.error('Erro ao quitar conta:', err);
           this.erroQuitacao.set('Erro ao processar a quitação no servidor.')
+        }
+      })
+  }
+
+  finalizarVenda(vendaId: number): void {
+    this.vendaService.finalizarVenda(vendaId)
+      .subscribe({
+        next: (venda) => {
+          this.vendaSelecionada.set(venda);
+          this.finalizacaoConcluida.set(venda);
+        },
+        error: (err) => {
+          console.error('Erro ao finalizar venda:', err);
         }
       })
   }

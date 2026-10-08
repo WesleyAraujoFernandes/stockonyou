@@ -214,6 +214,19 @@ public class VendaService {
                 return VendaResponseDTO.fromEntity(vendaRepository.save(venda));
         }
 
+        @Transactional 
+        public VendaResponseDTO finalizarVenda(Long id) {
+                Venda venda = vendaRepository.findById(id)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Venda/Comanda nao encontrada com id:" + id));
+                if (venda.getStatus() != StatusVenda.ABERTA) {
+                        throw new IllegalArgumentException(
+                                        "Somente vendas/comandas pagas podem ser finalizadas.");
+                }
+                venda.setStatus(StatusVenda.PENDENTE);
+                return VendaResponseDTO.fromEntity(vendaRepository.save(venda));
+        }
+
         @Transactional
         public VendaResponseDTO removerItemComanda(Long comandaId, Long produtoId) {
                 Venda venda = buscarComanda(comandaId);

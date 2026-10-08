@@ -53,6 +53,7 @@ export class HistoricoVenda implements OnInit {
   formaPagamentoSelecionada = signal<FormaPagamento>('DINHEIRO');
 
   exibirModalConfirmacaoQuitacao = signal(false);
+  exibirModalPagamento = signal(false);
   vendaParaQuitar = signal<number | null>(null);
 
   filtros: FiltroHistoricoVenda = {
@@ -302,7 +303,8 @@ export class HistoricoVenda implements OnInit {
 
   quitarContaPendurada(vendaId: number): void {
     this.vendaParaQuitar.set(vendaId);
-    this.exibirModalConfirmacaoQuitacao.set(true);
+    this.formaPagamentoSelecionada.set('DINHEIRO')
+    this.exibirModalPagamento.set(true);
   }
 
   temFiltrosAplicados(): boolean {

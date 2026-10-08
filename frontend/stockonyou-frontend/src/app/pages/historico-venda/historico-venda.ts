@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { FormaPagamento } from '../../core/model/pagamento.model';
 import { ToastService } from '../../core/services/toast.service';
 import { FiltroHistoricoVenda, StatusVenda, VendaResponse } from '../../core/model/venda.model';
 import { HistoricoVendaStore } from './store/historico-venda.store';
@@ -49,6 +50,7 @@ export class HistoricoVenda implements OnInit {
 
   exibirModalConfirmacaoCancelamento = signal(false);
   vendaParaCancelar = signal<number | null>(null);
+  formaPagamentoSelecionada = signal<FormaPagamento>('DINHEIRO');
 
   exibirModalConfirmacaoQuitacao = signal(false);
   vendaParaQuitar = signal<number | null>(null);

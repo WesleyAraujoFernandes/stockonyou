@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_CONFIG } from '../config/api.config';
 import { HistoricoVendaResponse, ItemVendaRequest, StatusVenda, VendaRequest, VendaResponse } from '../model/venda.model';
+import { PagamentoRequest } from '../model/pagamento.model';
 
 @Injectable({
   providedIn: 'root',
@@ -100,6 +101,15 @@ export class VendaService {
 
   adicionarItemComanda(comandaId: number, item: ItemVendaRequest): Observable<VendaResponse> {
     return this.http.put<VendaResponse>(`${this.apiUrl}/${comandaId}/itens`, item)
+  }
+
+  registrarPagamentoDetalhado(
+    vendaId: number,
+    request: PagamentoRequest
+  ): Observable<VendaResponse> {
+    return this.http.post<VendaResponse>(
+      `${this.apiUrl}/${vendaId}/pagamentos`, request
+    )
   }
 
 }

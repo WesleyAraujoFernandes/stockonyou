@@ -1,5 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { VendaService } from '../../../core/services/venda.service';
+import { PagamentoRequest } from '../../../core/model/pagamento.model';
 import { FiltroHistoricoVenda, VendaResponse } from '../../../core/model/venda.model';
 import { HistoricoVendaResponse } from '../../../core/model/venda.model';
 import { finalize } from 'rxjs';
@@ -189,6 +190,27 @@ export class HistoricoVendaStore {
         }
       })
   }
+
+  registarPagamentoDetalhado(
+    vendaId: number,
+    request: PagamentoRequest
+  ): void {
+    this.vendaService
+      .registrarPagamentoDetalhado(vendaId, request)
+      .subscribe({
+        next: (venda) => {
+          this.vendaSelecionada.set(venda);
+          this.quitacaoConcluida.set(venda);
+        },
+        error: (err) => {
+          console.error('Erro ao registrar pagamento:',err);
+          this.erroQuitacao.set(
+            'Erro ao processar o pagamento no servidor.'
+          )
+        }
+      })
+  }
+
 
   finalizarVenda(vendaId: number): void {
     this.vendaService.finalizarVenda(vendaId)

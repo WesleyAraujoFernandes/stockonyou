@@ -18,10 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.knowledge.stockonyou.api.dto.CidadeResponseDTO;
 import br.com.knowledge.stockonyou.api.dto.FornecedorRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.FornecedorResponseDTO;
-import br.com.knowledge.stockonyou.api.repository.FornecedorRepository;
 import br.com.knowledge.stockonyou.api.service.FornecedorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -52,21 +50,21 @@ public class FornecedorController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<FornecedorResponseDTO> criar(
-        @Valid @RequestBody FornecedorRequestDTO dto) {
+            @Valid @RequestBody FornecedorRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(fornecedorService.criar(dto));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<FornecedorResponseDTO> atualizar(
-        @PathVariable Long id, @Valid @RequestBody FornecedorRequestDTO dto ) {
-            return ResponseEntity.ok(fornecedorService.atualizar(id, dto));
+            @PathVariable Long id, @Valid @RequestBody FornecedorRequestDTO dto) {
+        return ResponseEntity.ok(fornecedorService.atualizar(id, dto));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        fornecedorService.deletar(id); 
+        fornecedorService.deletar(id);
         return ResponseEntity.noContent().build();
     }
 

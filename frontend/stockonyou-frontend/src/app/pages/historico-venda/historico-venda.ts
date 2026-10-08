@@ -197,6 +197,20 @@ export class HistoricoVenda implements OnInit {
     this.historicoStore.cancelarVenda(vendaId);
   }
 
+  confirmarPagamento(): void {
+    const venda = this.historicoStore.vendaSelecionada();
+    if (!venda) {
+      return;
+    }
+    this.historicoStore.registrarPagamentoDetalhado(
+      venda.id,
+      {
+        valor: venda.valorTotal,
+        formaPagamento: this.formaPagamentoSelecionada()
+      }
+    )
+  }
+
   confirmarQuitacao(): void {
     const vendaId = this.vendaParaQuitar();
     if (vendaId === null) {

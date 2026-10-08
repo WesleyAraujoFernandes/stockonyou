@@ -191,7 +191,7 @@ export class HistoricoVendaStore {
       })
   }
 
-  registarPagamentoDetalhado(
+  registrarPagamentoDetalhado(
     vendaId: number,
     request: PagamentoRequest
   ): void {
@@ -199,8 +199,9 @@ export class HistoricoVendaStore {
       .registrarPagamentoDetalhado(vendaId, request)
       .subscribe({
         next: (venda) => {
-          this.vendaSelecionada.set(venda);
-          this.quitacaoConcluida.set(venda);
+          this.quitacaoConcluida.set(
+            this.vendaSelecionada()
+          );
         },
         error: (err) => {
           console.error('Erro ao registrar pagamento:',err);

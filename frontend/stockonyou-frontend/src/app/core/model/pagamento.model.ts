@@ -8,3 +8,11 @@ export type FormaPagamento =
     valor: number;
     formaPagamento: FormaPagamento;
   }
+
+  export interface PagamentoResponse {
+    id: number;
+    valor: number;
+    formaPagamento: FormaPagamento;
+    dataPagamento: string;
+    usuarioNome: string;
+  }

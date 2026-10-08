@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_CONFIG } from '../config/api.config';
 import { HistoricoVendaResponse, ItemVendaRequest, StatusVenda, VendaRequest, VendaResponse } from '../model/venda.model';
-import { PagamentoRequest } from '../model/pagamento.model';
+import { PagamentoRequest, PagamentoResponse } from '../model/pagamento.model';
 
 @Injectable({
   providedIn: 'root',
@@ -106,8 +106,8 @@ export class VendaService {
   registrarPagamentoDetalhado(
     vendaId: number,
     request: PagamentoRequest
-  ): Observable<VendaResponse> {
-    return this.http.post<VendaResponse>(
+  ): Observable<PagamentoResponse> {
+    return this.http.post<PagamentoResponse>(
       `${this.apiUrl}/${vendaId}/pagamentos`, request
     )
   }

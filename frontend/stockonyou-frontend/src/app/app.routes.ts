@@ -9,7 +9,7 @@ export const routes: Routes = [
     pathMatch: 'full',
   },
 
- 
+
   {
     path: 'login',
     loadComponent: () => import('./pages/login/login').then((m) => m.Login),
@@ -32,8 +32,6 @@ export const routes: Routes = [
         path: 'cadastros/produtos',
         loadComponent: () => import('./pages/produtos/produtos').then((m) => m.Produtos),
       },
-
-
       {
         path: 'vendas/pdv',
         loadComponent: () => import('./pages/nova-venda/nova-venda').then((m) => m.NovaVenda),

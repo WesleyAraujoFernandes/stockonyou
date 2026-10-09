@@ -3,7 +3,7 @@ import { VendaService } from '../../../core/services/venda.service';
 import { PagamentoRequest } from '../../../core/model/pagamento.model';
 import { FiltroHistoricoVenda, VendaResponse } from '../../../core/model/venda.model';
 import { HistoricoVendaResponse } from '../../../core/model/venda.model';
-import { finalize } from 'rxjs';
+import { finalize, Observable, switchMap, tap } from 'rxjs';
 
 @Injectable()
 export class HistoricoVendaStore {
@@ -117,6 +117,20 @@ export class HistoricoVendaStore {
       })
   }
 
+  atualizarVendaSelecionada(vendaId: number): Observable<VendaResponse> {
+    return this.vendaService.buscarPorId(vendaId).pipe(
+      tap({
+        next: (venda) => {
+          this.vendaSelecionada.set(venda);
+        },
+        error: (err) => {
+          console.error('Erro ao atualizar venda:', err);
+          this.erroDetalhe.set('Não foi possível atualizar os dados da venda.')
+        }
+      })
+    )
+  }
+
   irParaPagina(pagina: number): boolean {
     if (pagina < 0 || pagina >= this.totalPaginas() || pagina === this.paginaAtual()) {
       return false;
@@ -197,21 +211,21 @@ export class HistoricoVendaStore {
   ): void {
     this.vendaService
       .registrarPagamentoDetalhado(vendaId, request)
+      .pipe(
+        switchMap(() => this.atualizarVendaSelecionada(vendaId))
+      )
       .subscribe({
-        next: (venda) => {
-          this.quitacaoConcluida.set(
-            this.vendaSelecionada()
-          );
+        next: (vendaAtualizada) => {
+          this.quitacaoConcluida.set(vendaAtualizada);
         },
         error: (err) => {
-          console.error('Erro ao registrar pagamento:',err);
+          console.error('Erro ao registrar o pagamento:', err)
           this.erroQuitacao.set(
-            'Erro ao processar o pagamento no servidor.'
+            'O pagamento foi solicitado, mas não foi possível concluir a atualização da venda.'
           )
         }
       })
   }
-
 
   finalizarVenda(vendaId: number): void {
     this.vendaService.finalizarVenda(vendaId)

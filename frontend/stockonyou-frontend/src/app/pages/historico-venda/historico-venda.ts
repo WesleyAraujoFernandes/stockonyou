@@ -73,6 +73,7 @@ export class HistoricoVenda implements OnInit {
           'Conta quitada com sucesso! Fluxo de caixa atualizado!'
         )
         this.exibirModalConfirmacaoQuitacao.set(false);
+        this.exibirModalPagamento.set(false);
         this.vendaParaQuitar.set(null);
 
         this.historicoStore.limparVendaSelecionada();

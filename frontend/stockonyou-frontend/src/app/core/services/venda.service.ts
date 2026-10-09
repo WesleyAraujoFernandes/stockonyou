@@ -90,6 +90,15 @@ export class VendaService {
     return this.http.put<VendaResponse>(`${this.apiUrl}/${vendaId}/pagamento`, {})
   }
 
+  registrarPagamentoDetalhado(
+    vendaId: number,
+    request: PagamentoRequest
+  ): Observable<PagamentoResponse> {
+    return this.http.post<PagamentoResponse>(
+      `${this.apiUrl}/${vendaId}/pagamentos`, request
+    )
+  }
+
   removerItemComanda(
     comandaId: number,
     produtoId: number
@@ -101,15 +110,6 @@ export class VendaService {
 
   adicionarItemComanda(comandaId: number, item: ItemVendaRequest): Observable<VendaResponse> {
     return this.http.put<VendaResponse>(`${this.apiUrl}/${comandaId}/itens`, item)
-  }
-
-  registrarPagamentoDetalhado(
-    vendaId: number,
-    request: PagamentoRequest
-  ): Observable<PagamentoResponse> {
-    return this.http.post<PagamentoResponse>(
-      `${this.apiUrl}/${vendaId}/pagamentos`, request
-    )
   }
 
 }

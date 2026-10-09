@@ -52,7 +52,7 @@ export class HistoricoVenda implements OnInit {
   vendaParaCancelar = signal<number | null>(null);
   formaPagamentoSelecionada = signal<FormaPagamento>('DINHEIRO');
 
-  exibirModalConfirmacaoQuitacao = signal(false);
+  //exibirModalConfirmacaoQuitacao = signal(false);
   exibirModalPagamento = signal(false);
   vendaParaQuitar = signal<number | null>(null);
 
@@ -72,7 +72,7 @@ export class HistoricoVenda implements OnInit {
         this.toast.sucesso(
           'Conta quitada com sucesso! Fluxo de caixa atualizado!'
         )
-        this.exibirModalConfirmacaoQuitacao.set(false);
+        //this.exibirModalConfirmacaoQuitacao.set(false);
         this.exibirModalPagamento.set(false);
         this.vendaParaQuitar.set(null);
 
@@ -174,11 +174,12 @@ export class HistoricoVenda implements OnInit {
     this.vendaParaCancelar.set(null);
   }
 
+  /*
   cancelarConfirmacaoQuitacao(): void {
     this.exibirModalConfirmacaoQuitacao.set(false);
     this.vendaParaQuitar.set(null);
   }
-
+  */
   cancelarVenda(vendaId: number): void {
     this.vendaParaCancelar.set(vendaId);
     this.exibirModalConfirmacaoCancelamento.set(true);
@@ -210,14 +211,6 @@ export class HistoricoVenda implements OnInit {
         formaPagamento: this.formaPagamentoSelecionada()
       }
     )
-  }
-
-  confirmarQuitacao(): void {
-    const vendaId = this.vendaParaQuitar();
-    if (vendaId === null) {
-      return;
-    }
-    this.historicoStore.quitarConta(vendaId);
   }
 
   fecharDetalhes(): void {
@@ -317,6 +310,7 @@ export class HistoricoVenda implements OnInit {
   }
 
   quitarContaPendurada(vendaId: number): void {
+    this.historicoStore.limparErroQuitacao();
     this.vendaParaQuitar.set(vendaId);
     this.formaPagamentoSelecionada.set('DINHEIRO')
     this.exibirModalPagamento.set(true);

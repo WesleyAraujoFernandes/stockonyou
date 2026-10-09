@@ -22,7 +22,6 @@ export class HistoricoVendaStore {
   readonly carregandoDetalhe = signal(false);
   readonly vendaDetalheCarregandoId = signal<number | null>(null);
 
-  readonly quitando = signal(false);
   readonly erroQuitacao = signal<string | null>(null);
 
   readonly erroDetalhe = signal<string | null>(null);
@@ -119,14 +118,8 @@ export class HistoricoVendaStore {
 
   atualizarVendaSelecionada(vendaId: number): Observable<VendaResponse> {
     return this.vendaService.buscarPorId(vendaId).pipe(
-      tap({
-        next: (venda) => {
-          this.vendaSelecionada.set(venda);
-        },
-        error: (err) => {
-          console.error('Erro ao atualizar venda:', err);
-          this.erroDetalhe.set('Não foi possível atualizar os dados da venda.')
-        }
+      tap((venda) => {
+        this.vendaSelecionada.set(venda)
       })
     )
   }
@@ -183,26 +176,6 @@ export class HistoricoVendaStore {
       this.direcaoOrdenacao.set('asc');
     }
     this.paginaAtual.set(0);
-  }
-
-  quitarConta(vendaId: number): void {
-    this.quitando.set(true);
-    this.erroQuitacao.set(null);
-    this.vendaService.registrarPagamento(vendaId)
-      .pipe(
-        finalize(() => {
-          this.quitando.set(false);
-        })
-      )
-      .subscribe({
-        next: (venda) => {
-          this.quitacaoConcluida.set(venda);
-        },
-        error: (err) => {
-          console.error('Erro ao quitar conta:', err);
-          this.erroQuitacao.set('Erro ao processar a quitação no servidor.')
-        }
-      })
   }
 
   registrarPagamentoDetalhado(

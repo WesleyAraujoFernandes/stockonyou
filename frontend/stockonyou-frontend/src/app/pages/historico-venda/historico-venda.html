@@ -514,13 +514,6 @@
   (cancelado)="cancelarConfirmacao()"></app-confirmacao-modal>
 }
 
-@if (exibirModalConfirmacaoQuitacao()) {
-<app-confirmacao-modal titulo="Quitar conta" mensagem="Confirma o recebimento total e a quitação desta conta pendurada?"
-  [textoConfirmar]="historicoStore.quitando() ? 'Quitando...' : 'Quitar conta'" textoCancelar="Voltar"
-  variante="success" [desabilitado]="historicoStore.quitando()" (confirmado)="confirmarQuitacao()"
-  (cancelado)="cancelarConfirmacaoQuitacao()"></app-confirmacao-modal>
-}
-
 @if (exibirModalPagamento()) {
 <div class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-xs p-4">
   <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-5">
@@ -540,6 +533,14 @@
         {{ historicoStore.vendaSelecionada()?.valorTotal | currency:'BRL' }}
       </div>
     </div>
+    @if (historicoStore.erroQuitacao()) {
+      <div
+        role="alert"
+        class="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-sm text-red-300"
+      >
+        {{ historicoStore.erroQuitacao() }}
+      </div>
+    }
     <div>
       <label for="formaPagamento" class="block text-xs font-semibold text-slate-300 mt-1.5">
         Forma de pagamento

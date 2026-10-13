@@ -389,8 +389,17 @@ public class VendaService {
         }
 
         private void validarComandaPodeSerCancelada(Venda comanda) {
-                if (comanda.getStatus() != StatusVenda.ABERTA) {
-                        throw new IllegalArgumentException("Somente comandas abertas podem ser canceladas.");
+                if (comanda.getStatus() == StatusVenda.CANCELADA) {
+                        throw new IllegalArgumentException(
+                                "Esta comanda já está cancelada!"
+                        );
+                }
+
+                if (comanda.getStatus() != StatusVenda.ABERTA
+                        && comanda.getStatus() != StatusVenda.PENDENTE
+                        && comanda.getStatus() != StatusVenda.PAGO
+                ) {
+                        throw new IllegalArgumentException("Esta comanda não pode ser cancelada no estado atual!");
                 }
         }
 

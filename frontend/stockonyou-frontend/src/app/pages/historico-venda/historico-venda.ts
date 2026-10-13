@@ -50,6 +50,7 @@ export class HistoricoVenda implements OnInit {
 
   exibirModalConfirmacaoCancelamento = signal(false);
   vendaParaCancelar = signal<number | null>(null);
+  statusVendaParaCancelar = signal<StatusVenda | null>(null);
   formaPagamentoSelecionada = signal<FormaPagamento>('DINHEIRO');
 
   //exibirModalConfirmacaoQuitacao = signal(false);
@@ -171,6 +172,7 @@ export class HistoricoVenda implements OnInit {
 
   cancelarConfirmacao(): void {
     this.exibirModalConfirmacaoCancelamento.set(false);
+    this.statusVendaParaCancelar.set(null);
     this.vendaParaCancelar.set(null);
   }
 
@@ -181,7 +183,13 @@ export class HistoricoVenda implements OnInit {
   }
   */
   cancelarVenda(vendaId: number): void {
-    this.vendaParaCancelar.set(vendaId);
+    const venda = this.historicoStore.vendaSelecionada();
+    if (!venda || venda.id !== vendaId) {
+      return;
+    }
+
+    this.vendaParaCancelar.set(vendaId)
+    this.statusVendaParaCancelar.set(venda.status)
     this.exibirModalConfirmacaoCancelamento.set(true);
   }
 
@@ -196,6 +204,7 @@ export class HistoricoVenda implements OnInit {
     }
     this.exibirModalConfirmacaoCancelamento.set(false);
     this.vendaParaCancelar.set(null);
+    this.statusVendaParaCancelar.set(null)
     this.historicoStore.cancelarVenda(vendaId);
   }
 

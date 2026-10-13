@@ -1,6 +1,7 @@
 package br.com.knowledge.stockonyou.api.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -64,6 +65,20 @@ public class PagamentoService {
         BigDecimal totalPago = pagamentoRepository.calcularTotalPago(venda.getId());
         BigDecimal saldoRestante = venda.getValorTotal().subtract(totalPago);
         return new PagamentoResumoResponseDTO(venda.getValorTotal(), totalPago, saldoRestante);
+    }
+
+    @Transactional(readOnly = true)
+    public BigDecimal consultarTotalRecebido(
+        LocalDate dataInicio,
+        LocalDate dataFim
+    ) {
+        if (dataInicio == null || dataFim == null) {
+            throw new IllegalArgumentException("As datas inicial e final devem ser informadas");
+        }
+        if (dataFim.isBefore(dataInicio)) {
+            throw new IllegalArgumentException("A data final não pode ser inferior à data inicial.");
+        }
+        return pagamentoRepository.calcularTotalRecebido(dataInicio.atStartOfDay(), dataFim.plusDays(1).atStartOfDay());
     }
 
     @Transactional(readOnly = true)

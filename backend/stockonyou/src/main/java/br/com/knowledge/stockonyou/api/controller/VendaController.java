@@ -1,10 +1,13 @@
 package br.com.knowledge.stockonyou.api.controller;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -114,6 +117,18 @@ public class VendaController {
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<VendaResponseDTO> cancelarComanda(@PathVariable Long id) {
         return ResponseEntity.ok(vendaService.cancelarComanda(id));
+    }
+
+    @GetMapping("/pagamentos/total-recebido")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<BigDecimal> consultarTotalRecebido(
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
+
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim
+    ) {
+        return ResponseEntity.ok(pagamentoService.consultarTotalRecebido(dataInicio, dataFim));
     }
 
     @PutMapping("/{id}/pagamento")

@@ -1,6 +1,7 @@
 package br.com.knowledge.stockonyou.api.repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,4 +15,14 @@ public interface PagamentoRepository extends JpaRepository<Pagamento, Long> {
 
     @Query("SELECT COALESCE(SUM(p.valor),0) FROM Pagamento p WHERE p.venda.id = :vendaId")
     BigDecimal calcularTotalPago(@Param("vendaId") Long vendaId);
+
+    @Query("""
+            SELECT COALESCE(SUM(p.valor),0)
+            FROM Pagamento p
+            WHERE p.dataPagamento >= :dataInicio AND p.dataPagamento <= :dataFim
+            """)
+    BigDecimal calcularTotalRecebido(
+        @Param("dataInicio") LocalDateTime dataInicio,
+        @Param("dataFim") LocalDateTime dataFim
+    );
 }

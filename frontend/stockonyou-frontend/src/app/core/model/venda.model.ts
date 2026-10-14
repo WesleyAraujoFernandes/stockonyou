@@ -1,6 +1,8 @@
 import { PageResponse } from "./page-response.model";
 
 export type StatusVenda = 'ABERTA' | 'PENDENTE' | 'PAGO' | 'CANCELADA'
+export type FormaPagamento = 'DINHEIRO' | 'PIX' | 'CARTAO_CREDITO' | 'CARTAO_DEBITO'
+
 export interface ItemVendaRequest {
   produtoId: number;
   quantidade: number;

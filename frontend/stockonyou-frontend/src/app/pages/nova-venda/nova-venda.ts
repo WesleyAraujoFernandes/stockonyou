@@ -7,7 +7,7 @@ import { VendaService } from '../../core/services/venda.service';
 import { ProdutoService } from '../../core/services/produto.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Produto } from '../../core/model/produto.model';
-import { ItemVendaRequest, VendaRequest, VendaResponse } from '../../core/model/venda.model';
+import { FormaPagamento, ItemVendaRequest, VendaRequest, VendaResponse } from '../../core/model/venda.model';
 import { Cliente, ClienteService } from '../../core/services/cliente.service';
 
 import {
@@ -89,6 +89,7 @@ export class NovaVenda implements OnInit {
 
   exibirModalFechamento = signal<boolean>(false);
   exibirModalFormaPagamento = signal<boolean>(false);
+  formaPagamentoSelecionada = signal<FormaPagamento | null>(null);
 
   idComandaAberta = signal<number | null>(null);
 
@@ -118,6 +119,10 @@ export class NovaVenda implements OnInit {
   voltarModalFechamento(): void {
     this.exibirModalFormaPagamento.set(false);
     this.exibirModalFechamento.set(true);
+  }
+
+  selecionarFormaPagamento(formaPagamento: FormaPagamento): void {
+    this.formaPagamentoSelecionada.set(formaPagamento);
   }
 
   recuperarTodasComandasDoBanco(): void {

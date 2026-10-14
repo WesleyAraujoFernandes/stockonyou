@@ -280,24 +280,28 @@
       <div class="grid grid-cols-1 gap-2">
         <button
           type="button"
+          (click)="selecionarFormaPagamento('DINHEIRO')"
           class="w-full px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition cursor-pointer"
         >
-          Dinheiro
+          Dinheiro vivo
         </button>
         <button
           type="button"
+          (click)="selecionarFormaPagamento('PIX')"
           class="w-full px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 transition cursor-pointer"
           >
           Pix
         </button>
         <button
           type="button"
+          (click)="selecionarFormaPagamento('CARTAO_CREDITO')"
           class="w-full px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 transition cursor-pointer"
         >
           Cartão de crédito
         </button>
         <button
           type="button"
+          (click)="selecionarFormaPagamento('CARTAO_DEBITO')"
           class="w-full px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 transition cursor-pointer"
         >
           Cartão de débito

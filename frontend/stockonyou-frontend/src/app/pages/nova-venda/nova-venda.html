@@ -251,11 +251,10 @@
       </p>
     </div>
     <div class="grid grid-cols-1 gap-2 pt-2">
-      <button type="button" (click)="confirmarFechamento('PAGO')"
+      <button type="button" (click)="abrirModalFormaPagamento()"
         class="w-full px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition shadow-md shadow-emerald-600/20 cursor-pointer">
         Pagar Agora (Dinheiro/Cartão/Pix)
-      </button>
-      @if (clienteSelecionado().id !== 1) {
+      </button> @if (clienteSelecionado().id !== 1) {
       <button type="button" (click)="confirmarFechamento('PENDENTE')"
         class="w-full px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 transition shadow-md shadow-amber-600/20 cursor-pointer">
         Pendurar Conta (Fiado / Pagar depois)
@@ -268,6 +267,51 @@
     </div>
   </div>
 </div>
+}
+@if (exibirModalFormaPagamento()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4">
+    <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-5 text-center">
+      <div>
+        <h3 class="text-base font-bold text-white">Forma de pagamento</h3>
+        <p class="text-xs text-slate-400 mt-1">
+          Selecione como o atendimento será pago.
+        </p>
+      </div>
+      <div class="grid grid-cols-1 gap-2">
+        <button
+          type="button"
+          class="w-full px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition cursor-pointer"
+        >
+          Dinheiro
+        </button>
+        <button
+          type="button"
+          class="w-full px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 transition cursor-pointer"
+          >
+          Pix
+        </button>
+        <button
+          type="button"
+          class="w-full px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 transition cursor-pointer"
+        >
+          Cartão de crédito
+        </button>
+        <button
+          type="button"
+          class="w-full px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 transition cursor-pointer"
+        >
+          Cartão de débito
+        </button>
+        <button
+          type="button"
+          (click)="voltarModalFechamento()"
+          class="w-full px-4 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 bg-slate-800 hover:bg-slate-700 transition cursor-pointer"
+        >
+          Voltar
+        </button>
+      </div>
+    </div>
+  </div>
 }
 <app-confirm-dialog [open]="confirmDialogOpen()" [title]="confirmDialogTitle()" [message]="confirmDialogMessage()"
   confirmText="Carregar" cancelText="Cancelar" (confirmed)="confirmDialogConfirmar()"

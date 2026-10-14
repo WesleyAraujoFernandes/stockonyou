@@ -88,6 +88,7 @@ export class NovaVenda implements OnInit {
   quantidadeInserir = 1;
 
   exibirModalFechamento = signal<boolean>(false);
+  exibirModalFormaPagamento = signal<boolean>(false);
 
   idComandaAberta = signal<number | null>(null);
 
@@ -107,6 +108,16 @@ export class NovaVenda implements OnInit {
 
   ngOnInit(): void {
     this.recuperarTodasComandasDoBanco();
+  }
+
+  abrirModalFormaPagamento(): void {
+    this.exibirModalFechamento.set(false);
+    this.exibirModalFormaPagamento.set(true);
+  }
+
+  voltarModalFechamento(): void {
+    this.exibirModalFormaPagamento.set(false);
+    this.exibirModalFechamento.set(true);
   }
 
   recuperarTodasComandasDoBanco(): void {

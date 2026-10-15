@@ -123,6 +123,8 @@ export class NovaVenda implements OnInit {
 
   selecionarFormaPagamento(formaPagamento: FormaPagamento): void {
     this.formaPagamentoSelecionada.set(formaPagamento);
+    this.toast.sucesso(`Forma de pagamento selecionada: ${formaPagamento}`)
+    this.exibirModalFormaPagamento.set(false)
   }
 
   recuperarTodasComandasDoBanco(): void {
@@ -716,6 +718,11 @@ export class NovaVenda implements OnInit {
       idCliente === 1 ||
       this.clienteSelecionado().nome.toLowerCase() === 'cliente padrão'
     ) {
+      if (!this.formaPagamentoSelecionada()) {
+        this.toast.erro('Selecione uma forma de pagamento.')
+        return
+      }
+
       const itensRequest: ItemVendaRequest[] = this.carrinho()
         .filter(item => item.produto !== undefined && item.produto !== null)
         .map(item => ({
@@ -725,6 +732,7 @@ export class NovaVenda implements OnInit {
 
       const payload: VendaRequest = {
         clienteNome: 'Cliente Padrão',
+        formaPagamento: this.formaPagamentoSelecionada()!,
         itens: itensRequest
       };
 

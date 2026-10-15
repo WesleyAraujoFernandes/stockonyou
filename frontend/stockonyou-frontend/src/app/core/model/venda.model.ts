@@ -20,6 +20,7 @@ export interface ItemVendaResponse {
 export interface VendaRequest {
   clienteId?: number;
   clienteNome?: string;
+  formaPagamento?: FormaPagamento;
   itens: ItemVendaRequest[];
 }
 

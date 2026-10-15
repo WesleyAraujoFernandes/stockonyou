@@ -22,10 +22,12 @@ import br.com.knowledge.stockonyou.api.exception.BusinessException;
 import br.com.knowledge.stockonyou.api.exception.ResourceNotFoundException;
 import br.com.knowledge.stockonyou.api.model.Cliente;
 import br.com.knowledge.stockonyou.api.model.ItemVenda;
+import br.com.knowledge.stockonyou.api.model.Pagamento;
 import br.com.knowledge.stockonyou.api.model.Produto;
 import br.com.knowledge.stockonyou.api.model.StatusVenda;
 import br.com.knowledge.stockonyou.api.model.Venda;
 import br.com.knowledge.stockonyou.api.repository.ClienteRepository;
+import br.com.knowledge.stockonyou.api.repository.PagamentoRepository;
 import br.com.knowledge.stockonyou.api.repository.ProdutoRepository;
 import br.com.knowledge.stockonyou.api.repository.VendaRepository;
 import br.com.knowledge.stockonyou.api.specification.VendaSpecification;
@@ -38,6 +40,7 @@ public class VendaService {
         private final VendaRepository vendaRepository;
         private final ProdutoRepository produtoRepository;
         private final ClienteRepository clienteRepository;
+        private final PagamentoRepository pagamentoRepository;
 
         @Transactional
         public VendaResponseDTO adicionarItemComanda(
@@ -181,6 +184,9 @@ public class VendaService {
                         throw new IllegalArgumentException(
                                         "Para clientes cadastrados, utilize o fluxo de gerenciamento e fechamento de comandas.");
                 }
+                if (dto.formaPagamento() == null) {
+                        throw new IllegalArgumentException("A forma de pagamento deve ser informada.");
+                }
                 Venda venda = criarVenda(
                                 cliente,
                                 dto.clienteNome(),
@@ -198,6 +204,14 @@ public class VendaService {
                 }
                 venda.setValorTotal(calcularValorTotal(venda));
                 Venda vendaSalva = vendaRepository.save(venda);
+                Pagamento pagamento = Pagamento.builder()
+                        .valor(vendaSalva.getValorTotal())
+                        .formaPagamento(dto.formaPagamento())
+                        .dataPagamento(LocalDateTime.now())
+                        .usuarioNome(username)
+                        .venda(vendaSalva)
+                        .build();
+                pagamentoRepository.save(pagamento);
                 return VendaResponseDTO.fromEntity(vendaSalva, alertas);
         }
 

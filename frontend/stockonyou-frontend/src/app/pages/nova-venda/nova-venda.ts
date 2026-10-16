@@ -121,11 +121,14 @@ export class NovaVenda implements OnInit {
     this.exibirModalFechamento.set(true);
   }
 
-  selecionarFormaPagamento(formaPagamento: FormaPagamento): void {
-    this.formaPagamentoSelecionada.set(formaPagamento);
-    this.toast.sucesso(`Forma de pagamento selecionada: ${formaPagamento}`)
-    this.exibirModalFormaPagamento.set(false)
-  }
+
+selecionarFormaPagamento(formaPagamento: FormaPagamento): void {
+  this.formaPagamentoSelecionada.set(formaPagamento);
+  this.toast.sucesso(`Forma de pagamento selecionada: ${formaPagamento}`);
+  this.exibirModalFormaPagamento.set(false);
+
+  this.confirmarFechamento('PAGO');
+}
 
   recuperarTodasComandasDoBanco(): void {
     this.vendaService.listarComandasAbertas().subscribe({
@@ -227,9 +230,14 @@ export class NovaVenda implements OnInit {
       this.toast.erro('Não há nenhuma comanda ativa aberta no servidor para ser finalizada.')
       return
     }
+    const formaPagamento = this.formaPagamentoSelecionada();
+    if (!formaPagamento) {
+      this.toast.erro('Selecione a forma de pagamento.')
+      return;
+    }
     const confirmar = confirm(`Deseja realmente encerrar e fechar a conta de "${this.clienteSelecionado().nome}" no valor de ${this.valorTotalCarrinho().toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`)
     if (confirmar) {
-      this.vendaService.registrarPagamento(idComanda).subscribe({
+      this.vendaService.registrarPagamento(idComanda, formaPagamento).subscribe({
         next: () => {
           this.toast.sucesso('Conta fechada com sucesso! Comanda Finalizada.');
           this.carrinho.set([]);
@@ -713,15 +721,19 @@ export class NovaVenda implements OnInit {
 
   confirmarFechamento(tipo: 'PAGO' | 'PENDENTE'): void {
     const idCliente = Number(this.clienteSelecionado().id);
+    const formaPagamento = this.formaPagamentoSelecionada();
+
+    if (tipo ==='PAGO'  && !formaPagamento) {
+      this.toast.erro('Selecione a forma de pagamento.');
+      return;
+    }
+
+    const formaPagamentoConfirmada: FormaPagamento | null = tipo === 'PAGO' ? formaPagamento : null;
 
     if (
       idCliente === 1 ||
       this.clienteSelecionado().nome.toLowerCase() === 'cliente padrão'
     ) {
-      if (!this.formaPagamentoSelecionada()) {
-        this.toast.erro('Selecione uma forma de pagamento.')
-        return
-      }
 
       const itensRequest: ItemVendaRequest[] = this.carrinho()
         .filter(item => item.produto !== undefined && item.produto !== null)
@@ -732,7 +744,7 @@ export class NovaVenda implements OnInit {
 
       const payload: VendaRequest = {
         clienteNome: 'Cliente Padrão',
-        formaPagamento: this.formaPagamentoSelecionada()!,
+        formaPagamento: formaPagamento ?? undefined,
         itens: itensRequest
       };
 
@@ -767,11 +779,15 @@ export class NovaVenda implements OnInit {
     const vendaId = this.vendaIdAtual;
 
     if (tipo === 'PAGO') {
+      if (!formaPagamentoConfirmada) {
+        this.toast.erro('Selecione a forma de pagamento.')
+        return;
+      }
       this.vendaService.buscarPorId(vendaId).subscribe({
         next: (venda) => {
 
           if (venda.status === 'PENDENTE') {
-            this.vendaService.registrarPagamento(vendaId).subscribe({
+            this.vendaService.registrarPagamento(vendaId, formaPagamentoConfirmada).subscribe({
               next: () => {
                 this.toast.sucesso('Venda quitada com sucesso!');
                 this.limparEstadoPdvAposFechamento(idCliente);
@@ -791,7 +807,7 @@ export class NovaVenda implements OnInit {
             this.vendaService.concluirComanda(vendaId)
               .pipe(
                 switchMap(() =>
-                  this.vendaService.registrarPagamento(vendaId)
+                  this.vendaService.registrarPagamento(vendaId, formaPagamentoConfirmada)
                 )
               )
               .subscribe({

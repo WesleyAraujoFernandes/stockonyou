@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.com.knowledge.stockonyou.api.dto.HistoricoVendaResponseDTO;
 import br.com.knowledge.stockonyou.api.dto.ItemVendaRequestDTO;
+import br.com.knowledge.stockonyou.api.dto.RegistrarPagamentoRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.VendaRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.VendaResponseDTO;
 import br.com.knowledge.stockonyou.api.exception.BusinessException;
@@ -41,6 +42,7 @@ public class VendaService {
         private final ProdutoRepository produtoRepository;
         private final ClienteRepository clienteRepository;
         private final PagamentoRepository pagamentoRepository;
+        private final PagamentoService pagamentoService;
 
         @Transactional
         public VendaResponseDTO adicionarItemComanda(
@@ -216,16 +218,15 @@ public class VendaService {
         }
 
         @Transactional
-        public VendaResponseDTO registrarPagamento(Long id) {
-                Venda venda = vendaRepository.findById(id)
-                                .orElseThrow(() -> new ResourceNotFoundException(
-                                                "Venda/Comanda nao encontrada com id:" + id));
+        public VendaResponseDTO registrarPagamento(Long id, RegistrarPagamentoRequestDTO request) {
+                Venda venda = buscarComanda(id);
                 if (venda.getStatus() != StatusVenda.PENDENTE) {
                         throw new IllegalArgumentException(
                                         "Somente vendas/comandas pendentes podem ter o pagamento registrado.");
                 }
-                venda.setStatus(StatusVenda.PAGO);
-                return VendaResponseDTO.fromEntity(vendaRepository.save(venda));
+                pagamentoService.quitarSaldoRestante(id, request.formaPagamento());
+                Venda vendaAtualizada = buscarComanda(id);
+                return VendaResponseDTO.fromEntity(vendaAtualizada);
         }
 
         @Transactional 

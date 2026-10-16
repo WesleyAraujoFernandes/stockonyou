@@ -12,6 +12,7 @@ import br.com.knowledge.stockonyou.api.dto.PagamentoRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.PagamentoResponseDTO;
 import br.com.knowledge.stockonyou.api.dto.PagamentoResumoResponseDTO;
 import br.com.knowledge.stockonyou.api.exception.ResourceNotFoundException;
+import br.com.knowledge.stockonyou.api.model.FormaPagamento;
 import br.com.knowledge.stockonyou.api.model.Pagamento;
 import br.com.knowledge.stockonyou.api.model.StatusVenda;
 import br.com.knowledge.stockonyou.api.model.Venda;
@@ -78,7 +79,7 @@ public class PagamentoService {
         if (dataFim.isBefore(dataInicio)) {
             throw new IllegalArgumentException("A data final não pode ser inferior à data inicial.");
         }
-        return pagamentoRepository.calcularTotalRecebido(dataInicio.atStartOfDay(), dataFim.plusDays(1).atStartOfDay());
+        return pagamentoRepository.calcularTotalRecebido(dataInicio.atStartOfDay(), dataFim.plusDays(1).atStartOfDay(), StatusVenda.CANCELADA);
     }
 
     @Transactional(readOnly = true)
@@ -87,6 +88,25 @@ public class PagamentoService {
         return pagamentoRepository.findByVendaId(vendaId).stream()
             .map(PagamentoResponseDTO::fromEntity)
             .toList();
+    }
+
+    @Transactional 
+    public PagamentoResponseDTO quitarSaldoRestante(
+        Long vendaId,
+        FormaPagamento formaPagamento
+    ) {
+        Venda venda = buscarVenda(vendaId);
+        BigDecimal saldoRestante = calcularSaldoRestante(venda);
+
+        if (saldoRestante.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalStateException(
+                "A venda não possui saldo restante para pagamento."
+            );
+        }
+
+        PagamentoRequestDTO request = new PagamentoRequestDTO(saldoRestante, formaPagamento);
+
+        return registrarPagamento(vendaId, request);
     }
 
     private Venda buscarVenda(Long vendaId) {

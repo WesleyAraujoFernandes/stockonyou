@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_CONFIG } from '../config/api.config';
-import { HistoricoVendaResponse, ItemVendaRequest, StatusVenda, VendaRequest, VendaResponse } from '../model/venda.model';
+import { FormaPagamento, HistoricoVendaResponse, ItemVendaRequest, StatusVenda, VendaRequest, VendaResponse } from '../model/venda.model';
 import { PagamentoRequest, PagamentoResponse } from '../model/pagamento.model';
 
 @Injectable({
@@ -86,8 +86,11 @@ export class VendaService {
     )
   }
 
-  registrarPagamento(vendaId: number): Observable<VendaResponse> {
-    return this.http.put<VendaResponse>(`${this.apiUrl}/${vendaId}/pagamento`, {})
+  registrarPagamento(
+    vendaId: number,
+    formaPagamento: FormaPagamento
+  ): Observable<VendaResponse> {
+    return this.http.put<VendaResponse>(`${this.apiUrl}/${vendaId}/pagamento`, {formaPagamento})
   }
 
   registrarPagamentoDetalhado(

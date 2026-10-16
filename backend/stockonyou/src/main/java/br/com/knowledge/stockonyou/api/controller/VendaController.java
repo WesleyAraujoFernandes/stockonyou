@@ -26,6 +26,7 @@ import br.com.knowledge.stockonyou.api.dto.ItemVendaRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.PagamentoRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.PagamentoResponseDTO;
 import br.com.knowledge.stockonyou.api.dto.PagamentoResumoResponseDTO;
+import br.com.knowledge.stockonyou.api.dto.RegistrarPagamentoRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.VendaRequestDTO;
 import br.com.knowledge.stockonyou.api.dto.VendaResponseDTO;
 import br.com.knowledge.stockonyou.api.model.StatusVenda;
@@ -133,8 +134,8 @@ public class VendaController {
 
     @PutMapping("/{id}/pagamento")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
-    public ResponseEntity<VendaResponseDTO> registrarPagamento(@PathVariable Long id) {
-        return ResponseEntity.ok(vendaService.registrarPagamento(id));
+    public ResponseEntity<VendaResponseDTO> registrarPagamento(@PathVariable Long id, @RequestBody RegistrarPagamentoRequestDTO request) {
+        return ResponseEntity.ok(vendaService.registrarPagamento(id, request));
     }
 
     @PutMapping("/{id}/finalizar")

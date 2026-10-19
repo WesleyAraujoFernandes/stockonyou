@@ -99,6 +99,12 @@ public class VendaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PutMapping("/{id}/reabrir")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<VendaResponseDTO> reabrirComanda(@PathVariable Long id) {
+        return ResponseEntity.ok(vendaService.reabrirComanda(id));
+    }
+
     @PostMapping("/{vendaId}/pagamentos")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<PagamentoResponseDTO> resgistrarPagamento(

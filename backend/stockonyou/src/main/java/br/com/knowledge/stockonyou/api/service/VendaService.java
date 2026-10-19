@@ -246,6 +246,18 @@ public class VendaService {
         }
 
         @Transactional
+        public VendaResponseDTO reabrirComanda(Long id) {
+                Venda comanda = buscarComanda(id);
+                if (comanda.getStatus() != StatusVenda.PENDENTE) {
+                        throw new IllegalArgumentException(
+                                        "Somente vendas/comandas pendentes podem ser reabertas.");
+                }
+                reporEstoqueDaComanda(comanda);
+                comanda.setStatus(StatusVenda.ABERTA);
+                return VendaResponseDTO.fromEntity(vendaRepository.save(comanda));
+        }
+
+        @Transactional
         public VendaResponseDTO removerItemComanda(Long comandaId, Long produtoId) {
                 Venda venda = buscarComanda(comandaId);
                 if (venda.getStatus() != StatusVenda.ABERTA) {

@@ -33,6 +33,10 @@ export class HistoricoVendaStore {
   readonly erroCancelamento = signal<string | null>(null);
   readonly cancelamentoConcluido = signal<VendaResponse | null>(null);
 
+  readonly reabrindo = signal(false);
+  readonly erroReabertura = signal<string | null>(null);
+  readonly reaberturaConcluida = signal<VendaResponse | null>(null)
+
   readonly vendaSelecionada = signal<VendaResponse | null>(null);
 
   readonly campoOrdenacao = signal('id');
@@ -176,6 +180,29 @@ export class HistoricoVendaStore {
       this.direcaoOrdenacao.set('asc');
     }
     this.paginaAtual.set(0);
+  }
+
+  reabrirComanda(vendaId: number): void {
+    this.reabrindo.set(true);
+    this.erroReabertura.set(null);
+
+    this.vendaService
+      .reabrirComanda(vendaId)
+      .pipe(
+        finalize(() => {
+          this.reabrindo.set(false)
+        })
+      )
+      .subscribe({
+        next: (venda) => {
+          this.vendaSelecionada.set(venda);
+          this.reaberturaConcluida.set(venda);
+        },
+        error: (err) => {
+          console.error('Erro ao reabrir a comanda no servidor.')
+        }
+      })
+
   }
 
   registrarPagamentoDetalhado(

@@ -112,6 +112,9 @@ public class VendaService {
         public VendaResponseDTO cancelarComanda(Long id) {
                 Venda comanda = buscarComanda(id);
                 validarComandaPodeSerCancelada(comanda);
+                if (comanda.getStatus() == StatusVenda.PENDENTE || comanda.getStatus() == StatusVenda.PAGO) {
+                        reporEstoqueDaComanda(comanda);
+                }
                 comanda.setStatus(StatusVenda.CANCELADA);
                 return VendaResponseDTO.fromEntity(vendaRepository.save(comanda));
         }
@@ -394,6 +397,14 @@ public class VendaService {
                 List<String> alertas = verificarAlertasDaConclusao(venda);
                 baixarEstoqueDaComanda(venda);
                 return alertas;
+        }
+
+        private void reporEstoqueDaComanda(Venda venda) {
+                for (ItemVenda item: venda.getItens()) {
+                        Produto produto = item.getProduto();
+                        produto.setQuantidade(produto.getQuantidade() + item.getQuantidade());
+                        produtoRepository.save(produto);
+                }
         }
 
         private void validarClienteNaoPossuiComandaAberta(Long clienteId) {

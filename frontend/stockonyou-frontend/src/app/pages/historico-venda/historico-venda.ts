@@ -138,6 +138,25 @@ export class HistoricoVenda implements OnInit {
       this.toast.erro(erro);
       this.historicoStore.limparErroDetalhe();
     })
+
+    effect(() => {
+      const reabertura = this.historicoStore.reaberturaConcluida();
+      if (!reabertura) {
+        return;
+      }
+      this.toast.sucesso('Comanda reaberta com sucesso!')
+      this.carregarHistorico();
+      this.historicoStore.limparReaberturaConcluida();
+    })
+
+    effect(() => {
+      const erro = this.historicoStore.erroReabertura();
+      if(!erro) {
+        return;
+      }
+      this.toast.erro(erro);
+      this.historicoStore.limparErroReabertura();
+    })
   }
 
   ngOnInit(): void {
@@ -318,11 +337,19 @@ export class HistoricoVenda implements OnInit {
     return venda?.status === 'PENDENTE';
   }
 
+  podeReabrir(venda: VendaResponse | null): boolean {
+    return venda?.status === 'PENDENTE'
+  }
+
   quitarContaPendurada(vendaId: number): void {
     this.historicoStore.limparErroQuitacao();
     this.vendaParaQuitar.set(vendaId);
     this.formaPagamentoSelecionada.set('DINHEIRO')
     this.exibirModalPagamento.set(true);
+  }
+
+  reabrirComanda(vendaId: number): void {
+    this.historicoStore.reabrirComanda(vendaId);
   }
 
   temFiltrosAplicados(): boolean {

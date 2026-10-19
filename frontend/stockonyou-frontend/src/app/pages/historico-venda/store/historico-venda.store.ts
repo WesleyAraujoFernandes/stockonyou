@@ -157,6 +157,10 @@ export class HistoricoVendaStore {
     this.erroCancelamento.set(null);
   }
 
+  limparErroReabertura(): void {
+    this.erroReabertura.set(null);
+  }
+
   limparOrdenacao(): void {
     this.campoOrdenacao.set('id');
     this.direcaoOrdenacao.set('desc');
@@ -164,6 +168,10 @@ export class HistoricoVendaStore {
 
   limparQuitacaoConcluida(): void {
     this.quitacaoConcluida.set(null);
+  }
+
+  limparReaberturaConcluida(): void {
+    this.reaberturaConcluida.set(null);
   }
 
   limparCancelamentoConcluido(): void {

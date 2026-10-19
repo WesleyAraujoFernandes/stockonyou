@@ -492,6 +492,19 @@
             Finalizar Conta
           </button>
           }
+          @if (podeReabrir(historicoStore.vendaSelecionada())) {
+            <button
+              (click)="reabrirComanda(historicoStore.vendaSelecionada()!.id)"
+              [disabled]="historicoStore.reabrindo()"
+              class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs rounded-xl transition shadow-lg shadow-amber-600/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              @if (historicoStore.reabrindo()) {
+                Reabrindo...
+              } @else {
+                Reabrir Comanda
+              }
+            </button>
+          }
           @if (podeQuitar(historicoStore.vendaSelecionada())) {
           <button (click)="quitarContaPendurada(historicoStore.vendaSelecionada()!.id)"
             class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl transition shadow-lg shadow-emerald-600/20 cursor-pointer">

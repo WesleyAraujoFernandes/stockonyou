@@ -18,18 +18,16 @@ public interface PagamentoRepository extends JpaRepository<Pagamento, Long> {
     @Query("SELECT COALESCE(SUM(p.valor),0) FROM Pagamento p WHERE p.venda.id = :vendaId")
     BigDecimal calcularTotalPago(@Param("vendaId") Long vendaId);
 
-
-@Query("""
-    SELECT COALESCE(SUM(p.valor), 0)
-    FROM Pagamento p
-    WHERE p.dataPagamento >= :dataInicio
-      AND p.dataPagamento < :dataFim
-      AND p.venda.status <> :statusCancelada
-    """)
-BigDecimal calcularTotalRecebido(
-    @Param("dataInicio") LocalDateTime dataInicio,
-    @Param("dataFim") LocalDateTime dataFim,
-    @Param("statusCancelada") StatusVenda statusCancelada
-);
+    @Query("""
+            SELECT COALESCE(SUM(p.valor), 0)
+            FROM Pagamento p
+            WHERE p.dataPagamento >= :dataInicio
+              AND p.dataPagamento < :dataFim
+              AND p.venda.status <> :statusCancelada
+            """)
+    BigDecimal calcularTotalRecebido(
+            @Param("dataInicio") LocalDateTime dataInicio,
+            @Param("dataFim") LocalDateTime dataFim,
+            @Param("statusCancelada") StatusVenda statusCancelada);
 
 }

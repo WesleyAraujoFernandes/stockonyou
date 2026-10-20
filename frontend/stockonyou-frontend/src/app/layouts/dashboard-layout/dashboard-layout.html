@@ -23,10 +23,10 @@
           >
             Navegação
           </span>
-          
+
           <!-- SINTAXE OFICIAL 1: Ícone estático aplicando o seletor diretamente no atributo do SVG -->
-          <svg 
-            lucideMenu 
+          <svg
+            lucideMenu
             [class.rotate-180]="!isSidebarOpen()"
             class="w-5 h-5 transition-transform duration-300 mx-auto"
           ></svg>
@@ -43,8 +43,8 @@
             [title]="!isSidebarOpen() ? item.label : ''"
           >
             <!-- SINTAXE OFICIAL 2: Ícone dinâmico da lista injetando o objeto através de [lucideIcon] -->
-            <svg 
-              [lucideIcon]="item.icon" 
+            <svg
+              [lucideIcon]="item.icon"
               class="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform"
             ></svg>
 
@@ -62,7 +62,7 @@
           *ngIf="isSidebarOpen()"
           class="px-3 py-2 rounded-lg bg-slate-950/40 border border-slate-800/50 text-[11px] text-slate-500 flex justify-between items-center"
         >
-          <span>Módulo Cadastros</span>
+          <span>Versão</span>
           <span class="font-mono text-[10px] text-indigo-400">v1.0</span>
         </div>
       </div>

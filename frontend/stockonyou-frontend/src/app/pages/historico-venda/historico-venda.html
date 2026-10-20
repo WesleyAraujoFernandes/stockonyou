@@ -409,27 +409,38 @@
           class="text-slate-400 hover:text-slate-200 transition cursor-pointer">Fechar</button>
       </div>
 
-      <div
-        class="grid grid-cols-2 gap-3 text-xs bg-slate-950/40 p-3 border border-slate-800/60 rounded-xl text-slate-300">
+      <div class="grid grid-cols-2 text-xs bg-slate-950/40 p-3 border border-slate-800/60 rounded-xl text-slate-300">
+        <!-- Coluna da Esquerda: Cliente -->
         <div>
           <span class="text-slate-500 font-medium">Cliente:</span>
           {{ historicoStore.vendaSelecionada()?.clienteNome || 'Cliente Padrão' }}
         </div>
-        <div>
-          <span class="text-slate-500 font-medium">Data:</span>
-          {{ historicoStore.vendaSelecionada()?.dataVenda | date:'dd/MM/yyyy HH:mm' }}
+
+        <!-- Coluna da Direita: Data (Adicionado pl-6 para empurrar mais para a direita) -->
+        <div class="grid grid-cols-[auto_1fr] gap-x-2 ml-auto w-full max-w-47.5 pl-16">
+          <span class="text-slate-500 font-medium text-left">Data:</span>
+          <span class="text-left whitespace-nowrap">
+            {{ historicoStore.vendaSelecionada()?.dataVenda | date:'dd/MM/yyyy HH:mm' }}
+          </span>
         </div>
+
+        <!-- Coluna da Esquerda: Atendente -->
         <div>
           <span class="text-slate-500 font-medium">Atendente:</span>
           {{ historicoStore.vendaSelecionada()?.usuarioNome || 'Sistema' }}
         </div>
-        <div>
-          <span class="text-slate-500 font-medium">Situação:</span>
-          <span class="font-semibold ml-1" [ngClass]="obterClassesStatus(historicoStore.vendaSelecionada()!.status)">
+
+        <!-- Coluna da Direita: Situação (Adicionado pl-6 para empurrar mais para a direita) -->
+        <div class="grid grid-cols-[auto_1fr] gap-x-2 ml-auto w-full max-w-47.5 pl-16">
+          <span class="text-slate-500 font-medium text-left">Situação:</span>
+          <span class="font-semibold text-left whitespace-nowrap"
+            [ngClass]="obterClassesStatus(historicoStore.vendaSelecionada()!.status)">
             {{ obterTextoStatus(historicoStore.vendaSelecionada()!.status) }}
           </span>
         </div>
       </div>
+
+
 
       <!-- Lista de itens do cupom -->
       <div class="border border-slate-800 rounded-xl overflow-hidden text-xs">
@@ -493,17 +504,15 @@
           </button>
           }
           @if (podeReabrir(historicoStore.vendaSelecionada())) {
-            <button
-              (click)="reabrirComanda(historicoStore.vendaSelecionada()!.id)"
-              [disabled]="historicoStore.reabrindo()"
-              class="px-4 py-2 ml-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs rounded-xl transition shadow-lg shadow-amber-600/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-            >
-              @if (historicoStore.reabrindo()) {
-                Reabrindo...
-              } @else {
-                Reabrir Comanda
-              }
-            </button>
+          <button (click)="reabrirComanda(historicoStore.vendaSelecionada()!.id)"
+            [disabled]="historicoStore.reabrindo()"
+            class="px-4 py-2 ml-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs rounded-xl transition shadow-lg shadow-amber-600/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+            @if (historicoStore.reabrindo()) {
+            Reabrindo...
+            } @else {
+            Reabrir Comanda
+            }
+          </button>
           }
           @if (podeQuitar(historicoStore.vendaSelecionada())) {
           <button (click)="quitarContaPendurada(historicoStore.vendaSelecionada()!.id)"
@@ -511,10 +520,12 @@
             Dar Baixa e Quitar Conta
           </button>
           }
+          <!--
           <button (click)="fecharDetalhes()"
             class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-xs rounded-xl transition cursor-pointer">
             Fechar Janela
           </button>
+          -->
         </div>
       </div>
     </div>
@@ -522,18 +533,13 @@
   }
 </div>
 @if (exibirModalConfirmacaoCancelamento()) {
-<app-confirmacao-modal
-  [titulo]="statusVendaParaCancelar() === 'PAGO'
+<app-confirmacao-modal [titulo]="statusVendaParaCancelar() === 'PAGO'
     ? 'Atenção: cancelar venda paga'
-    : 'Cancelar venda'"
-  [mensagem]="statusVendaParaCancelar() === 'PAGO'
+    : 'Cancelar venda'" [mensagem]="statusVendaParaCancelar() === 'PAGO'
     ? 'Esta venda já está paga. O cancelamento é uma operação excepcional e não registra automaticamente a devolução dos valores recibidos. Deseja continuar?'
-    : 'Confirma o cancelamento dessa venda?'"
-  [textoConfirmar]="statusVendaParaCancelar() === 'PAGO'
+    : 'Confirma o cancelamento dessa venda?'" [textoConfirmar]="statusVendaParaCancelar() === 'PAGO'
     ? 'Confirmar cancelamento'
-    : 'Cancelar Venda'"
-  textoCancelar = "Voltar"
-  (confirmado)="confirmarCancelamento()"
+    : 'Cancelar Venda'" textoCancelar="Voltar" (confirmado)="confirmarCancelamento()"
   (cancelado)="cancelarConfirmacao()">
 </app-confirmacao-modal>
 }
@@ -558,43 +564,29 @@
       </div>
     </div>
     @if (historicoStore.erroQuitacao()) {
-      <div
-        role="alert"
-        class="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-sm text-red-300"
-      >
-        {{ historicoStore.erroQuitacao() }}
-      </div>
+    <div role="alert" class="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-sm text-red-300">
+      {{ historicoStore.erroQuitacao() }}
+    </div>
     }
     <div>
       <label for="formaPagamento" class="block text-xs font-semibold text-slate-300 mt-1.5">
         Forma de pagamento
       </label>
-      <select
-        id="formaPagamento"
-        [value]="formaPagamentoSelecionada()"
+      <select id="formaPagamento" [value]="formaPagamentoSelecionada()"
         (change)="formaPagamentoSelecionada.set($any($event.target).value)"
-        class="w-full px-3 py-2.5. rounded-xl bg-slate-950 border border-slate-700 text-sm text-slate-200 outline-none focus:border-indigo-500 cursor-pointer"
-      >
+        class="w-full px-3 py-2.5. rounded-xl bg-slate-950 border border-slate-700 text-sm text-slate-200 outline-none focus:border-indigo-500 cursor-pointer">
         <option value="DINHEIRO">Dinheiro</option>
         <option value="PIX">Pix</option>
         <option value="CARTAO_CREDITO">Cartão de crédito</option>
         <option value="CARTAO_DEBITO">Cartão de débito</option>
       </select>
     </div>
-    <div
-      class="flex justify-end gap-2 pt-2"
-    >
-      <button
-        type="button"
-        (click)="exibirModalPagamento.set(false)"
-        class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-xs rounded-xl transition cursor-pointer"
-      >
+    <div class="flex justify-end gap-2 pt-2">
+      <button type="button" (click)="exibirModalPagamento.set(false)"
+        class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-xs rounded-xl transition cursor-pointer">
         Voltar
       </button>
-      <button
-        type="button"
-        (click)="confirmarPagamento()"
-        class="
+      <button type="button" (click)="confirmarPagamento()" class="
           px-4
           py-4
           bg-emerald-600
@@ -606,8 +598,7 @@
           transition
           shadow-lg
           shadow-emerald-600/20
-          cursor-pointer"
-      >
+          cursor-pointer">
         Quitar conta
       </button>
     </div>

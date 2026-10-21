@@ -239,10 +239,20 @@ public class VendaService {
                                                 "Venda/Comanda nao encontrada com id:" + id));
                 if (venda.getStatus() != StatusVenda.ABERTA) {
                         throw new IllegalArgumentException(
-                                        "Somente vendas/comandas pagas podem ser finalizadas.");
+                                        "Somente comandas abertas podem ser finalizadas.");
+                }
+                List<String> alertas = new ArrayList<>();
+
+                for (ItemVenda item : venda.getItens()) {
+                        Produto produto = item.getProduto();
+                        alertas.addAll(
+                                verificarAlertasDeEstoque(produto, item.getQuantidade())
+                        );
+                        baixarEstoque(produto, item.getQuantidade());
                 }
                 venda.setStatus(StatusVenda.PENDENTE);
-                return VendaResponseDTO.fromEntity(vendaRepository.save(venda));
+                Venda vendaSalva = vendaRepository.save(venda);
+                return VendaResponseDTO.fromEntity(vendaSalva, alertas);
         }
 
         @Transactional

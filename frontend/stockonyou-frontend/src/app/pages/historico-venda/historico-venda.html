@@ -403,7 +403,7 @@
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4">
     <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-5">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h2 class="text-base font-bold text-white">Detalhamento do Cupom # {{ historicoStore.vendaSelecionada()?.id }}
+        <h2 class="text-base font-bold text-white">Detalhamento da venda # {{ historicoStore.vendaSelecionada()?.id }}
         </h2>
         <button (click)="fecharDetalhes()"
           class="text-slate-400 hover:text-slate-200 transition cursor-pointer">Fechar</button>
@@ -520,12 +520,12 @@
             Dar Baixa e Quitar Conta
           </button>
           }
-          <!--
-          <button (click)="fecharDetalhes()"
-            class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-xs rounded-xl transition cursor-pointer">
-            Fechar Janela
+          @if (historicoStore.vendaSelecionada()?.status === 'ABERTA') {
+          <button (click)="pendurarVenda(historicoStore.vendaSelecionada()!.id)"
+            class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-slate-300 font-medium text-xs rounded-xl transition cursor-pointer">
+            Pendurar Conta
           </button>
-          -->
+          }
         </div>
       </div>
     </div>

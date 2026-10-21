@@ -255,6 +255,17 @@ public class VendaService {
                 return VendaResponseDTO.fromEntity(vendaSalva, alertas);
         }
 
+        @Transactional 
+        public VendaResponseDTO pendurarVenda(Long id) {
+                Venda venda = buscarComanda(id);
+                if (venda.getStatus() != StatusVenda.ABERTA) {
+                        throw new IllegalArgumentException(
+                                        "Somente comandas abertas podem ser penduradas.");
+                }
+                venda.setStatus(StatusVenda.PENDENTE);
+                return VendaResponseDTO.fromEntity(vendaRepository.save(venda));
+        }
+
         @Transactional
         public VendaResponseDTO reabrirComanda(Long id) {
                 Venda comanda = buscarComanda(id);

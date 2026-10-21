@@ -86,6 +86,12 @@ export class VendaService {
     )
   }
 
+  pendurarVenda(vendaId: number): Observable<VendaResponse> {
+    return this.http.put<VendaResponse>(
+      `${this.apiUrl}/${vendaId}/pendurar`, {}
+    )
+  }
+
   reabrirComanda(vendaId: number) {
     return this.http.put<VendaResponse> (
       `${this.apiUrl}/${vendaId}/reabrir`, {})

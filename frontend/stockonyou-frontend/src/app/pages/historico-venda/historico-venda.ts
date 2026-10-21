@@ -68,6 +68,7 @@ export class HistoricoVenda implements OnInit {
     effect(() => {
       const quitacao = this.historicoStore.quitacaoConcluida();
       const finalizacao = this.historicoStore.finalizacaoConcluida();
+      const vendaPendurada = this.historicoStore.pendurarVendaConcluida();
 
       if (quitacao) {
         this.toast.sucesso(
@@ -91,6 +92,15 @@ export class HistoricoVenda implements OnInit {
         this.fecharDetalhes();
         this.carregarHistorico();
         this.historicoStore.limparFinalizacaoConcluida();
+      }
+
+
+      if (vendaPendurada) {
+        this.toast.sucesso('Conta pendurada com sucesso!');
+        this.fecharDetalhes();
+        this.carregarHistorico();
+
+        this.historicoStore.limparPendurarVendaConcluida();
       }
 
     });
@@ -248,6 +258,10 @@ export class HistoricoVenda implements OnInit {
 
   finalizarVenda(vendaId: number): void {
     this.historicoStore.finalizarVenda(vendaId);
+  }
+
+  pendurarVenda(vendaId: number): void {
+    this.historicoStore.pendurarVenda(vendaId);
   }
 
   irParaPaginaInformada(valor: string): void {

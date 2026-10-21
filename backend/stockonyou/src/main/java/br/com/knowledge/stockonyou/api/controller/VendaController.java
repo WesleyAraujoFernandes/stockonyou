@@ -157,6 +157,11 @@ public class VendaController {
         return ResponseEntity.ok(vendaService.adicionarItemComanda(id, dto));
     }
 
+    @PutMapping("/{id}/pendurar")
+    public ResponseEntity<VendaResponseDTO> pendurarVenda(@PathVariable Long id) {
+        return ResponseEntity.ok(vendaService.pendurarVenda(id));
+    }
+
     @DeleteMapping("/{id}/itens/{produtoId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<VendaResponseDTO> removerItemComanda(@PathVariable Long id, @PathVariable Long produtoId) {

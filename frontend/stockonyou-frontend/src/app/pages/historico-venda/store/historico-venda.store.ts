@@ -28,6 +28,7 @@ export class HistoricoVendaStore {
 
   readonly quitacaoConcluida = signal<VendaResponse | null>(null);
   readonly finalizacaoConcluida = signal<VendaResponse | null>(null);
+  readonly pendurarVendaConcluida = signal<VendaResponse | null>(null);
 
   readonly cancelando = signal(false);
   readonly erroCancelamento = signal<string | null>(null);
@@ -178,6 +179,10 @@ export class HistoricoVendaStore {
     this.cancelamentoConcluido.set(null);
   }
 
+  limparPendurarVendaConcluida(): void {
+    this.pendurarVendaConcluida.set(null);
+  }
+
   ordenarPor(campo: string): void {
     if (this.campoOrdenacao() === campo) {
       this.direcaoOrdenacao.update(
@@ -231,6 +236,18 @@ export class HistoricoVendaStore {
           this.erroQuitacao.set(
             'O pagamento foi solicitado, mas não foi possível concluir a atualização da venda.'
           )
+        }
+      })
+  }
+
+  pendurarVenda(vendaId: number): void {
+    this.vendaService.pendurarVenda(vendaId)
+      .subscribe({
+        next: (venda) => {
+          this.pendurarVendaConcluida.set(venda);
+        },
+        error: (err) => {
+          console.error('Erro ao pendurar a conta:', err)
         }
       })
   }

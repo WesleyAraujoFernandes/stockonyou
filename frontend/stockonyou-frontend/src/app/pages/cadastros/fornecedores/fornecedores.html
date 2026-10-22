@@ -1,0 +1,83 @@
+<div class="space-y-6 relative">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b boder-slate-800 pb-5">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight text-white">
+        Cadastro de Fornecedores
+      </h1>
+      <p class="text-xs text-slate-400 mt-1">
+        Gerencie os fornecedores dos produtos em estoque.
+      </p>
+    </div>
+  </div>
+  <div
+    class="
+      flex
+      flex-col
+      sm:flex-row
+      gap-4
+      items-center
+      justify-between
+      bg-slate-900
+      border
+      border-slate-800
+      p-4
+      rounded-2xl
+      shasow-sm">
+      <div class="relative w-full sm:max-w-xs">
+        <input
+          type="text"
+          [ngModel]="termoBusca()"
+          (ngModelChange)="pesquisar($event)"
+          placeholder="Pesquisar fornecedor por nome..."
+          class="
+            w-full
+            px-4
+            py-2
+            bg-slate-950
+            border
+            border-slate-800
+            rounded-xl
+            focus:outline-none
+            focus:ring-2
+            focus:ring-indigo-500
+            text-xs
+            text-white
+            placeholder-slate-500"
+        >
+      </div>
+      <div class="text-xs text-slate-400">
+        Encontrados:
+        <span class="text-white font-semibold">{{ totalElementos() }}</span>
+      </div>
+  </div>
+  <div class="bg-slate-9000 border border-slate-800 rounded-2xl shadow-sm overflow-x-auto">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-slate-950/50 border-b border-slate-800 text-xs uppercase text-slate-400 font-semibold">
+          <th class="py-3.5 px-6">Nome</th>
+          <th class="py-3.5 px-6">CNPJ</th>
+          <th class="py-3.5 px-6">Telefone</th>
+          <th class="py-3.5 px-6">E-mail</th>
+          <th class="py-3.5 px-6">Cidade</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-800/60 text-sm text-slate-300">
+        @if (carregando()) {
+          <tr>
+            <td class="py-12 text-center text-slate-400">
+              Carregando fornecedores...
+            </td>
+          </tr>
+        } @else {
+          @for (fornecedor of fornecedores(); track fornecedor.id) {
+            <tr class="hover:bg-slate-800/40 trasition">
+              <td class="py-3.5 px-6 font-medium text-white">
+                {{ fornecedor.nome }}
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

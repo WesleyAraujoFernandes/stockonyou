@@ -5,12 +5,14 @@ export interface Fornecedor {
   telefone?: string;
   cnpj?: string;
   endereco?: string;
-  cidade: {
-    id: number;
-    nome: string;
-  };
+  cidade: CidadeFornecedor;
   cep?: string;
   observacao?: string;
+}
+
+export interface CidadeFornecedor {
+  id: number;
+  nome: string;
 }
 
 export interface FornecedorRequest {

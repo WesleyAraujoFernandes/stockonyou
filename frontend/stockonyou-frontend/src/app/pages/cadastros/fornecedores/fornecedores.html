@@ -8,9 +8,13 @@
         Gerencie os fornecedores dos produtos em estoque.
       </p>
     </div>
+    <button (click)="abrirModal()"
+      class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 border border-indigo-500/30 transition-all cursor-pointer shadow-lg shadow-indigo-600/20 active:scale-95">
+      <svg [lucideIcon]="IconPlus" class="w-4 h-4"></svg>
+      Cadastrar Fornecedor
+    </button>
   </div>
-  <div
-    class="
+  <div class="
       flex
       flex-col
       sm:flex-row
@@ -23,13 +27,9 @@
       p-4
       rounded-2xl
       shasow-sm">
-      <div class="relative w-full sm:max-w-xs">
-        <input
-          type="text"
-          [ngModel]="termoBusca()"
-          (ngModelChange)="pesquisar($event)"
-          placeholder="Pesquisar fornecedor por nome..."
-          class="
+    <div class="relative w-full sm:max-w-xs">
+      <input type="text" [ngModel]="termoBusca()" (ngModelChange)="pesquisar($event)"
+        placeholder="Pesquisar fornecedor por nome..." class="
             w-full
             px-4
             py-2
@@ -42,13 +42,12 @@
             focus:ring-indigo-500
             text-xs
             text-white
-            placeholder-slate-500"
-        >
-      </div>
-      <div class="text-xs text-slate-400">
-        Encontrados:
-        <span class="text-white font-semibold">{{ totalElementos() }}</span>
-      </div>
+            placeholder-slate-500">
+    </div>
+    <div class="text-xs text-slate-400">
+      Encontrados:
+      <span class="text-white font-semibold">{{ totalElementos() }}</span>
+    </div>
   </div>
   <div class="bg-slate-9000 border border-slate-800 rounded-2xl shadow-sm overflow-x-auto">
     <table class="w-full text-left border-collapse">
@@ -63,21 +62,202 @@
       </thead>
       <tbody class="divide-y divide-slate-800/60 text-sm text-slate-300">
         @if (carregando()) {
-          <tr>
-            <td class="py-12 text-center text-slate-400">
-              Carregando fornecedores...
-            </td>
-          </tr>
+        <tr>
+          <td class="py-12 text-center text-slate-400">
+            Carregando fornecedores...
+          </td>
+        </tr>
         } @else {
-          @for (fornecedor of fornecedores(); track fornecedor.id) {
-            <tr class="hover:bg-slate-800/40 trasition">
-              <td class="py-3.5 px-6 font-medium text-white">
-                {{ fornecedor.nome }}
-              </td>
-            </tr>
-          }
+        @for (fornecedor of fornecedores(); track fornecedor.id) {
+        <tr class="hover:bg-slate-800/40 trasition">
+          <td class="py-3.5 px-6 font-medium text-white">
+            {{ fornecedor.nome }}
+          </td>
+          <td class="py-3.5 px-6">{{ fornecedor.cnpj || '-' }}</td>
+          <td class="py-3.5 px-6">{{ fornecedor.telefone || '-' }}</td>
+          <td class="py-3.5 px-6">{{ fornecedor.email || '-' }}</td>
+          <td class="py-3.5 px-6">{{ fornecedor.cidade?.nome || '-' }}</td>
+        </tr>
+        } @empty {
+        <tr>
+          <td colspan="5" class="py-12 text-center text-slate-500">
+            Nenhum fornecedor encontrado.
+          </td>
+        </tr>
+        }
         }
       </tbody>
     </table>
   </div>
+  @if (totalPaginas() > 1) {
+  <div class="flex items-center justify-between gap-4">
+    <span class="text-xs text-slate-400">
+      Página {{ paginaAtual() + 1 }} de {{ totalPaginas() }}
+    </span>
+    <div class="flex gap-2">
+      <button type="button" (click)="paginaAnterior()" [disabled]="paginaAtual() === 0 || carregando()"
+        class="px-3 py-2 rounded-lg text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed">
+        Anterior
+      </button>
+      <button type="button" (click)="proximaPagina()" [disabled]="paginaAtual() >= totalPaginas() -1 || carregando()"
+        class="px-3 py-2 rounded-lg text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed">
+        Próxima
+      </button>
+    </div>
+  </div>
+  }
 </div>
+@if (exibirModalCadastro()) {
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4">
+  <form #formFornecedor="ngForm" (ngSubmit)="formFornecedor.valid && salvarFornecedor()"
+    class="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-5">
+    <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+      <h2 class="text-base font-bold text-white">
+        Novo Fornecedor
+      </h2>
+      <button>
+        <svg [lucideIcon]="IconX" class="w-4 h-4"></svg>
+      </button>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="sm:col-span-2">
+        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">
+          Nome do Fornecedor*
+        </label>
+        <input type="text" name="nome" required minlength=3 maxlength="120" #nomeInput="ngModel"
+          [(ngModel)]="novoFornecedor.nome" placeholder="Ex.: Distribuidora Central" class="
+              w-full
+              px-3
+              py-2
+              bg-slate-950
+              border
+              rounded-xl
+              text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500
+            " [class.border-red-500/50]="nomeInput.invalid && (nomeInput.dirty || nomeInput.touched)"
+          [class.border-slate-800]="!(nomeInput.invalid && (nomeInput.dirty || nomeInput.touched))" />
+        @if (nomeInput.invalid && (nomeInput.dirty || nomeInput.touched)) {
+        <div class="text-red-400 text-[11px] mt-1.5">
+          @if (nomeInput.errors?.['required']) {
+          O nome do fornecedor é obrigatório
+          } @else if (nomeInput.errors?.['minlength']) {
+          Informe pelo menos 3 caracteres
+          } @else if (nomeInput.errors?.['maxlength']) {
+          O nome não pode exceder 120 caracteres.
+          }
+        </div>
+        }
+      </div>
+      <div>
+        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">
+          CNPJ
+        </label>
+        <input type="text" name="cnpj" maxlength="18" [(ngModel)]="novoFornecedor.cnpj" placehoder="00.000.000/0000-00">
+      </div>
+      <div>
+        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">
+          Telefone
+        </label>
+        <input type="text" name="telefone" maxlength="20" [(ngModel)]="novoFornecedor.telefone"
+          placeholder="(00) 0000-0000" class="
+              w-full
+              px-3
+              py-3
+              bg-slate-950
+              border
+              border-slate-800
+              rounded-xl
+              text-xs
+              text-white
+              focus:outline-none
+              focus:ring-2 focus: ring-indigo-500
+            " />
+      </div>
+      <!-- E-mail -->
+      <div class="sm:col-span-2">
+        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">
+          E-mail
+        </label>
+        <input type="email" name="email" maxlength="255" #emailInput="ngModel" [(ngModel)]="novoFornecedor.email"
+          placeholder="contato@fornecedor.com.br"
+          class="w-full px-3 py-2 bg-slate-950 border rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          [class.border-red-500/50]="emailInput.invalid && (emailInput.dirty || emailInput.touched)"
+          [class.border-slate-800]="!(emailInput.invalid && (emailInput.dirty || emailInput.touched))" />
+        @if (emailInput.invalid && (emailInput.dirty || emailInput.touched)) {
+        <div class="text-red-400 text-[11px] mt-1.5">
+          Informe um endereço de e-mail válido.
+        </div>
+        }
+      </div>
+      <div class="sm:col-span-2">
+        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">
+          Endereço
+        </label>
+        <input type="text" name="endereco" maxlength="255" [(ngModel)]="novoFornecedor.endereco"
+          placehoder="'Rua, número e complemenetp"
+          class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-2500">
+      </div>
+      <div>
+        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">
+          CEP
+        </label>
+        <input type="text" name="cep" maxlength="9" [(ngModel)]="novoFornecedor.cep" placeholder="0000-000"
+          class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div>
+        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">
+          Cidade (Obrigatória)
+        </label>
+        <select name="cidadeId" id="cidadeId" required [(ngModel)]="novoFornecedor.cidadeId"
+          [disabled]="carregandoCidades() || cidades().length === 0"
+          class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60">
+          <option [ngValue]="null" disabled>
+            @if (carregandoCidades()) {
+            Carregando cidades...
+            } @else {
+            Selecione uma cidade...
+            }
+          </option>
+          @for (cidade of cidades(); track cidade.id) {
+          <option [ngValue]="cidade.id">
+            {{ cidade.nome }}
+          </option>
+          }
+        </select>
+        @if (!carregandoCidades() && cidades().length === 0) {
+        <p class="text-amber-400 text-[11px] mt-1.5">
+          Nenhuma cidade disponível para seleção.
+        </p>
+        }
+      </div>
+      <!-- Observação -->
+      <div class="sm:col-span-2">
+        <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">
+          Observação
+        </label>
+        <textarea name="observacao" maxlength="500" rows="3" [(ngModel)]="novoFornecedor.observacao"
+          placeholder="Informações adicionais sobre o fornecedor..."
+          class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y">
+
+          </textarea>
+      </div>
+    </div>
+    <div class="flex justify-end gap-3 border-t border-slate-800 pt-4">
+      <button
+        type="button"
+        (click)="fecharCadastro()"
+        [disabled]="salvando()"
+        class="px-4 py-2 rounded-xl text-xs font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 transition disabled:opacity-40 cursor-pointer"
+      >
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        [disabled]="formFornecedor.invalid || salvando() || carregandoCidades() || cidades().length ===0"
+        class="px-5 py-5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 transition shadow-md shadow-indigo-600/20 disable:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+      >
+        {{ salvando() ? 'Salvando...' : 'Salvar Fornecedor' }}
+      </button>
+    </div>
+  </form>
+</div>
+}

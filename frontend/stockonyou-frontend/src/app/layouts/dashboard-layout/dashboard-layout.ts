@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { Header } from '../../components/header/header';
-import { LucideDynamicIcon, LucideIcon,LucideMenu, LucideTags, LucideBox, LucideShoppingCart, LucideGalleryHorizontalEnd } from '@lucide/angular';
+import { LucideDynamicIcon, LucideIcon,LucideMenu, LucideTags, LucideBox, LucideShoppingCart, LucideGalleryHorizontalEnd, LucideTruck, LucideTrophy } from '@lucide/angular';
 import { Toast } from "../../components/toast/toast";
 
 interface MenuItem {
@@ -21,8 +21,7 @@ interface MenuItem {
     RouterLinkActive,
     Header,
     LucideDynamicIcon,
-    LucideMenu
-    ,
+    LucideMenu,
     Toast
   ],
   templateUrl: './dashboard-layout.html',
@@ -52,6 +51,11 @@ export class DashboardLayout {
       label: 'Histórico de Vendas',
       route: '/vendas/historico',
       icon: LucideGalleryHorizontalEnd
+    },
+    {
+      label: 'Fornecedores',
+      route: '/cadastros/fornecedores',
+      icon: LucideTruck
     }
   ];
 

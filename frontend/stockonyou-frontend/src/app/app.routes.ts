@@ -22,11 +22,15 @@ export const routes: Routes = [
       import('./layouts/dashboard-layout/dashboard-layout').then((m) => m.DashboardLayout),
     canActivate: [authGuard],
     children: [
-
       {
         path: 'cadastros/categorias',
         loadComponent: () =>
           import('./pages/cadastros/categorias/categorias').then((m) => m.Categorias),
+      },
+      {
+        path: 'cadastros/fornecedores',
+        loadComponent: () =>
+          import('./pages/cadastros/fornecedores/fornecedores').then((m) => m.Fornecedores)
       },
       {
         path: 'cadastros/produtos',

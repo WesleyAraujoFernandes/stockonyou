@@ -5,7 +5,7 @@ export interface Fornecedor {
   telefone?: string;
   cnpj?: string;
   endereco?: string;
-  cidade: CidadeFornecedor;
+  cidade?: CidadeFornecedor;
   cep?: string;
   observacao?: string;
 }
